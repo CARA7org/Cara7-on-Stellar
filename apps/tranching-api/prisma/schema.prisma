@@ -1,0 +1,132 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Business registry: ABS deals and their note tranches (one Soroban note-token
+// contract per class; the deal and the paying agent carry the money flow)
+// ---------------------------------------------------------------------------
+
+model Deal {
+  id                   Int       @id @default(autoincrement())
+  name                 String    @unique
+  description          String?
+  /// abs-deal contract: funding escrow + closing DvP + waterfall v4.
+  dealContractId       String?   @map("deal_contract_id")
+  /// paying-agent contract: per-holder pushes of interest + principal.
+  payingAgentContractId String?  @map("paying_agent_contract_id")
+  periodDays           Int       @default(3) @map("period_days")
+  closedAt             DateTime? @map("closed_at")
+  createdAt            DateTime  @default(now()) @map("created_at")
+  tranches             Tranche[]
+
+  @@map("deal")
+}
+
+model Tranche {
+  id            Int      @id @default(autoincrement())
+  dealId        Int      @map("deal_id")
+  name          String
+  seniority     String // SENIOR | MEZZANINE | JUNIOR - class 0/1/2 on-chain
+  /// note-token contract id of the class.
+  contractId    String   @unique @map("contract_id")
+  baseAssetId   String   @map("base_asset_id")
+  couponBps     Int      @default(0) @map("coupon_bps")
+  /// Original face of the class in base units (notes x denomination).
+  originalFace  Decimal  @map("original_face") @db.Decimal(40, 0)
+  assetSymbol   String   @map("asset_symbol")
+  assetDecimals Int      @map("asset_decimals")
+  createdAt     DateTime @default(now()) @map("created_at")
+  deal          Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
+
+  @@index([dealId])
+  @@map("tranche")
+}
+
+// ---------------------------------------------------------------------------
+// Indexation on-chain
+// ---------------------------------------------------------------------------
+
+/// One row per onchain contract event. `id` is the event TOID - globally
+/// sortable and unique - so re-ingestion is idempotent (dedup key).
+/// Types: note-token issue|transfer|approve|period_rolled|weight_frozen ;
+/// abs-deal subscribed|sub_cancelled|sub_loan_funded|sub_loan_refunded|
+/// deal_closed|deal_aborted|distribution|fees_paid|interest_paid|
+/// principal_paid|factor_updated|reserve_released|reserve_refunded|
+/// carry_updated|residual_paid|enforced|matured ;
+/// paying-agent period_funded|holder_paid|push_failed|claimed|batch_done.
+model StellarEvent {
+  id         String   @id
+  ledger     Int
+  ts         DateTime
+  contractId String   @map("contract_id")
+  type       String
+  topic      Json
+  data       Json
+  createdAt  DateTime @default(now()) @map("created_at")
+
+  @@index([contractId, ledger])
+  @@index([contractId, type, ledger])
+  @@map("stellar_event")
+}
+
+/// Periodic note snapshot per tranche - outstanding nominal, note factor,
+/// current all-in coupon and cumulative payments. Replaces the vault
+/// NAV/share-price snapshot of the retired ERC4626 generation.
+model TrancheSnapshot {
+  id               Int      @id @default(autoincrement())
+  contractId       String   @map("contract_id") // note-token id
+  ts               DateTime @default(now())
+  ledger           Int
+  outstanding      Decimal  @db.Decimal(40, 0) // base units
+  /// FACTOR_SCALE units: 10_000_000 = 100%.
+  noteFactor       Int      @map("note_factor")
+  /// All-in annual rate in 0.001% units (oracle fixing + spread for A).
+  couponRateUnits  Int      @map("coupon_rate_units")
+  paidInterestCum  Decimal  @map("paid_interest_cum") @db.Decimal(40, 0)
+  paidPrincipalCum Decimal  @map("paid_principal_cum") @db.Decimal(40, 0)
+
+  @@index([contractId, ts])
+  @@map("tranche_snapshot")
+}
+
+/// Note holding + payment counters per (note contract, address), maintained
+/// by ingest from issue/transfer (units), subscribed/sub_cancelled (cost
+/// basis at par) and holder_paid/claimed (received counters).
+model UserPosition {
+  tranche           String
+  address           String
+  /// Notes held (integer units, decimals 0).
+  units             Decimal  @db.Decimal(40, 0)
+  /// Subscription cost basis in base units (0 for secondary buyers).
+  subscribed        Decimal  @db.Decimal(40, 0) @default(0)
+  interestReceived  Decimal  @map("interest_received") @db.Decimal(40, 0) @default(0)
+  principalReceived Decimal  @map("principal_received") @db.Decimal(40, 0) @default(0)
+  updatedAt         DateTime @updatedAt @map("updated_at")
+
+  @@id([tranche, address])
+  @@map("user_position")
+}
+
+/// Single-row ingest cursor (last fully-ingested ledger) per contract.
+model IngestState {
+  contractId String @id @map("contract_id")
+  lastLedger Int    @map("last_ledger")
+}
+
+/// USD price history per ticker, deduped to one row per hour.
+model PriceSnapshot {
+  symbol   String
+  bucket   Int // unix hour bucket - dedup key
+  ts       DateTime
+  priceUsd Float    @map("price_usd")
+
+  @@id([symbol, bucket])
+  @@index([symbol, ts])
+  @@map("price_snapshot")
+}
