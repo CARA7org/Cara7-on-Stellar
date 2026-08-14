@@ -1,0 +1,16 @@
+[workspace]
+resolver = "2"
+members = [
+    "contracts/note-token",
+    "contracts/abs-deal",
+    "contracts/paying-agent",
+    "contracts/asset-nft",
+    "contracts/rate-oracle",
+]
+
+[profile.release]
+opt-level = "z"
+lto = true
+strip = "symbols"
+panic = "abort"
+overflow-checks = true
