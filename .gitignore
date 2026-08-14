@@ -7,13 +7,27 @@ Thumbs.db
 .idea/
 *.swp
 
-# Dependencies & builds
+# Dependencies
 node_modules/
+
+# Builds
 dist/
 build/
 target/
+.next/
+.vercel/
+*.tsbuildinfo
+*.log
+
+# Generated Prisma client (recreated by `prisma generate` on install)
+apps/*/src/generated/
+
+# Runtime volumes
+/data/
+apps/*/data/
 
 # Env & secrets
 .env
 .env.*
+!.env.example
 *.pem

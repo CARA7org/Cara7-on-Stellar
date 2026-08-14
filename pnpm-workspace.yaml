@@ -1,0 +1,11 @@
+packages:
+  - "apps/*"
+
+# pnpm 10 blocks the build scripts of the dependencies by default;
+# Prisma and esbuild need theirs.
+onlyBuiltDependencies:
+  - prisma
+  - "@prisma/client"
+  - "@prisma/engines"
+  - esbuild
+  - sharp

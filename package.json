@@ -1,0 +1,13 @@
+{
+  "name": "trueabs-monorepo",
+  "version": "1.0.0",
+  "private": true,
+  "description": "ABS tokenization on Stellar: document knowledge base, Soroban tranching and their fronts",
+  "packageManager": "pnpm@10.30.1",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "start:prod": "pnpm --filter docs-api start:prod"
+  }
+}
