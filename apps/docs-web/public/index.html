@@ -1,0 +1,432 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Cara7 - Knowledge base</title>
+<style>
+  :root {
+    --bg: #f4f5f9;
+    --card: #ffffff;
+    --ink: #1c2130;
+    --muted: #6b7186;
+    --line: #e3e5ee;
+    --accent: #4653e8;
+    --accent-soft: #eef0fe;
+    --ok: #1d8a4e;
+    --err: #c93a3a;
+    --mark: #fdeaa8;
+  }
+  * { box-sizing: border-box; }
+  body {
+    margin: 0;
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+    background: var(--bg);
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  header {
+    background: var(--card);
+    border-bottom: 1px solid var(--line);
+    padding: 1rem 1.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 1rem;
+    flex-wrap: wrap;
+  }
+  header h1 { font-size: 1.15rem; margin: 0; display: flex; align-items: center; gap: .5rem; }
+  header h1 .logo {
+    background: var(--accent); color: #fff; border-radius: 8px;
+    width: 30px; height: 30px; display: inline-flex; align-items: center; justify-content: center;
+    font-size: .95rem;
+  }
+  #stats { color: var(--muted); font-size: .85rem; }
+  main {
+    max-width: 1180px;
+    margin: 1.5rem auto;
+    padding: 0 1.5rem;
+    display: grid;
+    grid-template-columns: minmax(340px, 5fr) minmax(380px, 7fr);
+    gap: 1.25rem;
+    align-items: start;
+  }
+  @media (max-width: 900px) { main { grid-template-columns: 1fr; } }
+  .card {
+    background: var(--card);
+    border: 1px solid var(--line);
+    border-radius: 14px;
+    padding: 1.25rem;
+  }
+  .card h2 { margin: 0 0 .9rem; font-size: .8rem; text-transform: uppercase; letter-spacing: .06em; color: var(--muted); }
+  .col { display: flex; flex-direction: column; gap: 1.25rem; }
+
+  /* --- Upload --- */
+  #dropzone {
+    border: 2px dashed var(--line);
+    border-radius: 12px;
+    padding: 2rem 1rem;
+    text-align: center;
+    cursor: pointer;
+    transition: border-color .15s, background .15s;
+  }
+  #dropzone.dragover { border-color: var(--accent); background: var(--accent-soft); }
+  #dropzone .big { font-size: 2rem; }
+  #dropzone p { margin: .35rem 0; }
+  #dropzone .hint { color: var(--muted); font-size: .82rem; }
+  #dropzone strong { color: var(--accent); }
+  #note-input {
+    width: 100%; margin-top: .8rem; padding: .6rem .8rem; font: inherit; font-size: .88rem;
+    border: 1px solid var(--line); border-radius: 10px; resize: vertical; background: var(--bg);
+  }
+  #note-input:focus { outline: none; border-color: var(--accent); background: var(--card); }
+  #upload-log { list-style: none; margin: .8rem 0 0; padding: 0; display: flex; flex-direction: column; gap: .4rem; }
+  #upload-log li {
+    font-size: .85rem; padding: .5rem .7rem; border-radius: 8px;
+    background: var(--bg); display: flex; justify-content: space-between; gap: .8rem;
+  }
+  #upload-log .ok { color: var(--ok); }
+  #upload-log .err { color: var(--err); }
+
+  /* --- Documents --- */
+  #doc-list { list-style: none; margin: 0; padding: 0; }
+  #doc-list li {
+    display: flex; align-items: center; gap: .7rem;
+    padding: .6rem .2rem; border-bottom: 1px solid var(--line);
+  }
+  #doc-list li:last-child { border-bottom: none; }
+  #doc-list .icon { font-size: 1.25rem; }
+  #doc-list .meta { flex: 1; min-width: 0; }
+  #doc-list .name { font-weight: 600; font-size: .9rem; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+  #doc-list .sub { color: var(--muted); font-size: .78rem; }
+  #doc-list .note {
+    color: var(--ink); font-size: .8rem; font-style: italic; opacity: .85;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
+  #doc-list a.name { color: var(--ink); text-decoration: none; }
+  #doc-list a.name:hover { color: var(--accent); }
+  .btn-del {
+    border: none; background: none; color: var(--muted); cursor: pointer;
+    font-size: 1rem; padding: .3rem .45rem; border-radius: 6px;
+  }
+  .btn-del:hover { background: #fbecec; color: var(--err); }
+  .empty { color: var(--muted); font-size: .88rem; text-align: center; padding: 1rem 0; }
+
+  /* --- Search --- */
+  #search {
+    width: 100%; font-size: 1rem; padding: .75rem 1rem;
+    border: 1px solid var(--line); border-radius: 10px; outline: none;
+    background: var(--bg);
+  }
+  #search:focus { border-color: var(--accent); background: var(--card); }
+  #results { margin-top: 1rem; display: flex; flex-direction: column; gap: .8rem; }
+  .result {
+    border: 1px solid var(--line); border-radius: 10px; padding: .8rem 1rem;
+  }
+  .result .doc { font-size: .78rem; font-weight: 600; color: var(--accent); margin-bottom: .3rem; }
+  .result .snip { font-size: .88rem; white-space: pre-wrap; word-break: break-word; }
+  mark { background: var(--mark); border-radius: 3px; padding: 0 2px; }
+
+  /* --- Document reader --- */
+  #reader {
+    position: fixed; inset: 0; background: rgba(20, 24, 40, .55);
+    display: flex; align-items: center; justify-content: center; padding: 2rem; z-index: 10;
+  }
+  #reader[hidden] { display: none; }
+  #reader .panel {
+    background: var(--card); border-radius: 14px; max-width: 860px; width: 100%;
+    max-height: 85vh; display: flex; flex-direction: column; overflow: hidden;
+  }
+  #reader .panel header {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: .9rem 1.25rem; border-bottom: 1px solid var(--line); background: var(--card);
+  }
+  #reader .panel h3 { margin: 0; font-size: .95rem; }
+  #reader .panel .close {
+    border: none; background: var(--bg); border-radius: 8px; cursor: pointer;
+    font-size: 1rem; padding: .35rem .6rem;
+  }
+  #reader .panel .body {
+    overflow-y: auto; padding: 1.25rem; white-space: pre-wrap; font-size: .88rem;
+    word-break: break-word;
+  }
+  #reader .panel .doc-note { font-style: italic; color: var(--muted); margin-bottom: 1rem; }
+  .btn-read {
+    border: 1px solid var(--line); background: var(--card); color: var(--accent); cursor: pointer;
+    font-size: .78rem; padding: .3rem .6rem; border-radius: 7px; white-space: nowrap;
+  }
+  .btn-read:hover { background: var(--accent-soft); }
+  .result .matches { color: var(--muted); font-weight: 400; }
+  .result .snip + .snip { margin-top: .5rem; padding-top: .5rem; border-top: 1px dashed var(--line); }
+
+  /* --- Access token --- */
+  #token-bar {
+    display: flex; align-items: center; justify-content: center; gap: .6rem; flex-wrap: wrap;
+    background: #fff7e0; border-bottom: 1px solid #eadfae; padding: .6rem 1.5rem; font-size: .88rem;
+  }
+  #token-bar[hidden] { display: none; }
+  #token-feedback { font-weight: 600; }
+  #token-feedback.err { color: var(--err); }
+  #token-feedback.ok { color: var(--ok); }
+  #token-bar input {
+    padding: .4rem .6rem; border: 1px solid var(--line); border-radius: 8px; min-width: 220px;
+  }
+  #token-bar button {
+    padding: .4rem .8rem; border: none; border-radius: 8px; background: var(--accent);
+    color: #fff; cursor: pointer;
+  }
+</style>
+</head>
+<body>
+<header>
+  <h1><span class="logo">C7</span> Cara7 · Knowledge base</h1>
+  <div id="stats"></div>
+</header>
+
+<div id="token-bar" hidden>
+  <span>This knowledge base is protected. Paste the access token:</span>
+  <input type="password" id="token-input" placeholder="Token…" autocomplete="off">
+  <button id="token-save">Submit</button>
+  <span id="token-feedback"></span>
+</div>
+
+<main>
+  <div class="col">
+    <section class="card">
+      <h2>Upload documents</h2>
+      <div id="dropzone">
+        <div class="big">📥</div>
+        <p><strong>Drag and drop</strong> your files here<br>or click to browse</p>
+        <p class="hint">PDF, Word (.docx, .doc), Excel (.xlsx, .xls), CSV, TXT, Markdown, ZIP (content indexed) - 50 MB maximum</p>
+      </div>
+      <input type="file" id="file-input" multiple hidden
+             accept=".pdf,.docx,.doc,.xlsx,.xls,.csv,.txt,.md,.zip">
+      <textarea id="note-input" rows="2" maxlength="2000"
+                placeholder="Notes about the document (optional): context, source, keywords… They are indexed too."></textarea>
+      <ul id="upload-log"></ul>
+    </section>
+
+    <section class="card">
+      <h2>Indexed documents</h2>
+      <ul id="doc-list"></ul>
+      <div class="empty" id="doc-empty" hidden>No document yet.</div>
+    </section>
+  </div>
+
+  <div class="col">
+    <section class="card">
+      <h2>Search the knowledge base</h2>
+      <input type="search" id="search" placeholder="Search a word or a sentence…" autocomplete="off">
+      <div id="results"></div>
+    </section>
+  </div>
+</main>
+
+<div id="reader" hidden>
+  <div class="panel">
+    <header>
+      <h3 id="reader-title"></h3>
+      <button class="close" id="reader-close">✕ Close</button>
+    </header>
+    <div class="body" id="reader-body"></div>
+  </div>
+</div>
+
+<script>
+const $ = (sel) => document.querySelector(sel);
+const dropzone = $('#dropzone');
+const fileInput = $('#file-input');
+const uploadLog = $('#upload-log');
+const docList = $('#doc-list');
+const docEmpty = $('#doc-empty');
+const searchInput = $('#search');
+const resultsEl = $('#results');
+const statsEl = $('#stats');
+const tokenBar = $('#token-bar');
+
+// Served by Vercel, the page calls the API on Railway; otherwise, same origin.
+const API_BASE = location.hostname.endsWith('.vercel.app')
+  ? 'https://app-production-2e29.up.railway.app'
+  : '';
+let apiToken = localStorage.getItem('cara7_token') || '';
+
+async function api(path, options = {}) {
+  const headers = { ...(options.headers || {}) };
+  if (apiToken) headers['Authorization'] = 'Bearer ' + apiToken;
+  const response = await fetch(API_BASE + path, { ...options, headers });
+  if (response.status === 401) tokenBar.hidden = false;
+  return response;
+}
+
+const fileUrl = (id) =>
+  API_BASE + '/api/documents/' + id + '/file' + (apiToken ? '?token=' + encodeURIComponent(apiToken) : '');
+
+async function saveToken() {
+  const entered = $('#token-input').value.trim();
+  if (!entered) return;
+  const feedback = $('#token-feedback');
+  apiToken = entered;
+  const response = await api('/api/stats');
+  if (!response.ok) {
+    feedback.className = 'err';
+    feedback.textContent = '✗ Invalid token';
+    return;
+  }
+  localStorage.setItem('cara7_token', entered);
+  $('#token-input').value = '';
+  feedback.className = 'ok';
+  feedback.textContent = '✓ Token accepted - access granted';
+  setTimeout(() => { tokenBar.hidden = true; feedback.textContent = ''; }, 1500);
+  refreshDocs();
+  runSearch();
+}
+$('#token-save').addEventListener('click', saveToken);
+$('#token-input').addEventListener('keydown', (event) => {
+  if (event.key === 'Enter') saveToken();
+});
+
+const esc = (s) => s.replace(/[&<>"']/g, (c) =>
+  ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+
+const ICONS = { '.pdf': '📄', '.docx': '📝', '.doc': '📝', '.xlsx': '📊', '.xls': '📊', '.csv': '📊', '.txt': '📃', '.md': '📃', '.zip': '🗜️' };
+const iconFor = (name) => ICONS[(name.match(/\.[^.]+$/) || [''])[0].toLowerCase()] || '📄';
+
+function fmtSize(bytes) {
+  if (bytes < 1024) return bytes + ' B';
+  if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+  return (bytes / 1024 / 1024).toFixed(1) + ' MB';
+}
+
+function fmtDate(isoDate) {
+  return new Date(isoDate).toLocaleString('en-GB', { dateStyle: 'short', timeStyle: 'short' });
+}
+
+async function refreshStats() {
+  const response = await api('/api/stats');
+  if (!response.ok) return;
+  const s = await response.json();
+  statsEl.textContent = `${s.documents} document${s.documents > 1 ? 's' : ''} · ${fmtSize(s.bytes)}`;
+}
+
+async function refreshDocs() {
+  const response = await api('/api/documents');
+  if (!response.ok) return;
+  const { documents } = await response.json();
+  docEmpty.hidden = documents.length > 0;
+  docList.innerHTML = documents.map((d) => `
+    <li>
+      <span class="icon">${iconFor(d.filename)}</span>
+      <div class="meta">
+        <a class="name" href="${fileUrl(d.id)}" title="Download ${esc(d.filename)}">${esc(d.filename)}</a>
+        ${d.note ? `<div class="note" title="${esc(d.note)}">${esc(d.note)}</div>` : ''}
+        <div class="sub">${fmtSize(d.size)}${d.pages ? ` · ${d.pages} p.` : ''} · ${fmtDate(d.createdAt)}</div>
+      </div>
+      <button class="btn-read" data-id="${d.id}">Read</button>
+      <button class="btn-del" data-id="${d.id}" title="Delete">✕</button>
+    </li>`).join('');
+  refreshStats();
+}
+
+docList.addEventListener('click', async (e) => {
+  const readButton = e.target.closest('.btn-read');
+  if (readButton) { openReader(readButton.dataset.id); return; }
+  const btn = e.target.closest('.btn-del');
+  if (!btn) return;
+  await api('/api/documents/' + btn.dataset.id, { method: 'DELETE' });
+  refreshDocs();
+  runSearch();
+});
+
+// --- Full document reader ---
+async function openReader(id) {
+  const response = await api('/api/documents/' + id + '/text');
+  if (!response.ok) return;
+  const { filename, note, text } = await response.json();
+  $('#reader-title').textContent = filename;
+  $('#reader-body').innerHTML =
+    (note ? `<div class="doc-note">Note: ${esc(note)}</div>` : '') + esc(text);
+  $('#reader').hidden = false;
+}
+$('#reader-close').addEventListener('click', () => { $('#reader').hidden = true; });
+$('#reader').addEventListener('click', (e) => { if (e.target.id === 'reader') $('#reader').hidden = true; });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape') $('#reader').hidden = true; });
+
+// --- File upload ---
+dropzone.addEventListener('click', () => fileInput.click());
+fileInput.addEventListener('change', () => { uploadFiles(fileInput.files); fileInput.value = ''; });
+['dragenter', 'dragover'].forEach((ev) =>
+  dropzone.addEventListener(ev, (e) => { e.preventDefault(); dropzone.classList.add('dragover'); }));
+['dragleave', 'drop'].forEach((ev) =>
+  dropzone.addEventListener(ev, (e) => { e.preventDefault(); dropzone.classList.remove('dragover'); }));
+dropzone.addEventListener('drop', (e) => uploadFiles(e.dataTransfer.files));
+
+async function uploadFiles(files) {
+  if (!files.length) return;
+  const form = new FormData();
+  const note = $('#note-input').value.trim();
+  if (note) form.append('note', note);
+  for (const f of files) form.append('files', f);
+  const pending = document.createElement('li');
+  pending.textContent = `Indexing ${files.length} file${files.length > 1 ? 's' : ''}…`;
+  uploadLog.prepend(pending);
+  try {
+    const response = await api('/api/upload', { method: 'POST', body: form });
+    if (!response.ok && response.status === 401) {
+      pending.innerHTML = '<span class="err">Access token required (banner at the top of the page)</span>';
+      return;
+    }
+    const { results } = await response.json();
+    pending.remove();
+    let allOk = true;
+    for (const r of results) {
+      const li = document.createElement('li');
+      li.innerHTML = r.ok
+        ? `<span>${esc(r.filename)}</span><span class="ok">✓ indexed</span>`
+        : `<span>${esc(r.filename)}</span><span class="err">✗ ${esc(r.error)}</span>`;
+      uploadLog.prepend(li);
+      if (!r.ok) allOk = false;
+    }
+    if (allOk) $('#note-input').value = '';
+  } catch (err) {
+    pending.innerHTML = `<span class="err">Upload failed: ${esc(err.message)}</span>`;
+  }
+  refreshDocs();
+}
+
+// --- Search ---
+let searchTimer;
+searchInput.addEventListener('input', () => {
+  clearTimeout(searchTimer);
+  searchTimer = setTimeout(runSearch, 250);
+});
+
+async function runSearch() {
+  const q = searchInput.value.trim();
+  if (!q) { resultsEl.innerHTML = ''; return; }
+  const response = await api('/api/search?q=' + encodeURIComponent(q));
+  if (!response.ok) { resultsEl.innerHTML = ''; return; }
+  const { results } = await response.json();
+  if (!results.length) {
+    resultsEl.innerHTML = '<div class="empty">No result.</div>';
+    return;
+  }
+  const highlight = (s) => esc(s).replaceAll('\u0001', '<mark>').replaceAll('\u0002', '</mark>');
+  resultsEl.innerHTML = results.map((r) => `
+    <div class="result">
+      <div class="doc">${iconFor(r.filename)} ${esc(r.filename)}
+        <span class="matches">· ${r.matches > 1 ? `${r.matches} passages` : '1 passage'}</span>
+        <button class="btn-read" data-id="${r.documentId}">Read the document</button>
+      </div>
+      ${r.snippets.map((s) => `<div class="snip">${highlight(s)}</div>`).join('')}
+    </div>`).join('');
+}
+
+resultsEl.addEventListener('click', (e) => {
+  const readButton = e.target.closest('.btn-read');
+  if (readButton) openReader(readButton.dataset.id);
+});
+
+refreshDocs();
+</script>
+</body>
+</html>
