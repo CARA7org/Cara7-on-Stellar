@@ -1,0 +1,149 @@
+{
+  "poolId": "BSF5-DEMO-POOL",
+  "dealName": "Bavarian Sky French Auto Leases 5",
+  "cutOffDate": "2026-08-01",
+  "currencyLabel": "EUR (demo EURC on Stellar testnet)",
+  "note": "Demo sample: 20 electric vehicles representative of the 20,000-vehicle target pool. VINs follow the real format (manufacturer WMI, year code at position 10) with fictional serials.",
+  "vehicles": [
+    {
+      "vin": "VF1AG0005PD104217",
+      "vehicle": { "manufacturer": "Renault", "model": "Megane E-Tech EV60", "energy": "EL", "yearOfRegistration": 2023, "mileageOdometer": 21400, "originalValuation": 38900, "currentValuation": 26400, "residualValue": 17500, "originalLtv": 0.86 },
+      "battery": { "serialNumber": "AESC-EV60-23-88121", "manufacturer": "AESC", "chemistry": "NMC", "capacityKwh": 60.0, "sohPercent": 94.1, "chargeCycles": 310 },
+      "loan": { "contractId": "BSF5-2023-0001", "productType": "LEASE", "originationDate": "2023-04-14", "maturityDate": "2027-04-14", "originalTermMonths": 48, "remainingTermMonths": 8, "originalPrincipal": 33400, "currentPrincipal": 21800, "interestRateBps": 549, "monthlyPayment": 640, "accountStatus": "PERF", "daysPastDue": 0, "arrearsAmount": 0 },
+      "obligor": { "obligorId": "OBL-7F2K1", "legalType": "INDV", "country": "FR", "region": "FR-IDF", "employmentStatus": "EMPL", "creditScoreBand": "A" }
+    },
+    {
+      "vin": "VF1AGVYB0ND221584",
+      "vehicle": { "manufacturer": "Renault", "model": "Zoe R135 ZE50", "energy": "EL", "yearOfRegistration": 2022, "mileageOdometer": 44800, "originalValuation": 32300, "currentValuation": 14900, "residualValue": 9800, "originalLtv": 0.81 },
+      "battery": { "serialNumber": "LGES-ZE50-22-40233", "manufacturer": "LG Energy Solution", "chemistry": "NMC", "capacityKwh": 52.0, "sohPercent": 90.6, "chargeCycles": 540 },
+      "loan": { "contractId": "BSF5-2022-0002", "productType": "LOAN", "originationDate": "2022-03-02", "maturityDate": "2026-12-02", "originalTermMonths": 57, "remainingTermMonths": 4, "originalPrincipal": 26100, "currentPrincipal": 6400, "interestRateBps": 429, "monthlyPayment": 470, "accountStatus": "PERF", "daysPastDue": 0, "arrearsAmount": 0 },
+      "obligor": { "obligorId": "OBL-2M9A4", "legalType": "INDV", "country": "FR", "region": "FR-ARA", "employmentStatus": "EMPL", "creditScoreBand": "B" }
+    },
+    {
+      "vin": "VF1SC000XRD330906",
+      "vehicle": { "manufacturer": "Renault", "model": "Scenic E-Tech EV87", "energy": "EL", "yearOfRegistration": 2024, "mileageOdometer": 12100, "originalValuation": 46900, "currentValuation": 36800, "residualValue": 24600, "originalLtv": 0.88 },
+      "battery": { "serialNumber": "AESC-EV87-24-11876", "manufacturer": "AESC", "chemistry": "NMC", "capacityKwh": 87.0, "sohPercent": 97.9, "chargeCycles": 140 },
+      "loan": { "contractId": "BSF5-2024-0003", "productType": "LEASE", "originationDate": "2024-06-20", "maturityDate": "2028-06-20", "originalTermMonths": 48, "remainingTermMonths": 34, "originalPrincipal": 41300, "currentPrincipal": 28900, "interestRateBps": 619, "monthlyPayment": 720, "accountStatus": "PERF", "daysPastDue": 0, "arrearsAmount": 0 },
+      "obligor": { "obligorId": "OBL-9T3B7", "legalType": "SMEX", "country": "FR", "region": "FR-HDF", "employmentStatus": "SELF", "creditScoreBand": "B" }
+    },
+    {
+      "vin": "VF3UHZKX0PS410772",
+      "vehicle": { "manufacturer": "Peugeot", "model": "e-208 GT", "energy": "EL", "yearOfRegistration": 2023, "mileageOdometer": 26700, "originalValuation": 35100, "currentValuation": 19800, "residualValue": 12900, "originalLtv": 0.84 },
+      "battery": { "serialNumber": "ACC-E208-23-73310", "manufacturer": "ACC", "chemistry": "NMC", "capacityKwh": 50.0, "sohPercent": 93.4, "chargeCycles": 380 },
+      "loan": { "contractId": "BSF5-2023-0004", "productType": "PCP", "originationDate": "2023-01-11", "maturityDate": "2027-01-11", "originalTermMonths": 48, "remainingTermMonths": 5, "originalPrincipal": 29500, "currentPrincipal": 9200, "interestRateBps": 509, "monthlyPayment": 455, "accountStatus": "PERF", "daysPastDue": 0, "arrearsAmount": 0 },
+      "obligor": { "obligorId": "OBL-4C8D2", "legalType": "INDV", "country": "FR", "region": "FR-NAQ", "employmentStatus": "EMPL", "creditScoreBand": "A" }
+    },
+    {
+      "vin": "VF3M4DGZ0PS528146",
+      "vehicle": { "manufacturer": "Peugeot", "model": "e-2008 Allure", "energy": "EL", "yearOfRegistration": 2023, "mileageOdometer": 31500, "originalValuation": 38400, "currentValuation": 21700, "residualValue": 14100, "originalLtv": 0.79 },
+      "battery": { "serialNumber": "ACC-E2008-23-52209", "manufacturer": "ACC", "chemistry": "NMC", "capacityKwh": 54.0, "sohPercent": 92.8, "chargeCycles": 405 },
+      "loan": { "contractId": "BSF5-2023-0005", "productType": "LEASE", "originationDate": "2023-09-05", "maturityDate": "2027-09-05", "originalTermMonths": 48, "remainingTermMonths": 13, "originalPrincipal": 30300, "currentPrincipal": 11500, "interestRateBps": 559, "monthlyPayment": 505, "accountStatus": "PERF", "daysPastDue": 0, "arrearsAmount": 0 },
+      "obligor": { "obligorId": "OBL-6H1E9", "legalType": "INDV", "country": "FR", "region": "FR-OCC", "employmentStatus": "EMPL", "creditScoreBand": "C" }
+    },
+    {
+      "vin": "VF7C4HNZXPB617235",
+      "vehicle": { "manufacturer": "Citroen", "model": "e-C4 Shine", "energy": "EL", "yearOfRegistration": 2023, "mileageOdometer": 29800, "originalValuation": 37800, "currentValuation": 20600, "residualValue": 13400, "originalLtv": 0.82 },
+      "battery": { "serialNumber": "ACC-EC4-23-33998", "manufacturer": "ACC", "chemistry": "NMC", "capacityKwh": 50.0, "sohPercent": 92.1, "chargeCycles": 420 },
+      "loan": { "contractId": "BSF5-2023-0006", "productType": "LOAN", "originationDate": "2023-05-30", "maturityDate": "2027-05-30", "originalTermMonths": 48, "remainingTermMonths": 9, "originalPrincipal": 30900, "currentPrincipal": 8100, "interestRateBps": 479, "monthlyPayment": 430, "accountStatus": "PERF", "daysPastDue": 12, "arrearsAmount": 430 },
+      "obligor": { "obligorId": "OBL-1P5F3", "legalType": "INDV", "country": "FR", "region": "FR-PAC", "employmentStatus": "EMPL", "creditScoreBand": "C" }
+    },
+    {
+      "vin": "UU1K5200XPD709864",
+      "vehicle": { "manufacturer": "Dacia", "model": "Spring Extreme 65", "energy": "EL", "yearOfRegistration": 2023, "mileageOdometer": 18200, "originalValuation": 22300, "currentValuation": 12100, "residualValue": 7600, "originalLtv": 0.77 },
+      "battery": { "serialNumber": "BYD-SPR-23-90514", "manufacturer": "BYD", "chemistry": "LFP", "capacityKwh": 27.4, "sohPercent": 95.6, "chargeCycles": 260 },
+      "loan": { "contractId": "BSF5-2023-0007", "productType": "LOAN", "originationDate": "2023-07-18", "maturityDate": "2026-07-18", "originalTermMonths": 36, "remainingTermMonths": 0, "originalPrincipal": 17200, "currentPrincipal": 4300, "interestRateBps": 399, "monthlyPayment": 300, "accountStatus": "RSTR", "daysPastDue": 34, "arrearsAmount": 600 },
+      "obligor": { "obligorId": "OBL-8V2G6", "legalType": "INDV", "country": "FR", "region": "FR-BRE", "employmentStatus": "UNEM", "creditScoreBand": "D" }
+    },
+    {
+      "vin": "WVZZZE1ZXPP818453",
+      "vehicle": { "manufacturer": "Volkswagen", "model": "ID.3 Pro 58", "energy": "EL", "yearOfRegistration": 2023, "mileageOdometer": 24600, "originalValuation": 42600, "currentValuation": 25300, "residualValue": 16800, "originalLtv": 0.85 },
+      "battery": { "serialNumber": "LGES-ID3-23-61027", "manufacturer": "LG Energy Solution", "chemistry": "NMC", "capacityKwh": 58.0, "sohPercent": 93.8, "chargeCycles": 350 },
+      "loan": { "contractId": "BSF5-2023-0008", "productType": "LEASE", "originationDate": "2023-03-24", "maturityDate": "2027-03-24", "originalTermMonths": 48, "remainingTermMonths": 7, "originalPrincipal": 36200, "currentPrincipal": 13400, "interestRateBps": 529, "monthlyPayment": 560, "accountStatus": "PERF", "daysPastDue": 0, "arrearsAmount": 0 },
+      "obligor": { "obligorId": "OBL-3J7H8", "legalType": "INDV", "country": "FR", "region": "FR-GES", "employmentStatus": "EMPL", "creditScoreBand": "B" }
+    },
+    {
+      "vin": "WVWZZZEZXRE926031",
+      "vehicle": { "manufacturer": "Volkswagen", "model": "ID.4 Pro", "energy": "EL", "yearOfRegistration": 2024, "mileageOdometer": 15800, "originalValuation": 48800, "currentValuation": 36100, "residualValue": 24900, "originalLtv": 0.87 },
+      "battery": { "serialNumber": "SKO-ID4-24-14382", "manufacturer": "SK On", "chemistry": "NMC", "capacityKwh": 77.0, "sohPercent": 97.2, "chargeCycles": 170 },
+      "loan": { "contractId": "BSF5-2024-0009", "productType": "LEASE", "originationDate": "2024-02-09", "maturityDate": "2028-02-09", "originalTermMonths": 48, "remainingTermMonths": 30, "originalPrincipal": 42500, "currentPrincipal": 16800, "interestRateBps": 599, "monthlyPayment": 610, "accountStatus": "PERF", "daysPastDue": 0, "arrearsAmount": 0 },
+      "obligor": { "obligorId": "OBL-5N4K1", "legalType": "SMEX", "country": "FR", "region": "FR-IDF", "employmentStatus": "SELF", "creditScoreBand": "A" }
+    },
+    {
+      "vin": "5YJ3E7EB0PF035712",
+      "vehicle": { "manufacturer": "Tesla", "model": "Model 3 RWD", "energy": "EL", "yearOfRegistration": 2023, "mileageOdometer": 33900, "originalValuation": 43990, "currentValuation": 27200, "residualValue": 18300, "originalLtv": 0.83 },
+      "battery": { "serialNumber": "CATL-M3-23-77105", "manufacturer": "CATL", "chemistry": "LFP", "capacityKwh": 60.0, "sohPercent": 94.7, "chargeCycles": 465 },
+      "loan": { "contractId": "BSF5-2023-0010", "productType": "LOAN", "originationDate": "2023-06-15", "maturityDate": "2028-06-15", "originalTermMonths": 60, "remainingTermMonths": 22, "originalPrincipal": 36500, "currentPrincipal": 12700, "interestRateBps": 449, "monthlyPayment": 480, "accountStatus": "PERF", "daysPastDue": 0, "arrearsAmount": 0 },
+      "obligor": { "obligorId": "OBL-7Q9L5", "legalType": "INDV", "country": "FR", "region": "FR-ARA", "employmentStatus": "EMPL", "creditScoreBand": "A" }
+    },
+    {
+      "vin": "XP7YGCEK0RB144290",
+      "vehicle": { "manufacturer": "Tesla", "model": "Model Y Long Range", "energy": "EL", "yearOfRegistration": 2024, "mileageOdometer": 19400, "originalValuation": 52990, "currentValuation": 39700, "residualValue": 27100, "originalLtv": 0.88 },
+      "battery": { "serialNumber": "PANA-MY-24-20871", "manufacturer": "Panasonic", "chemistry": "NMC", "capacityKwh": 75.0, "sohPercent": 97.5, "chargeCycles": 190 },
+      "loan": { "contractId": "BSF5-2024-0011", "productType": "LEASE", "originationDate": "2024-04-03", "maturityDate": "2028-04-03", "originalTermMonths": 48, "remainingTermMonths": 32, "originalPrincipal": 46600, "currentPrincipal": 19600, "interestRateBps": 579, "monthlyPayment": 690, "accountStatus": "PERF", "daysPastDue": 0, "arrearsAmount": 0 },
+      "obligor": { "obligorId": "OBL-2R6M8", "legalType": "INDV", "country": "FR", "region": "FR-IDF", "employmentStatus": "EMPL", "creditScoreBand": "B" }
+    },
+    {
+      "vin": "WBA31AW00PC253168",
+      "vehicle": { "manufacturer": "BMW", "model": "i4 eDrive40", "energy": "EL", "yearOfRegistration": 2023, "mileageOdometer": 27100, "originalValuation": 59900, "currentValuation": 39200, "residualValue": 26800, "originalLtv": 0.8 },
+      "battery": { "serialNumber": "SAMS-I4-23-66240", "manufacturer": "Samsung SDI", "chemistry": "NMC", "capacityKwh": 83.9, "sohPercent": 94.3, "chargeCycles": 330 },
+      "loan": { "contractId": "BSF5-2023-0012", "productType": "LEASE", "originationDate": "2023-02-28", "maturityDate": "2027-02-28", "originalTermMonths": 48, "remainingTermMonths": 6, "originalPrincipal": 47900, "currentPrincipal": 24300, "interestRateBps": 539, "monthlyPayment": 745, "accountStatus": "PERF", "daysPastDue": 0, "arrearsAmount": 0 },
+      "obligor": { "obligorId": "OBL-9S1N4", "legalType": "SMEX", "country": "FR", "region": "FR-ARA", "employmentStatus": "SELF", "creditScoreBand": "A" }
+    },
+    {
+      "vin": "WBA11EW00RC362854",
+      "vehicle": { "manufacturer": "BMW", "model": "iX1 xDrive30", "energy": "EL", "yearOfRegistration": 2024, "mileageOdometer": 13700, "originalValuation": 55900, "currentValuation": 42300, "residualValue": 28700, "originalLtv": 0.84 },
+      "battery": { "serialNumber": "CATL-IX1-24-31569", "manufacturer": "CATL", "chemistry": "NMC", "capacityKwh": 66.5, "sohPercent": 97.8, "chargeCycles": 130 },
+      "loan": { "contractId": "BSF5-2024-0013", "productType": "LEASE", "originationDate": "2024-08-12", "maturityDate": "2028-08-12", "originalTermMonths": 48, "remainingTermMonths": 36, "originalPrincipal": 46900, "currentPrincipal": 15200, "interestRateBps": 609, "monthlyPayment": 580, "accountStatus": "PERF", "daysPastDue": 0, "arrearsAmount": 0 },
+      "obligor": { "obligorId": "OBL-4W8P2", "legalType": "INDV", "country": "FR", "region": "FR-NOR", "employmentStatus": "EMPL", "creditScoreBand": "B" }
+    },
+    {
+      "vin": "TMAK581GXPJ471520",
+      "vehicle": { "manufacturer": "Hyundai", "model": "Kona Electric 65", "energy": "EL", "yearOfRegistration": 2023, "mileageOdometer": 22900, "originalValuation": 41400, "currentValuation": 24800, "residualValue": 16200, "originalLtv": 0.81 },
+      "battery": { "serialNumber": "LGES-KON-23-48067", "manufacturer": "LG Energy Solution", "chemistry": "NMC", "capacityKwh": 65.4, "sohPercent": 93.9, "chargeCycles": 340 },
+      "loan": { "contractId": "BSF5-2023-0014", "productType": "LOAN", "originationDate": "2023-10-06", "maturityDate": "2027-10-06", "originalTermMonths": 48, "remainingTermMonths": 14, "originalPrincipal": 33500, "currentPrincipal": 9800, "interestRateBps": 469, "monthlyPayment": 445, "accountStatus": "PERF", "daysPastDue": 0, "arrearsAmount": 0 },
+      "obligor": { "obligorId": "OBL-6Y3R7", "legalType": "INDV", "country": "FR", "region": "FR-PDL", "employmentStatus": "EMPL", "creditScoreBand": "B" }
+    },
+    {
+      "vin": "KMHK381GXRU580139",
+      "vehicle": { "manufacturer": "Hyundai", "model": "Ioniq 5 77", "energy": "EL", "yearOfRegistration": 2024, "mileageOdometer": 17600, "originalValuation": 52400, "currentValuation": 38900, "residualValue": 26300, "originalLtv": 0.86 },
+      "battery": { "serialNumber": "SKO-IO5-24-25918", "manufacturer": "SK On", "chemistry": "NMC", "capacityKwh": 77.4, "sohPercent": 97.4, "chargeCycles": 160 },
+      "loan": { "contractId": "BSF5-2024-0015", "productType": "LEASE", "originationDate": "2024-05-17", "maturityDate": "2028-05-17", "originalTermMonths": 48, "remainingTermMonths": 33, "originalPrincipal": 45100, "currentPrincipal": 14100, "interestRateBps": 589, "monthlyPayment": 565, "accountStatus": "PERF", "daysPastDue": 0, "arrearsAmount": 0 },
+      "obligor": { "obligorId": "OBL-1Z5T9", "legalType": "INDV", "country": "FR", "region": "FR-IDF", "employmentStatus": "EMPL", "creditScoreBand": "A" }
+    },
+    {
+      "vin": "KNAC281GXPS698442",
+      "vehicle": { "manufacturer": "Kia", "model": "EV6 GT-Line", "energy": "EL", "yearOfRegistration": 2023, "mileageOdometer": 25300, "originalValuation": 53100, "currentValuation": 33600, "residualValue": 22400, "originalLtv": 0.85 },
+      "battery": { "serialNumber": "SKO-EV6-23-58730", "manufacturer": "SK On", "chemistry": "NMC", "capacityKwh": 77.4, "sohPercent": 94.5, "chargeCycles": 360 },
+      "loan": { "contractId": "BSF5-2023-0016", "productType": "LEASE", "originationDate": "2023-08-22", "maturityDate": "2027-08-22", "originalTermMonths": 48, "remainingTermMonths": 12, "originalPrincipal": 45200, "currentPrincipal": 17900, "interestRateBps": 559, "monthlyPayment": 640, "accountStatus": "PERF", "daysPastDue": 0, "arrearsAmount": 0 },
+      "obligor": { "obligorId": "OBL-8B2V6", "legalType": "SMEX", "country": "FR", "region": "FR-OCC", "employmentStatus": "SELF", "creditScoreBand": "B" }
+    },
+    {
+      "vin": "KNAE781GXRS703917",
+      "vehicle": { "manufacturer": "Kia", "model": "Niro EV", "energy": "EL", "yearOfRegistration": 2024, "mileageOdometer": 14900, "originalValuation": 44200, "currentValuation": 32800, "residualValue": 21900, "originalLtv": 0.82 },
+      "battery": { "serialNumber": "CATL-NIR-24-41285", "manufacturer": "CATL", "chemistry": "NMC", "capacityKwh": 64.8, "sohPercent": 97.6, "chargeCycles": 150 },
+      "loan": { "contractId": "BSF5-2024-0017", "productType": "LOAN", "originationDate": "2024-07-01", "maturityDate": "2029-07-01", "originalTermMonths": 60, "remainingTermMonths": 47, "originalPrincipal": 36300, "currentPrincipal": 10600, "interestRateBps": 499, "monthlyPayment": 420, "accountStatus": "PERF", "daysPastDue": 0, "arrearsAmount": 0 },
+      "obligor": { "obligorId": "OBL-3D7W1", "legalType": "INDV", "country": "FR", "region": "FR-CVL", "employmentStatus": "EMPL", "creditScoreBand": "C" }
+    },
+    {
+      "vin": "VF1TW0000ND812675",
+      "vehicle": { "manufacturer": "Renault", "model": "Twingo E-Tech", "energy": "EL", "yearOfRegistration": 2022, "mileageOdometer": 38400, "originalValuation": 25200, "currentValuation": 10800, "residualValue": 6900, "originalLtv": 0.76 },
+      "battery": { "serialNumber": "LGES-TWI-22-19547", "manufacturer": "LG Energy Solution", "chemistry": "NMC", "capacityKwh": 22.0, "sohPercent": 91.2, "chargeCycles": 610 },
+      "loan": { "contractId": "BSF5-2022-0018", "productType": "LOAN", "originationDate": "2022-11-09", "maturityDate": "2026-11-09", "originalTermMonths": 48, "remainingTermMonths": 3, "originalPrincipal": 19100, "currentPrincipal": 3200, "interestRateBps": 419, "monthlyPayment": 340, "accountStatus": "PERF", "daysPastDue": 0, "arrearsAmount": 0 },
+      "obligor": { "obligorId": "OBL-5G9X3", "legalType": "INDV", "country": "FR", "region": "FR-BFC", "employmentStatus": "RETI", "creditScoreBand": "B" }
+    },
+    {
+      "vin": "VF3F3DGZXRS920581",
+      "vehicle": { "manufacturer": "Peugeot", "model": "e-308 GT", "energy": "EL", "yearOfRegistration": 2024, "mileageOdometer": 16300, "originalValuation": 43900, "currentValuation": 33100, "residualValue": 22200, "originalLtv": 0.87 },
+      "battery": { "serialNumber": "ACC-E308-24-36194", "manufacturer": "ACC", "chemistry": "NMC", "capacityKwh": 54.0, "sohPercent": 97.3, "chargeCycles": 155 },
+      "loan": { "contractId": "BSF5-2024-0019", "productType": "PCP", "originationDate": "2024-03-27", "maturityDate": "2028-03-27", "originalTermMonths": 48, "remainingTermMonths": 31, "originalPrincipal": 38200, "currentPrincipal": 12400, "interestRateBps": 569, "monthlyPayment": 495, "accountStatus": "PERF", "daysPastDue": 0, "arrearsAmount": 0 },
+      "obligor": { "obligorId": "OBL-7K4Y8", "legalType": "INDV", "country": "FR", "region": "FR-GES", "employmentStatus": "EMPL", "creditScoreBand": "A" }
+    },
+    {
+      "vin": "5YJ3E7EA0RF047268",
+      "vehicle": { "manufacturer": "Tesla", "model": "Model 3 Highland RWD", "energy": "EL", "yearOfRegistration": 2024, "mileageOdometer": 11800, "originalValuation": 42990, "currentValuation": 34500, "residualValue": 23800, "originalLtv": 0.89 },
+      "battery": { "serialNumber": "CATL-M3H-24-52736", "manufacturer": "CATL", "chemistry": "LFP", "capacityKwh": 60.0, "sohPercent": 98.2, "chargeCycles": 120 },
+      "loan": { "contractId": "BSF5-2024-0020", "productType": "LEASE", "originationDate": "2024-09-30", "maturityDate": "2028-09-30", "originalTermMonths": 48, "remainingTermMonths": 37, "originalPrincipal": 38300, "currentPrincipal": 15300, "interestRateBps": 629, "monthlyPayment": 540, "accountStatus": "PERF", "daysPastDue": 0, "arrearsAmount": 0 },
+      "obligor": { "obligorId": "OBL-2F6Z4", "legalType": "SMEX", "country": "FR", "region": "FR-PAC", "employmentStatus": "SELF", "creditScoreBand": "B" }
+    }
+  ]
+}
