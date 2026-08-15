@@ -1,0 +1,12 @@
+{
+  "name": "interest-determination",
+  "title": "Interest Determination Agent",
+  "mcpTools": [
+    "mcp__deal__get_tranches",
+    "mcp__deal__get_distributions",
+    "mcp__deal__get_period_preview",
+    "mcp__deal__get_waterfall_state"
+  ],
+  "maxTurns": 25,
+  "report": "interest-determination-report.md"
+}

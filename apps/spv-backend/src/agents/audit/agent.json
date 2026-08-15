@@ -1,0 +1,19 @@
+{
+  "name": "audit",
+  "title": "Audit Agent",
+  "mcpTools": [
+    "mcp__deal__get_pool",
+    "mcp__deal__get_vehicle",
+    "mcp__deal__get_nft_registry",
+    "mcp__deal__get_ipfs",
+    "mcp__deal__get_tranches",
+    "mcp__deal__get_distributions",
+    "mcp__deal__get_note_events",
+    "mcp__deal__get_period_preview",
+    "mcp__deal__get_reporting",
+    "mcp__deal__get_waterfall_state",
+    "mcp__deal__get_noteholders"
+  ],
+  "maxTurns": 25,
+  "report": "audit-report.md"
+}

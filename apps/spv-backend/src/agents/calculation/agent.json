@@ -1,0 +1,13 @@
+{
+  "name": "calculation",
+  "title": "Calculation Agent",
+  "mcpTools": [
+    "mcp__deal__get_pool",
+    "mcp__deal__get_period_preview",
+    "mcp__deal__get_tranches",
+    "mcp__deal__get_distributions",
+    "mcp__deal__get_waterfall_state"
+  ],
+  "maxTurns": 25,
+  "report": "calculation-report.md"
+}

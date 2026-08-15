@@ -1,0 +1,12 @@
+{
+  "name": "anti-fraud",
+  "title": "Anti-Fraud Agent",
+  "mcpTools": [
+    "mcp__deal__get_pool",
+    "mcp__deal__get_vehicle",
+    "mcp__deal__get_nft_registry",
+    "mcp__deal__get_ipfs"
+  ],
+  "maxTurns": 25,
+  "report": "anti-fraud-report.md"
+}

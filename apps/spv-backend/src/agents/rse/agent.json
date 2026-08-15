@@ -1,0 +1,10 @@
+{
+  "name": "rse",
+  "title": "RSE / ESG Agent",
+  "mcpTools": [
+    "mcp__deal__get_pool",
+    "mcp__deal__get_vehicle"
+  ],
+  "maxTurns": 25,
+  "report": "rse-report.md"
+}

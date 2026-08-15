@@ -1,0 +1,13 @@
+{
+  "name": "accounting",
+  "title": "Accounting Agent",
+  "mcpTools": [
+    "mcp__deal__get_pool",
+    "mcp__deal__get_period_preview",
+    "mcp__deal__get_distributions",
+    "mcp__deal__get_tranches",
+    "mcp__deal__get_reporting"
+  ],
+  "maxTurns": 25,
+  "report": "accounting-report.md"
+}

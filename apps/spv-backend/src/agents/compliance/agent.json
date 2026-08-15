@@ -1,0 +1,11 @@
+{
+  "name": "compliance",
+  "title": "Compliance Agent",
+  "mcpTools": [
+    "mcp__deal__get_pool",
+    "mcp__deal__get_vehicle",
+    "mcp__deal__get_reporting"
+  ],
+  "maxTurns": 25,
+  "report": "compliance-report.md"
+}

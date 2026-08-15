@@ -1,0 +1,13 @@
+{
+  "name": "paying",
+  "title": "Paying Agent",
+  "mcpTools": [
+    "mcp__deal__get_distributions",
+    "mcp__deal__get_tranches",
+    "mcp__deal__get_note_events",
+    "mcp__deal__get_waterfall_state",
+    "mcp__deal__get_noteholders"
+  ],
+  "maxTurns": 25,
+  "report": "paying-report.md"
+}
