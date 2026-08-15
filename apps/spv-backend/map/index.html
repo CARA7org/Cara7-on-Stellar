@@ -1,0 +1,651 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>CARA7 - Data Spec Book map</title>
+<style>
+  * { box-sizing: border-box; }
+  body { margin: 0; background: #ffffff; color: #1f2328;
+         font: 14px/1.45 -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+         display: flex; flex-direction: column; height: 100vh; }
+  header { display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+           padding: 14px 24px 10px; border-bottom: 1px solid #e4e7ec; }
+  header h1 { font-size: 18px; margin: 0; }
+  header .sub { color: #6b7280; font-size: 13px; }
+  .toggle { margin-left: auto; display: flex; gap: 6px; align-items: center;
+            color: #6b7280; font-size: 13px; }
+  .toggle button { background: #ffffff; color: #1f2328; cursor: pointer;
+                   border: 1px solid #d0d5dd; padding: 4px 12px; border-radius: 6px; }
+  .toggle button.on { border-color: #2563eb; color: #2563eb; }
+  #flow-toggle.on { border-color: #91117e; color: #91117e; font-weight: 600; }
+  #diagram { flex: 1; min-height: 0; overflow: auto; position: relative; }
+  #diagram .mxgraph { max-width: none !important; }
+  /* Flow-of-funds step card (the "mini modal") */
+  #flow-card { position: fixed; right: 24px; bottom: 56px; width: 380px; z-index: 40;
+               background: #ffffff; border: 1px solid #d0d5dd; border-radius: 10px;
+               box-shadow: 0 12px 32px rgba(16, 24, 40, .18); padding: 14px 16px;
+               display: none; }
+  #flow-card.left { right: auto; left: 24px; }
+  #flow-card.open { display: block; animation: flow-pop .18s ease-out; }
+  @keyframes flow-pop { from { opacity: 0; transform: translateY(8px); }
+                        to { opacity: 1; transform: none; } }
+  #flow-card .kind { display: inline-block; font-size: 11px; font-weight: 700;
+                     letter-spacing: .04em; padding: 2px 8px; border-radius: 999px; }
+  #flow-card .kind.money { background: #fdf3d7; color: #92400e; }
+  #flow-card .kind.data { background: #dbeafe; color: #1d4ed8; }
+  #flow-card h3 { margin: 8px 0 6px; font-size: 15px; }
+  #flow-card p { margin: 0 0 12px; color: #475467; font-size: 13px; }
+  #flow-card .amount { font-weight: 700; color: #92400e; }
+  #flow-card .bar { display: flex; align-items: center; gap: 8px; }
+  #flow-card .bar button { background: #ffffff; border: 1px solid #d0d5dd; cursor: pointer;
+                           border-radius: 6px; padding: 4px 12px; font-size: 13px; }
+  #flow-card .bar button.primary { background: #570a61; border-color: #570a61; color: #fff; }
+  #flow-card .bar .count { margin-left: auto; color: #6b7280; font-size: 12px; }
+  /* Highlight pulse for steps without a traveling edge dot */
+  @keyframes flow-pulse { 0%, 100% { opacity: 1; } 50% { opacity: .25; } }
+  /* Floating amount chip pinned on the active box/edge */
+  #flow-chip { position: fixed; z-index: 39; display: none; transform: translate(-50%, -130%);
+               font-size: 12px; font-weight: 700; padding: 3px 10px; border-radius: 999px;
+               border: 1px solid; background: #fffbeb; color: #92400e; border-color: #f4d27a;
+               box-shadow: 0 4px 12px rgba(16, 24, 40, .18); pointer-events: none;
+               animation: flow-bob 1.2s ease-in-out infinite; white-space: nowrap; }
+  #flow-chip.data { background: #eff6ff; color: #1d4ed8; border-color: #bfdbfe; }
+  @keyframes flow-bob { 0%, 100% { margin-top: 0; } 50% { margin-top: -6px; } }
+  footer { color: #6b7280; font-size: 12px; padding: 8px 24px 12px;
+           border-top: 1px solid #e4e7ec; }
+  footer a { color: #2563eb; }
+</style>
+</head>
+<body>
+<header>
+  <h1>CARA7 &mdash; Data Spec Book</h1>
+  <span class="toggle">
+    <button id="flow-toggle">Flow of funds ▶</button>
+    &middot; Open links in
+    <button id="mode-github" class="on">GitHub</button>
+    <button id="mode-local">VS&nbsp;Code</button>
+  </span>
+</header>
+<div id="diagram"></div>
+<div id="flow-chip"></div>
+<div id="flow-card">
+  <span class="kind money" id="flow-kind">MONEY</span>
+  <h3 id="flow-title"></h3>
+  <p id="flow-text"></p>
+  <div id="flow-pot" style="display:none; margin: -4px 0 12px; padding: 6px 10px; border-radius: 6px;
+       background: #fffbeb; border: 1px solid #f4d27a; color: #92400e; font-size: 13px; font-weight: 600;"></div>
+  <div class="bar">
+    <button id="flow-prev">◀ Prev</button>
+    <button id="flow-next" class="primary">Next ▶</button>
+    <span class="count" id="flow-count"></span>
+    <button id="flow-exit" title="Exit the walkthrough">✕</button>
+  </div>
+</div>
+<footer>
+  Rendered from <code>map/data-spec-book.diagram.xml</code> (extracted verbatim from the CARA7 draw.io file) by the vendored
+  draw.io viewer &middot; zoom with the toolbar, drag to pan &middot; served by
+  <a href="https://github.com/CARA7org/Cara7-on-Stellar/tree/main/apps/spv-backend">apps/spv-backend</a> on <code>/</code>.
+</footer>
+
+<script type="application/json" id="map-links">
+{
+  "repo": "https://github.com/CARA7org/Cara7-on-Stellar/tree/main",
+  "links": {
+    "ZIKSrII0FIwoN5GAtqwQ-1": "apps/spv-backend/src/asset-pool/data/pool.json",
+    "Pk5OfUOHv3_TRxhxDVZG-4": "apps/spv-backend/src/asset-pool/data/pool.json",
+    "Pk5OfUOHv3_TRxhxDVZG-5": "apps/spv-backend/src/asset-pool/data/pool.json",
+    "Pk5OfUOHv3_TRxhxDVZG-6": "apps/spv-backend/src/asset-pool/data/pool.json",
+    "Pk5OfUOHv3_TRxhxDVZG-24": "apps/spv-backend/src/asset-pool",
+    "Pk5OfUOHv3_TRxhxDVZG-7": "apps/spv-backend/src/tokens/mint-all.ts",
+    "Pk5OfUOHv3_TRxhxDVZG-12": "apps/spv-backend/src/tokens/metadata.ts",
+    "Pk5OfUOHv3_TRxhxDVZG-15": "apps/spv-backend/src/tokens/metadata.ts",
+    "Pk5OfUOHv3_TRxhxDVZG-16": "apps/spv-backend/src/tokens/metadata.ts",
+    "Pk5OfUOHv3_TRxhxDVZG-18": "apps/spv-backend/src/tokens/metadata.ts",
+    "Pk5OfUOHv3_TRxhxDVZG-19": "apps/spv-backend/src/tokens/metadata.ts",
+    "Pk5OfUOHv3_TRxhxDVZG-21": "apps/spv-backend/src/tokens/metadata.ts",
+    "Pk5OfUOHv3_TRxhxDVZG-22": "apps/spv-backend/src/tokens/metadata.ts",
+    "Pk5OfUOHv3_TRxhxDVZG-25": "apps/spv-backend/src/tokens/metadata.ts",
+    "Pk5OfUOHv3_TRxhxDVZG-26": "apps/spv-backend/src/ipfs/gateway.ts",
+    "Pk5OfUOHv3_TRxhxDVZG-55": "apps/spv-backend/src/ipfs",
+    "Pk5OfUOHv3_TRxhxDVZG-33": "apps/spv-backend/src/ipfs/store.ts",
+    "Pk5OfUOHv3_TRxhxDVZG-77": "contracts/abs-deal",
+    "5syplDnoljjLWRBNYlyY-5": "contracts/abs-deal",
+    "5syplDnoljjLWRBNYlyY-9": "contracts/abs-deal",
+    "Pk5OfUOHv3_TRxhxDVZG-118": "apps/spv-backend/src/agents/data-custody",
+    "Pk5OfUOHv3_TRxhxDVZG-104": "contracts/paying-agent",
+    "ZIKSrII0FIwoN5GAtqwQ-21": "contracts/paying-agent",
+    "ZIKSrII0FIwoN5GAtqwQ-4": "contracts/abs-deal",
+    "Pk5OfUOHv3_TRxhxDVZG-79": "apps/spv-backend/src/waterfall",
+    "Pk5OfUOHv3_TRxhxDVZG-81": "contracts/note-token",
+    "Pk5OfUOHv3_TRxhxDVZG-82": "contracts/note-token",
+    "Pk5OfUOHv3_TRxhxDVZG-83": "contracts/note-token",
+    "xDPgKg9zeEWjaTC5PgPw-7": "contracts/note-token",
+    "xDPgKg9zeEWjaTC5PgPw-6": "contracts/note-token",
+    "xDPgKg9zeEWjaTC5PgPw-3": "contracts/note-token",
+    "Pk5OfUOHv3_TRxhxDVZG-88": "apps/tranching-api",
+    "Pk5OfUOHv3_TRxhxDVZG-89": "apps/tranching-api",
+    "Pk5OfUOHv3_TRxhxDVZG-90": "apps/tranching-api",
+    "Pk5OfUOHv3_TRxhxDVZG-67": "apps/spv-backend/src/agents/mcp-access",
+    "Pk5OfUOHv3_TRxhxDVZG-120": "apps/spv-backend/src/agents/mcp-access",
+    "cTcXm5-mWiktb2D24p8G-15": "apps/spv-backend/src/agents/accounting",
+    "uk0NRVN-ux7Ab5T_4S_U-17": "apps/spv-backend/src/agents/audit",
+    "Pk5OfUOHv3_TRxhxDVZG-121": "apps/spv-backend/src/agents/anti-fraud",
+    "Pk5OfUOHv3_TRxhxDVZG-118": "apps/spv-backend/src/agents/data-custody",
+    "Pk5OfUOHv3_TRxhxDVZG-116": "apps/spv-backend/src/agents/interest-determination",
+    "Pk5OfUOHv3_TRxhxDVZG-107": "apps/spv-backend/src/agents/calculation",
+    "Pk5OfUOHv3_TRxhxDVZG-104": "apps/spv-backend/src/agents/paying",
+    "Pk5OfUOHv3_TRxhxDVZG-105": "apps/spv-backend/src/agents/verifier",
+    "Pk5OfUOHv3_TRxhxDVZG-106": "apps/spv-backend/src/agents/compliance",
+    "Pk5OfUOHv3_TRxhxDVZG-114": "apps/spv-backend/src/agents/rse",
+    "cTcXm5-mWiktb2D24p8G-12": "apps/spv-backend/src/reporting",
+    "ZIKSrII0FIwoN5GAtqwQ-44": "apps/spv-backend/src/reporting/edw-export.ts",
+    "s-YEvL6f5Rx5aUoNA9BE-1": "apps/defi-web",
+    "s-YEvL6f5Rx5aUoNA9BE-2": "apps/defi-web",
+    "s-YEvL6f5Rx5aUoNA9BE-5": "apps/defi-web",
+    "s-YEvL6f5Rx5aUoNA9BE-9": "apps/defi-web",
+    "s-YEvL6f5Rx5aUoNA9BE-11": "apps/defi-web",
+    "s-YEvL6f5Rx5aUoNA9BE-13": "apps/defi-web",
+    "Pk5OfUOHv3_TRxhxDVZG-93": "apps/defi-web",
+    "Pk5OfUOHv3_TRxhxDVZG-98": "apps/defi-web",
+    "Pk5OfUOHv3_TRxhxDVZG-99": "apps/defi-web",
+    "Pk5OfUOHv3_TRxhxDVZG-100": "apps/defi-web",
+    "cTcXm5-mWiktb2D24p8G-6": "apps/defi-web",
+    "cTcXm5-mWiktb2D24p8G-8": "apps/defi-web"
+  }
+}
+</script>
+
+<script>
+  const linkData = JSON.parse(document.getElementById('map-links').textContent);
+  let mode = localStorage.getItem('map-link-mode') || 'github';
+  let schemaXml = null;
+  // Absolute path of the checkout, served by the backend: the browser cannot
+  // know it, and local mode needs it to build the vscode:// links.
+  let localRoot = '';
+
+  async function loadLocalRoot() {
+    if (localRoot) return;
+    try {
+      const response = await fetch('map/local-root');
+      if (response.ok) localRoot = (await response.json()).root;
+    } catch {
+      localRoot = '';
+    }
+  }
+
+  function linkFor(path) {
+    return mode === 'local' && localRoot
+      ? `vscode://file${localRoot}/${path}`
+      : `${linkData.repo}/${path}`;
+  }
+
+  // Inject one clickable link per implemented cell: draw.io's own link
+  // mechanism (UserObject wrapper), so the viewer renders and handles them.
+  function xmlWithLinks() {
+    const doc = new DOMParser().parseFromString(schemaXml, 'text/xml');
+    for (const [id, path] of Object.entries(linkData.links)) {
+      const cell = doc.querySelector(`mxCell[id="${id}"]`);
+      if (!cell) continue;
+      const wrapper = doc.createElement('UserObject');
+      wrapper.setAttribute('label', cell.getAttribute('value') ?? '');
+      wrapper.setAttribute('link', linkFor(path));
+      wrapper.setAttribute('id', id);
+      cell.removeAttribute('value');
+      cell.removeAttribute('id');
+      cell.parentNode.insertBefore(wrapper, cell);
+      wrapper.appendChild(cell);
+    }
+    return new XMLSerializer().serializeToString(doc);
+  }
+
+  // Schema extent in draw.io coordinates (x -241..2964 plus margins).
+  const CANVAS_WIDTH = 3300;
+
+  function render() {
+    const container = document.getElementById('diagram');
+    container.innerHTML = '';
+    const el = document.createElement('div');
+    el.className = 'mxgraph';
+    // The viewer sizes its element to graph-size x zoom: pick the zoom that
+    // makes the schema exactly fill the container width (vertical scroll).
+    const zoom = Math.max(0.2, Math.min(1, container.clientWidth / CANVAS_WIDTH));
+    el.dataset.mxgraph = JSON.stringify({
+      xml: xmlWithLinks(),
+      nav: true,
+      resize: false,
+      zoom,
+      toolbar: 'zoom',
+      'toolbar-position': 'top',
+      'toolbar-nohide': true,
+      'allow-zoom-out': true,
+      'allow-zoom-in': true,
+      target: 'blank',
+    });
+    container.appendChild(el);
+    if (window.GraphViewer) {
+      window.GraphViewer.createViewerForElement(el, (viewer) => flow.attach(viewer));
+    }
+  }
+
+  async function setMode(next) {
+    mode = next;
+    localStorage.setItem('map-link-mode', mode);
+    document.getElementById('mode-github').classList.toggle('on', mode === 'github');
+    document.getElementById('mode-local').classList.toggle('on', mode === 'local');
+    if (mode === 'local') await loadLocalRoot();
+    if (schemaXml) render();
+  }
+  document.getElementById('mode-github').onclick = () => setMode('github');
+  document.getElementById('mode-local').onclick = () => setMode('local');
+
+  // ── Flow of funds / flow of data walkthrough ────────────────────────────
+  // One collection period of the live testnet deal, step by step: each step
+  // highlights the schema cells doing the work, animates the money (gold) or
+  // data (blue) along the actual edges, and explains it in the step card.
+  // Amounts are the real period-1/3 figures of the deployed v4 generation.
+  const FLOW_STEPS = [
+    {
+      kind: 'data',
+      title: 'The assets are tokenized',
+      amount: '61 NFTs',
+      text: 'The 20 EV leases enter the data room: the loan, obligor, vehicle and battery records stream through the API, which mints the Obligor, Auto, Battery and Pool tokens - 61 NFTs on 4 contracts, metadata on IPFS. This is the ASSET side of the balance sheet: a registry, money never flows through it.',
+      cells: [
+        'Pk5OfUOHv3_TRxhxDVZG-24', 'Pk5OfUOHv3_TRxhxDVZG-55',
+        'Pk5OfUOHv3_TRxhxDVZG-33', // the ipfsData Blockchain list
+        // every overlapping shape of the four token stacks
+        'Pk5OfUOHv3_TRxhxDVZG-12', 'Pk5OfUOHv3_TRxhxDVZG-15', 'Pk5OfUOHv3_TRxhxDVZG-16',
+        'Pk5OfUOHv3_TRxhxDVZG-18', 'Pk5OfUOHv3_TRxhxDVZG-19',
+        'Pk5OfUOHv3_TRxhxDVZG-21', 'Pk5OfUOHv3_TRxhxDVZG-22',
+        'Pk5OfUOHv3_TRxhxDVZG-25',
+      ],
+      edges: [
+        // the four asset sources stream into the API...
+        'ZIKSrII0FIwoN5GAtqwQ-3', 'Pk5OfUOHv3_TRxhxDVZG-9',
+        'Pk5OfUOHv3_TRxhxDVZG-10', 'Pk5OfUOHv3_TRxhxDVZG-11',
+        // ...which mints the Obligor / Auto / Battery / Pool token stacks
+        'Pk5OfUOHv3_TRxhxDVZG-27', 'Pk5OfUOHv3_TRxhxDVZG-30',
+        'Pk5OfUOHv3_TRxhxDVZG-29', 'Pk5OfUOHv3_TRxhxDVZG-28',
+      ],
+    },
+    {
+      kind: 'data',
+      title: 'Due diligence',
+      amount: 'prospectus approved',
+      text: 'Investment bank, advisors and auditors make their due diligence. Rating agencies make their credit risk assessment and tranching. The prospectus is approved and certified by the regulatory authorities for public asset-backed security issuance, then sent to potential investors, and the selling process can start.',
+      cells: [
+        // the asset token stacks the diligence is performed on...
+        'Pk5OfUOHv3_TRxhxDVZG-12', 'Pk5OfUOHv3_TRxhxDVZG-15', 'Pk5OfUOHv3_TRxhxDVZG-16',
+        'Pk5OfUOHv3_TRxhxDVZG-18', 'Pk5OfUOHv3_TRxhxDVZG-19',
+        'Pk5OfUOHv3_TRxhxDVZG-21', 'Pk5OfUOHv3_TRxhxDVZG-22',
+        'Pk5OfUOHv3_TRxhxDVZG-25',
+        // ...and every reviewing party
+        'Pk5OfUOHv3_TRxhxDVZG-67', 'Pk5OfUOHv3_TRxhxDVZG-120',
+        'Pk5OfUOHv3_TRxhxDVZG-105', 'Pk5OfUOHv3_TRxhxDVZG-106',
+        'Pk5OfUOHv3_TRxhxDVZG-107', 'Pk5OfUOHv3_TRxhxDVZG-114',
+        'Pk5OfUOHv3_TRxhxDVZG-116', 'Pk5OfUOHv3_TRxhxDVZG-118',
+        'Pk5OfUOHv3_TRxhxDVZG-121', 'uk0NRVN-ux7Ab5T_4S_U-17',
+        '5syplDnoljjLWRBNYlyY-12',
+      ],
+      edges: [
+        // asset tokens flow to the agents, through the API and the MCP hub
+        'Pk5OfUOHv3_TRxhxDVZG-52', 'Pk5OfUOHv3_TRxhxDVZG-123',
+        'Pk5OfUOHv3_TRxhxDVZG-110', 'Pk5OfUOHv3_TRxhxDVZG-111',
+        'Pk5OfUOHv3_TRxhxDVZG-112', 'Pk5OfUOHv3_TRxhxDVZG-113',
+        'Pk5OfUOHv3_TRxhxDVZG-115', 'Pk5OfUOHv3_TRxhxDVZG-117',
+        'Pk5OfUOHv3_TRxhxDVZG-119', 'Pk5OfUOHv3_TRxhxDVZG-122',
+        'uk0NRVN-ux7Ab5T_4S_U-18',
+      ],
+    },
+    {
+      kind: 'money',
+      title: 'Issuance: investors subscribe the notes',
+      pot: 'Escrow 0 → 215,000 EURC',
+      amount: '+ 215,000 EURC',
+      text: 'The money story STARTS here. During the funding window, investors subscribe at par in whole notes of 100 EURC: their stablecoin moves from their wallet into the ESCROW held by the deal contract. Until closing this is the only reversible step - cancel refunds in full. Live right now: CARA7 Demo Series 2 is in this exact phase on testnet.',
+      cells: ['5syplDnoljjLWRBNYlyY-3', '5syplDnoljjLWRBNYlyY-5'],
+      edges: ['5syplDnoljjLWRBNYlyY-6'],
+    },
+    {
+      kind: 'money',
+      title: 'Closing: one atomic DvP',
+      pot: 'Escrow 215,000 → 0 EURC',
+      amount: '215,000 EURC + 5,000 reserve',
+      text: 'When every class is fully subscribed, close() settles the whole issuance in ONE transaction: the proceeds leave escrow for the issuer, the notes are issued at par into each subscriber’s wallet (Class A 1,000 / B 700 / C 450 notes), and the seller’s subordinated loan funds the 5,000 EURC cash reserve. Delivery versus payment - nobody ever holds the other side’s asset without having paid.',
+      cells: ['5syplDnoljjLWRBNYlyY-9'],
+      edges: ['5syplDnoljjLWRBNYlyY-7'],
+    },
+    {
+      kind: 'money',
+      title: 'The proceeds buy the receivables',
+      amount: '215,000 EURC → EUR',
+      text: 'The SPV Management company off-ramps the proceeds to an IBAN account and pays the issuer the purchase price of the receivables portfolio - the true sale. Net proceeds retained by the SPV: zero, exactly as the BBVA prospectus words it. The pool now belongs to the deal, and everything that follows is the money coming BACK.',
+      cells: ['5syplDnoljjLWRBNYlyY-2', '5syplDnoljjLWRBNYlyY-12'],
+      edges: ['5syplDnoljjLWRBNYlyY-10'],
+    },
+    {
+      kind: 'money',
+      title: 'Obligors pay their installments',
+      amount: '9,900 EURC',
+      text: 'Each month the lessees pay their lease installment in EUR to the servicer. Demo scale: 9,900 EURC of clean collections per period.',
+      edges: ['Pk5OfUOHv3_TRxhxDVZG-74'],
+    },
+    {
+      kind: 'data',
+      title: 'Data collection and tokenization',
+      amount: 'obligor data',
+      text: 'Each month or quarter, the issuer, becoming the servicer, sends obligor data to the SPV Management company through onchain data tokenization. The same path the assets took at origination, run again on the period\u2019s performance.',
+      cells: [
+        'Pk5OfUOHv3_TRxhxDVZG-24', 'Pk5OfUOHv3_TRxhxDVZG-55',
+        'Pk5OfUOHv3_TRxhxDVZG-33',
+      ],
+      edges: [
+        // the same first flow as step 1: the asset sources into the API
+        'ZIKSrII0FIwoN5GAtqwQ-3', 'Pk5OfUOHv3_TRxhxDVZG-9',
+        'Pk5OfUOHv3_TRxhxDVZG-10', 'Pk5OfUOHv3_TRxhxDVZG-11',
+      ],
+    },
+    {
+      kind: 'money',
+      title: 'On-ramp: EUR becomes EURC',
+      amount: 'EUR → 9,900 EURC',
+      text: 'The collections are converted to the euro stablecoin and land in the SPV Management company pool wallet - the cash is now on-chain, inside the custody perimeter.',
+      edges: ['ZIKSrII0FIwoN5GAtqwQ-41', 'Pk5OfUOHv3_TRxhxDVZG-75'],
+    },
+    {
+      kind: 'data',
+      title: 'EURIBOR fixing reaches the oracle',
+      amount: 'E1M 2.209%',
+      text: 'The EMMI EURIBOR 1M fixing (2.209%) is relayed on-chain to the RateOracle. At distribution time the waterfall reads it and prices Class A at max(0, fixing + 0.60%) - the floor applies to the senior class only.',
+      edges: ['ZIKSrII0FIwoN5GAtqwQ-11', 'ZIKSrII0FIwoN5GAtqwQ-9'],
+    },
+    {
+      kind: 'money',
+      title: 'The SPV Management company runs the period',
+      pot: '0 → 14,900 EURC (9,900 collections + 5,000 reserve + carry)',
+      amount: 'ADA 14,900 EURC',
+      text: 'distribute(period, 9,900 EURC) pulls the collections into the deal contract. The Available Distribution Amount = collections + the FULL 5,000 EURC cash reserve released at the top (it re-funds at its rank every period, as in the real BAVARIAN workbook) + last period’s rounding carry.',
+      edges: ['ZIKSrII0FIwoN5GAtqwQ-6'],
+    },
+    {
+      kind: 'money',
+      title: 'The SPV pays its service providers (waterfall rank 1 of 7)',
+      pot: '14,900 → 14,850 EURC',
+      amount: '- 50 EURC',
+      text: 'Before any noteholder sees a cent, the deal pays its providers: management company, custodian, paying agent. A fixed 50 EURC per period here - in the real BAVARIAN deal these are itemized invoices (IQ EQ 4,166.67 EUR/month, BNP custodian 3,844.60...). Fixed amounts, never a % of assets.',
+      cells: ['Pk5OfUOHv3_TRxhxDVZG-77'],
+    },
+    {
+      kind: 'money',
+      title: 'Interest, senior first (waterfall ranks 2-4 of 7)',
+      pot: '14,850 → 14,815.13 EURC',
+      amount: '23.41 + 5.83 + 5.62 EURC',
+      text: 'Interest accrues on each class’s OUTSTANDING nominal, actual/360: Class A 23.41, Class B 5.83, Class C 5.62 EURC in period 1. Computed PER NOTE and rounded down - the remainder joins the carry. Unpaid interest defers as a shortfall (no interest on shortfalls).',
+      edges: ['Pk5OfUOHv3_TRxhxDVZG-84', 'Pk5OfUOHv3_TRxhxDVZG-85', 'Pk5OfUOHv3_TRxhxDVZG-86'],
+    },
+    {
+      kind: 'money',
+      title: 'The cash reserve re-funds (waterfall rank 5 of 7)',
+      pot: '14,815.13 → 9,815.13 EURC',
+      amount: '5,000 EURC back in',
+      text: 'No new money here: the SAME 5,000 EURC the reserve poured into the pot at step 5 now flows back into it. Net zero over the period - but in between, it stood ready to cover fees and interest if collections had fallen short. The IQ EQ workbook executes this exact release-and-refill cycle every month.',
+      cells: ['Pk5OfUOHv3_TRxhxDVZG-77'],
+    },
+    {
+      kind: 'money',
+      title: 'Sequential principal, Class A first (waterfall rank 6 of 7)',
+      pot: '9,815.13 → 0 EURC (everything amortizes Class A)',
+      amount: '- 9,815.13 EURC (Class A)',
+      text: 'Everything left amortizes Class A first: 9,815.13 EURC of principal in period 1. The per-note outstanding drops and the NOTE FACTOR declines - 100% → 90.18% → 80.37% → 70.55% over the three periods run so far. B and C amortize only after A is repaid in full.',
+      edges: ['Pk5OfUOHv3_TRxhxDVZG-84'],
+    },
+    {
+      kind: 'money',
+      title: 'Interest AND principal go to the paying agent',
+      amount: '9,838.54 EURC',
+      text: 'The waterfall hands every class’s aggregate - coupon and principal together, 9,838.54 EURC for Class A - to the PAYING AGENT CONTRACT. Nothing is ever paid into the note tokens: a note has no NAV.',
+      cells: ['ZIKSrII0FIwoN5GAtqwQ-21'],
+      edges: ['ZIKSrII0FIwoN5GAtqwQ-26'],
+    },
+    {
+      kind: 'money',
+      title: 'The paying agent pays every noteholder',
+      amount: '+ 1,963.99 EURC',
+      text: 'Paying agent push_batch walks the holder registry (10 transfers per transaction): MERKL computes interest splits pro rata temporis between mid-period seller and buyer, principal follows the holder of record. Live demo: 1,963.99 EURC arrived in a Freighter wallet with no claim and no withdrawal.',
+      edges: ['Pk5OfUOHv3_TRxhxDVZG-97', 'Pk5OfUOHv3_TRxhxDVZG-101', 'Pk5OfUOHv3_TRxhxDVZG-102', 'Pk5OfUOHv3_TRxhxDVZG-103', 'cTcXm5-mWiktb2D24p8G-11'],
+    },
+    {
+      kind: 'money',
+      title: 'Off-ramp: EURC back to EUR',
+      amount: 'EURC → EUR',
+      text: 'A noteholder who wants fiat off-ramps to their IBAN. The investor’s only exits are these repayments and selling the notes - there is no withdraw function anywhere in the chain.',
+      edges: ['uk0NRVN-ux7Ab5T_4S_U-8', 'uk0NRVN-ux7Ab5T_4S_U-10', 'uk0NRVN-ux7Ab5T_4S_U-12'],
+    },
+    {
+      kind: 'data',
+      title: 'The AI agents verify everything',
+      amount: 'reconciled to the stroop',
+      text: 'Through the MCP data room the calculation agent recomputes the whole cascade (including the dust carry), the paying agent reconciles both legs (waterfall → agent → holders), and the audit agent ties every figure back to the chain. Their reports feed the investor dashboard.',
+      cells: ['Pk5OfUOHv3_TRxhxDVZG-67', 'Pk5OfUOHv3_TRxhxDVZG-107', 'Pk5OfUOHv3_TRxhxDVZG-104', 'uk0NRVN-ux7Ab5T_4S_U-17', 'cTcXm5-mWiktb2D24p8G-12'],
+    },
+  ];
+
+  const flow = {
+    viewer: null, active: false, index: 0,
+    highlights: [], dots: [], raf: null,
+
+    attach(viewer) {
+      this.viewer = viewer;
+      if (this.active) this.show(this.index); // re-render after a mode switch
+    },
+    get graph() { return this.viewer ? this.viewer.graph : null; },
+
+    enter() {
+      // Tolerate a click before the viewer is attached: attach() re-shows
+      // the pending step as soon as the graph exists.
+      this.active = true; this.index = 0;
+      document.getElementById('flow-toggle').classList.add('on');
+      if (this.graph) this.show(0);
+    },
+    exit() {
+      this.active = false;
+      this.clear();
+      document.getElementById('flow-toggle').classList.remove('on');
+      document.getElementById('flow-card').classList.remove('open');
+    },
+    next() { if (this.index < FLOW_STEPS.length - 1) this.show(this.index + 1); },
+    prev() { if (this.index > 0) this.show(this.index - 1); },
+
+    clear() {
+      for (const h of this.highlights) h.destroy();
+      this.highlights = [];
+      for (const dot of this.dots) dot.remove();
+      this.dots = [];
+      if (this.raf) cancelAnimationFrame(this.raf);
+      this.raf = null;
+      document.getElementById('flow-chip').style.display = 'none';
+    },
+
+    stateFor(id) {
+      const cell = this.graph.model.getCell(id);
+      return cell ? this.graph.view.getState(cell) : null;
+    },
+
+    show(index) {
+      if (!this.graph) return;
+      this.index = index;
+      const step = FLOW_STEPS[index];
+      this.clear();
+
+      const color = step.kind === 'money' ? '#b8860b' : '#2563eb';
+      const cellStates = (step.cells ?? []).map((id) => this.stateFor(id)).filter(Boolean);
+      const edgeStates = (step.edges ?? []).map((id) => this.stateFor(id)).filter(Boolean);
+
+      // Highlight the boxes doing the work + the endpoints of animated edges.
+      const endpointStates = edgeStates.flatMap((s) => {
+        const src = s.cell.source && this.graph.view.getState(s.cell.source);
+        const dst = s.cell.target && this.graph.view.getState(s.cell.target);
+        return [src, dst].filter(Boolean);
+      });
+      for (const state of [...cellStates, ...endpointStates]) {
+        const h = new mxCellHighlight(this.graph, color, 3);
+        h.highlight(state);
+        this.highlights.push(h);
+      }
+      for (const state of edgeStates) {
+        const h = new mxCellHighlight(this.graph, color, 3);
+        h.highlight(state);
+        this.highlights.push(h);
+      }
+      if (!edgeStates.length) {
+        for (const h of this.highlights) {
+          if (h.shape?.node) h.shape.node.style.animation = 'flow-pulse 1.2s ease-in-out infinite';
+        }
+      }
+
+      this.animate(edgeStates, color);
+      // Center the first highlight in the scroll viewport. Its SVG node lives
+      // in the rendered (CSS-scaled) space, so a boundingClientRect delta is
+      // the only conversion-free way (scrollIntoView is a no-op on SVG <g>).
+      // Center the step in the viewport once the highlight is painted. Read
+      // the node fresh inside the timeout (the shape can be redrawn) and use
+      // an instant scroll - the viewer starves smooth scrolling entirely.
+      const stepAtSchedule = index;
+      setTimeout(() => {
+        if (!this.active || this.index !== stepAtSchedule) return;
+        const node = this.highlights[0]?.shape?.node;
+        if (!node) return;
+        const container = document.getElementById('diagram');
+        const nodeRect = node.getBoundingClientRect();
+        if (!nodeRect.width && !nodeRect.height) return;
+        const containerRect = container.getBoundingClientRect();
+        container.scrollBy(
+          nodeRect.x + nodeRect.width / 2 - (containerRect.x + containerRect.width / 2),
+          nodeRect.y + nodeRect.height / 2 - (containerRect.y + containerRect.height / 2),
+        );
+        // Keep the card off the action: flip it left when the highlighted
+        // area ends up in the right half of the viewport.
+        const settled = node.getBoundingClientRect();
+        document
+          .getElementById('flow-card')
+          .classList.toggle('left', settled.x + settled.width / 2 > window.innerWidth / 2);
+        // Amount chip pinned above the active box - the "something is
+        // moving here" cue even for the waterfall's internal ranks.
+        if (step.amount) {
+          const chip = document.getElementById('flow-chip');
+          chip.textContent = step.amount;
+          chip.className = step.kind === 'data' ? 'data' : '';
+          chip.style.left = `${settled.x + settled.width / 2}px`;
+          chip.style.top = `${settled.y}px`;
+          chip.style.display = 'block';
+        }
+      }, 150);
+
+      // The step card ("mini modal") - close/reopen so each step pops.
+      const card = document.getElementById('flow-card');
+      card.classList.remove('open');
+      void card.offsetWidth; // restart the pop animation
+      document.getElementById('flow-kind').textContent = step.kind.toUpperCase();
+      document.getElementById('flow-kind').className = `kind ${step.kind}`;
+      document.getElementById('flow-title').textContent = `${index + 1}. ${step.title}`;
+      document.getElementById('flow-text').textContent = step.text;
+      const pot = document.getElementById('flow-pot');
+      if (step.pot) {
+        pot.textContent = `In the pot: ${step.pot}`;
+        pot.style.display = 'block';
+      } else {
+        pot.style.display = 'none';
+      }
+      document.getElementById('flow-count').textContent = `${index + 1} / ${FLOW_STEPS.length}`;
+      document.getElementById('flow-prev').disabled = index === 0;
+      document.getElementById('flow-next').textContent =
+        index === FLOW_STEPS.length - 1 ? 'Done ✓' : 'Next ▶';
+      card.classList.add('open');
+    },
+
+    /** Animated value dots traveling along each edge's rendered polyline. */
+    animate(edgeStates, color) {
+      const paths = edgeStates
+        .map((state) => state.absolutePoints)
+        .filter((pts) => pts && pts.length > 1)
+        .map((pts) => {
+          const segments = [];
+          let total = 0;
+          for (let i = 1; i < pts.length; i++) {
+            const len = Math.hypot(pts[i].x - pts[i - 1].x, pts[i].y - pts[i - 1].y);
+            segments.push({ a: pts[i - 1], b: pts[i], len });
+            total += len;
+          }
+          return { segments, total };
+        });
+      if (!paths.length) return;
+
+      const pane = this.graph.view.getOverlayPane();
+      const svgNS = 'http://www.w3.org/2000/svg';
+      for (const path of paths) {
+        const dot = document.createElementNS(svgNS, 'circle');
+        dot.setAttribute('r', '7');
+        dot.setAttribute('fill', color);
+        dot.setAttribute('stroke', '#ffffff');
+        dot.setAttribute('stroke-width', '2');
+        pane.appendChild(dot);
+        this.dots.push(dot);
+        path.dot = dot;
+      }
+      const started = performance.now();
+      const tick = (now) => {
+        const t = ((now - started) / 1800) % 1; // one pass ~1.8s, looping
+        for (const path of paths) {
+          let distance = t * path.total;
+          for (const seg of path.segments) {
+            if (distance <= seg.len || seg === path.segments[path.segments.length - 1]) {
+              const k = seg.len ? Math.min(1, distance / seg.len) : 0;
+              path.dot.setAttribute('cx', seg.a.x + (seg.b.x - seg.a.x) * k);
+              path.dot.setAttribute('cy', seg.a.y + (seg.b.y - seg.a.y) * k);
+              break;
+            }
+            distance -= seg.len;
+          }
+        }
+        this.raf = requestAnimationFrame(tick);
+      };
+      this.raf = requestAnimationFrame(tick);
+    },
+
+  };
+
+  document.getElementById('flow-toggle').onclick = () =>
+    flow.active ? flow.exit() : flow.enter();
+  document.getElementById('flow-next').onclick = () =>
+    flow.index === FLOW_STEPS.length - 1 ? flow.exit() : flow.next();
+  document.getElementById('flow-prev').onclick = () => flow.prev();
+  document.getElementById('flow-exit').onclick = () => flow.exit();
+  document.addEventListener('keydown', (event) => {
+    if (!flow.active) return;
+    if (event.key === 'ArrowRight') flow.next();
+    if (event.key === 'ArrowLeft') flow.prev();
+    if (event.key === 'Escape') flow.exit();
+  });
+
+  fetch('data-spec-book.diagram.xml')
+    .then((response) => response.text())
+    .then((xml) => {
+      schemaXml = xml;
+      render();
+      // The vendored viewer auto-processes .mxgraph elements when it loads,
+      // but that path never hands us the viewer instance - re-render once
+      // the library is up so createViewerForElement's callback can capture
+      // it (the flow walkthrough needs graph states).
+      const script = document.createElement('script');
+      script.src = 'vendor/viewer-static.min.js';
+      script.onload = () => render();
+      document.body.appendChild(script);
+    })
+    .catch(() => {
+      document.getElementById('diagram').innerHTML =
+        '<p style="padding:24px">Could not load data-spec-book.diagram.xml - open this page through the spv-backend server (make dev-spv, then http://localhost:8090/).</p>';
+    });
+  void setMode(mode);
+</script>
+</body>
+</html>
