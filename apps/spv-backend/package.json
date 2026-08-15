@@ -1,0 +1,36 @@
+{
+  "name": "spv-backend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "TrueABS SPV backend - modular rendering of the Data Spec Book (pool, tokens, IPFS, waterfall, agents)",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check": "pnpm typecheck && pnpm test && pnpm check:map",
+    "check:map": "tsx scripts/check-map.ts",
+    "mint": "tsx src/tokens/mint-all.ts",
+    "oracle:push": "tsx src/oracle-relay/push-fixing.ts",
+    "export-reports": "tsx scripts/export-agent-reports.ts"
+  },
+  "dependencies": {
+    "@fastify/static": "^10.1.2",
+    "@modelcontextprotocol/sdk": "^1.30.0",
+    "@stellar/stellar-sdk": "16.0.1",
+    "dotenv": "^17.2.3",
+    "fastify": "^5.11.0",
+    "multiformats": "^14.0.5",
+    "tsx": "^4.23.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.10.1",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}
