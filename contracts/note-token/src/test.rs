@@ -2,11 +2,28 @@
 
 use super::*;
 use soroban_sdk::testutils::{Address as _, Ledger};
-use soroban_sdk::{Address, Env, String};
+use soroban_sdk::{
+    contract as mock_contract, contractimpl as mock_contractimpl, Address, Env, String,
+};
 
 const DAY: u64 = 86_400;
 const T0: u64 = 1_800_000_000;
 const DENOMINATION: i128 = 1_000; // 100 EURC at 1dp for readable numbers
+
+/// A minimal controller. Every holder is eligible, except the holders that
+/// `deny` puts on its deny list.
+#[mock_contract]
+pub struct MockController;
+
+#[mock_contractimpl]
+impl MockController {
+    pub fn deny(e: Env, holder: Address) {
+        e.storage().instance().set(&holder, &true);
+    }
+    pub fn is_eligible(e: Env, holder: Address) -> bool {
+        !e.storage().instance().has(&holder)
+    }
+}
 
 struct Setup {
     e: Env,
@@ -20,7 +37,7 @@ fn setup() -> Setup {
     let e = Env::default();
     e.ledger().with_mut(|ledger| ledger.timestamp = T0);
     e.mock_all_auths();
-    let controller = Address::generate(&e);
+    let controller = e.register(MockController, ());
     let token_id = e.register(
         NoteToken,
         (
@@ -68,6 +85,39 @@ fn issue_then_finalize_freezes_supply() {
     assert!(s.token.try_finalize_issuance(&T0).is_err());
     assert_eq!(s.token.balance(&s.alice), 60);
     assert_eq!(s.token.balance(&s.bob), 40);
+}
+
+#[test]
+fn controller_view_returns_the_controller() {
+    let s = setup();
+    assert_eq!(s.token.controller(), s.controller);
+}
+
+#[test]
+fn transfer_to_a_receiver_off_the_whitelist_is_rejected() {
+    let s = issued();
+    MockControllerClient::new(&s.e, &s.controller).deny(&s.bob);
+    assert_eq!(
+        s.token.try_transfer(&s.alice, &s.bob, &10),
+        Err(Ok(NoteError::NotEligible))
+    );
+    assert_eq!(s.token.balance(&s.alice), 100);
+    assert_eq!(s.token.balance(&s.bob), 0);
+    assert_eq!(s.token.holders().len(), 1);
+}
+
+#[test]
+fn holder_removed_from_the_whitelist_can_still_sell_to_an_eligible_holder() {
+    let s = issued();
+    MockControllerClient::new(&s.e, &s.controller).deny(&s.alice);
+    s.token.transfer(&s.alice, &s.bob, &30);
+    assert_eq!(s.token.balance(&s.alice), 70);
+    assert_eq!(s.token.balance(&s.bob), 30);
+    // The removed holder cannot receive notes back.
+    assert_eq!(
+        s.token.try_transfer(&s.bob, &s.alice, &1),
+        Err(Ok(NoteError::NotEligible))
+    );
 }
 
 #[test]

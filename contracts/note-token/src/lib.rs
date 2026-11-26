@@ -24,11 +24,18 @@
 //! exact) or a transfer has frozen `FinalWeight/FinalBalance` for P.
 //! Transfers freeze every intervening closed period, so a later period can
 //! never shadow an unfrozen earlier one.
+//!
+//! Whitelist: the controller (the deal) keeps the list of eligible holders.
+//! A transfer asks the controller `is_eligible(to)` and fails with
+//! `NotEligible` when the receiver is not on the list. The sender is not
+//! checked: a holder that the deal removes from the list keeps its notes,
+//! is still paid, and can sell only to an eligible holder.
 
 #![no_std]
 
 use soroban_sdk::{
-    contract, contracterror, contractevent, contractimpl, contracttype, Address, Env, String, Vec,
+    contract, contractclient, contracterror, contractevent, contractimpl, contracttype, Address,
+    Env, String, Vec,
 };
 
 #[contracterror]
@@ -42,6 +49,15 @@ pub enum NoteError {
     InsufficientBalance = 5,
     InsufficientAllowance = 6,
     BadPeriod = 8,
+    /// The receiver of a transfer is not on the whitelist of the deal.
+    NotEligible = 9,
+}
+
+/// The whitelist surface of the controller (the abs-deal contract).
+#[allow(dead_code)]
+#[contractclient(name = "ControllerClient")]
+pub trait ControllerInterface {
+    fn is_eligible(e: Env, holder: Address) -> bool;
 }
 
 #[contracttype]
@@ -242,6 +258,12 @@ impl NoteToken {
 
     pub fn denomination(e: Env) -> i128 {
         Self::config(&e).denomination
+    }
+
+    /// The controller of this note: the deal that issues the notes, rolls
+    /// the periods and keeps the whitelist.
+    pub fn controller(e: Env) -> Address {
+        Self::config(&e).controller
     }
 
     pub fn transfer(e: Env, from: Address, to: Address, notes: i128) -> Result<(), NoteError> {
@@ -459,6 +481,10 @@ impl NoteToken {
         }
         if from == to {
             return Ok(()); // self-transfer: no balance or weight effect
+        }
+        // The receiver must be on the whitelist of the deal.
+        if !ControllerClient::new(e, &Self::config(e).controller).is_eligible(to) {
+            return Err(NoteError::NotEligible);
         }
         // Settle day-weights on the PRE-transfer balances.
         Self::settle(e, from, from_balance);

@@ -3,10 +3,25 @@
 use super::*;
 use note_token::{NoteToken, NoteTokenClient as RealNoteClient};
 use soroban_sdk::testutils::{Address as _, IssuerFlags, Ledger, StellarAssetContract as _};
-use soroban_sdk::{token::StellarAssetClient, vec, Address, Env, String};
+use soroban_sdk::{
+    contract as mock_contract, contractimpl as mock_contractimpl, token::StellarAssetClient, vec,
+    Address, Env, String,
+};
 
 const DAY: u64 = 86_400;
 const T0: u64 = 1_800_000_000;
+
+/// The note-token asks its controller (the deal) whether a receiver is on
+/// the whitelist. In these tests every holder is eligible.
+#[mock_contract]
+pub struct MockController;
+
+#[mock_contractimpl]
+impl MockController {
+    pub fn is_eligible(_e: Env, _holder: Address) -> bool {
+        true
+    }
+}
 
 struct Setup {
     e: Env,
@@ -32,7 +47,7 @@ fn setup() -> Setup {
     let asset = token::Client::new(&e, &sac.address());
     let asset_admin = StellarAssetClient::new(&e, &sac.address());
 
-    let controller = Address::generate(&e);
+    let controller = e.register(MockController, ());
     let note_id = e.register(
         NoteToken,
         (
