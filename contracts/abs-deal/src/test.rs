@@ -1,6 +1,7 @@
 #![cfg(test)]
 
 use super::*;
+use crate::reference::{reference_config, Reference};
 use note_token::NoteToken;
 use paying_agent::{PayingAgent, PayingAgentClient};
 use soroban_sdk::testutils::{Address as _, Ledger};
@@ -30,6 +31,11 @@ impl MockOracle {
     }
     pub fn lastprice(e: Env) -> Option<PriceData> {
         e.storage().instance().get(&0u32)
+    }
+    /// The reporter of this oracle is the oracle itself: an address that is
+    /// not the admin and not the servicer of a deal.
+    pub fn get_reporter(e: Env) -> Address {
+        e.current_contract_address()
     }
 }
 
@@ -69,26 +75,30 @@ fn setup() -> Setup {
     let seller = Address::generate(&e);
     let fees_recipient = Address::generate(&e);
 
-    let config = DealConfig {
-        admin: admin.clone(),
-        asset: sac.address(),
-        oracle: oracle_id,
-        seller: seller.clone(),
-        servicer: servicer.clone(),
-        fees_recipient: fees_recipient.clone(),
-        fees_per_period: 50,
-        required_reserve: 5_000,
-        days_in_period: 30,
-        oracle_max_staleness_secs: 7 * 86_400,
-        note_denomination: DENOMINATION,
-        round_unit: 1,
-        classes: vec![
-            &e,
-            ClassTerms { rate: RateSpec::Floating(600), total_notes: NOTES_A },
-            ClassTerms { rate: RateSpec::Fixed(1_000), total_notes: NOTES_B },
-            ClassTerms { rate: RateSpec::Fixed(1_500), total_notes: NOTES_C },
-        ],
-    };
+    // The reference configuration: fees, interest A/B/C, reserve re-fund,
+    // sequential principal, residual.
+    let config = reference_config(
+        &e,
+        Reference {
+            admin: &admin,
+            asset: &sac.address(),
+            oracle: &oracle_id,
+            seller: &seller,
+            servicer: &servicer,
+            fees_recipient: &fees_recipient,
+            fees_per_period: 50,
+            required_reserve: 5_000,
+            days_in_period: 30,
+            oracle_max_staleness_secs: 7 * 86_400,
+            note_denomination: DENOMINATION,
+            round_unit: 1,
+            classes: &[
+                (RateSpec::Floating(600), NOTES_A),
+                (RateSpec::Fixed(1_000), NOTES_B),
+                (RateSpec::Fixed(1_500), NOTES_C),
+            ],
+        },
+    );
     let deal_id = e.register(AbsDeal, (config,));
     let deal = AbsDealClient::new(&e, &deal_id);
 
@@ -116,6 +126,10 @@ fn setup() -> Setup {
     let investor_a = Address::generate(&e);
     let investor_b = Address::generate(&e);
     let investor_c = Address::generate(&e);
+    deal.set_eligible(
+        &vec![&e, investor_a.clone(), investor_b.clone(), investor_c.clone()],
+        &true,
+    );
     asset_admin.mint(&investor_a, &(NOTES_A * DENOMINATION));
     asset_admin.mint(&investor_b, &(NOTES_B * DENOMINATION));
     asset_admin.mint(&investor_c, &(NOTES_C * DENOMINATION));

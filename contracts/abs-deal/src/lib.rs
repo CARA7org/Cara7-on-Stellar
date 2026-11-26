@@ -1,149 +1,111 @@
 //! ABS deal contract - the SPV of the CARA7 Data Spec Book: funding escrow,
-//! closing DvP, and the waterfall v4 Priority of Payments engine.
+//! closing DvP, and a configurable Priority of Payments engine.
 //!
-//! Lifecycle (Bavarian Sky French Auto Leases 5 mechanics, POC-compressed):
+//! Lifecycle:
 //!
-//! - FUNDING: investors `subscribe` EURC against note units (cancellable at
-//!   any time before closing - the only moment a "withdraw" exists, per the
-//!   Goldfinch pre-lock semantics); the Seller escrows the subordinated loan
-//!   that will fund the cash reserve.
+//! - FUNDING: investors `subscribe` the settlement asset against note units.
+//!   A subscription is cancellable until the closing: this is the only
+//!   moment a "withdraw" exists. The Seller escrows the subordinated loan
+//!   that funds the cash reserve.
 //! - `close()` - the closing DvP, one atomic transaction: the subordinated
 //!   loan becomes the cash reserve, the FULL subscription proceeds go to the
 //!   Seller as the receivables purchase price (net proceeds retained by the
-//!   SPV = 0 - BBVA prospectus verbatim), the notes are issued at par and
-//!   transfers open. From here there is NO deposit and NO withdraw:
-//!   noteholders are repaid only through the priority of payments.
+//!   SPV = 0), the notes are issued at par and transfers open. From here
+//!   there is NO deposit and NO withdraw: noteholders are repaid only through
+//!   the priority of payments.
 //! - AMORTIZING: each period the servicer's `distribute(period, collections)`
-//!   runs the pre-enforcement PoP on the Available Distribution Amount =
-//!   collections + the FULL cash reserve released at the top (full-cycle,
-//!   re-funded at its rank - the IQ EQ workbook mechanic, NOT a deficit
-//!   draw) + the rounding-dust carry from last period. Ranks: (1) fees,
-//!   (2-4) interest A/B/C on outstanding nominal (Class A = EURIBOR 1M +
-//!   spread floored at 0 from the RateOracle; unpaid interest defers as a
-//!   shortfall, no interest on shortfalls), (5) reserve re-fund, (6)
-//!   sequential principal A -> B -> C, (7) residual to the Seller.
-//! - ENFORCED (`set_enforced`, irreversible): accelerated order - per class
-//!   interest then principal, Class A in full before B before C, no reserve
-//!   re-fund.
+//!   runs the `normal` order of the configuration.
+//! - ENFORCED (`set_enforced`, irreversible): `distribute` runs the
+//!   `enforced` order. The reserve is released in full and not re-funded.
 //! - MATURED (automatic when every class's outstanding hits 0): reserve
-//!   (= subordinated loan repayment) + carry swept to the Seller; the
-//!   contract's asset balance ends at exactly 0.
+//!   (= subordinated loan repayment) + carry swept to the Seller.
 //!
-//! Noteholder ranks use PER-NOTE rounding: entitlement / note count, floored
-//! to `round_unit`, times the note count - the remainder is the dust carry
-//! that re-enters next period's ADA (the workbook's 49.39 carried forward).
-//! Interest AND principal both leave through the PAYING AGENT contract, as
-//! the Data Spec Book draws it - nothing is ever paid into the note tokens.
+//! The priority of payments is a configuration, not code. `DealConfig`
+//! (`types.rs`) gives the classes and their rates (fixed, or the oracle
+//! fixing plus a spread, with floors), the fee lines, the reserve rule, the
+//! triggers, and two rank lists: the `normal` order and the `enforced`
+//! order. A rank holds items (a fee line, the interest or the principal of a
+//! class, the reserve re-fund, the residual), a condition on a trigger, and
+//! a split rule: sequential or pari passu. `engine.rs` runs one period.
+//! `validate.rs` checks a configuration at the construction.
 //!
-//! Invariant after every distribute: contract asset balance == reserve + carry.
+//! The reference deal (Bavarian Sky French Auto Leases 5, compressed) is one
+//! configuration: (1) fees, (2-4) interest A/B/C on the outstanding nominal
+//! (Class A = EURIBOR 1M + spread floored at 0, unpaid interest defers as a
+//! shortfall, no interest on shortfalls), (5) reserve re-fund, (6) sequential
+//! principal A -> B -> C, (7) residual to the Seller. After enforcement:
+//! per class interest then principal, Class A in full before B before C.
+//!
+//! The available amount of a period = collections + the cash reserve
+//! released at the top + the rounding-dust carry from last period. Noteholder
+//! ranks use PER-NOTE rounding: entitlement / note count, floored to
+//! `round_unit`, times the note count - the remainder is the dust carry
+//! that re-enters next period's available amount. Interest AND principal
+//! both leave through the PAYING AGENT contract - nothing is ever paid into
+//! the note tokens.
+//!
+//! Roles. Three roles are separate, so that each one can have its own
+//! signing policy:
+//!
+//! - the admin is the operator of the deal (the management company). It
+//!   settles the issuance (`close`) and holds the lifecycle: wiring,
+//!   whitelist, abort, enforcement, replacement of the servicer;
+//! - the servicer triggers a payment date (`distribute`). It reports the
+//!   collections. It cannot change an amount or the order of the ranks;
+//! - the reporter of the rate oracle publishes the reference rate.
+//!
+//! The contract refuses a deal where the admin is the servicer. `close` and
+//! `distribute` of a deal with a floating class refuse an oracle reporter
+//! that is the admin or the servicer (`RoleConflict`).
+//!
+//! Settlement asset: any SEP-41 token set at deployment, in practice EURC
+//! or EURCV through their Stellar Asset Contract. The issuer of the asset
+//! can freeze an account or claw back funds, so:
+//!
+//! - a payout to a fees recipient or to the Seller that fails is parked as
+//!   an amount owed to that recipient, who takes it later with
+//!   `claim_owed`. A frozen recipient never blocks the payment date of the
+//!   noteholders;
+//! - the balance checks accept a surplus (anyone can transfer the asset to
+//!   the deal) and stop on a deficit (a clawback). A surplus stays idle
+//!   until the maturity sweep pays it to the Seller.
+//!
+//! Whitelist: only an investor on the deal whitelist can subscribe, and the
+//! note tokens ask `is_eligible` before each transfer. The admin keeps the
+//! list. A holder removed from the list keeps its notes and is still paid.
+//!
+//! `set_wiring` checks that each note token belongs to this deal and has its
+//! denomination, and that the paying agent pays this deal's notes in this
+//! deal's asset. A deal has at most `MAX_CLASSES` classes.
+//!
+//! Two rules hold after every `distribute`, and the `period_settled` event
+//! carries the figures of both:
+//!
+//! - conservation: collections + opening reserve + opening carry = cash paid
+//!   out + closing reserve + closing carry;
+//! - the balance invariant: contract asset balance >= reserve + carry +
+//!   amounts owed.
 
 #![no_std]
 
+mod engine;
+mod events;
+mod types;
+mod validate;
+
+pub use events::*;
+pub use types::*;
+pub use validate::validate;
+
+use engine::{Opening, CLASS_SLOTS, TRIGGER_SLOTS};
 use soroban_sdk::{
-    contract, contractclient, contracterror, contractevent, contractimpl, contracttype, token,
-    Address, Env, Vec,
+    contract, contractclient, contractimpl, contracttype, panic_with_error, token, Address, Env,
+    Vec,
 };
 
-/// 100% in rate units (percent x 1_000) - shared with the RateOracle.
-pub const RATE_SCALE: i128 = 100_000;
-/// 100% in note-factor units (7 dp, close to A-BEST's 8 dp Principal Factor).
-pub const FACTOR_SCALE: i128 = 10_000_000;
-const DAY_COUNT_BASE: i128 = 360;
-
-#[contracterror]
-#[derive(Copy, Clone, Debug, Eq, PartialEq)]
-#[repr(u32)]
-pub enum DealError {
-    WrongState = 1,
-    NotWired = 2,
-    AlreadyWired = 3,
-    InvalidAmount = 4,
-    InvalidConfig = 5,
-    RateUnavailable = 6,
-    RateStale = 7,
-    ClassFull = 8,
-    NotFullySubscribed = 9,
-    SubLoanShort = 10,
-    PeriodMismatch = 11,
-    BadClass = 12,
-    InsufficientSubscription = 13,
-}
-
-/// Rate terms of one class: Class A floats over the oracle fixing (all-in
-/// floored at 0%), Classes B/C carry fixed rates per the prospectus.
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum RateSpec {
-    /// Spread over EURIBOR 1M in 0.001% units; all-in floored at 0%.
-    Floating(i128),
-    /// Fixed annual rate in 0.001% units.
-    Fixed(i128),
-}
-
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct ClassTerms {
-    pub rate: RateSpec,
-    pub total_notes: i128,
-}
-
-#[contracttype]
-#[derive(Clone)]
-pub struct DealConfig {
-    pub admin: Address,
-    pub asset: Address,
-    pub oracle: Address,
-    pub seller: Address,
-    pub servicer: Address,
-    pub fees_recipient: Address,
-    pub fees_per_period: i128,
-    /// Required cash reserve == the Seller's subordinated loan amount.
-    pub required_reserve: i128,
-    pub days_in_period: u32,
-    pub oracle_max_staleness_secs: u64,
-    /// Original face of one note in asset base units (POC: 100 EURC).
-    pub note_denomination: i128,
-    /// Per-note rounding grain in asset base units (POC: 1 stroop).
-    pub round_unit: i128,
-    /// Senior first: A, B, C.
-    pub classes: Vec<ClassTerms>,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub enum State {
-    Funding,
-    Amortizing,
-    Enforced,
-    Matured,
-    Aborted,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct Wiring {
-    pub note_tokens: Vec<Address>,
-    pub paying_agent: Address,
-}
-
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct ClassState {
-    /// Authoritative outstanding per note, in asset base units. The class
-    /// outstanding is `per_note_outstanding x total_notes`, drift-free.
-    pub per_note_outstanding: i128,
-    /// Deferred unpaid interest (accrues no interest of its own).
-    pub shortfall: i128,
-}
-
-/// Per-class allocation handed to the paying agent each period.
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct ClassAlloc {
-    pub interest: i128,
-    pub principal: i128,
-    pub per_note_principal: i128,
-}
+/// Payout codes named in `PayoutParked`: a fee line, the residual.
+const RANK_FEES: u32 = 1;
+const RANK_RESIDUAL: u32 = 7;
 
 #[contracttype]
 #[derive(Clone)]
@@ -158,9 +120,14 @@ enum DataKey {
     SubLoan,     // i128 escrowed subordinated loan (Funding only)
     SubTotals,   // Vec<i128> subscribed notes per class
     NextPeriod,  // u32, 1 after closing
+    OwedTotal,   // i128 sum of the parked payouts not claimed yet
+    SubscriptionCount, // u32 open subscriptions (entries of all Subscribers lists)
+    Triggers,    // Vec<bool> stored trigger flags, in the order of the config
     // persistent
     Subscription(u32, Address), // notes escrowed by investor per class
     Subscribers(u32),           // Vec<Address> per class (closing iteration)
+    Owed(Address),              // i128 parked payout of one recipient
+    Eligible(Address),          // present = the holder is on the whitelist
 }
 
 const PERSISTENT_BUMP: u32 = 30 * 24 * 60 * 12;
@@ -172,18 +139,11 @@ fn bump_persistent(e: &Env, key: &DataKey) {
         .extend_ttl(key, PERSISTENT_LIFETIME, PERSISTENT_BUMP);
 }
 
-/// Oracle fixing as stored by the rate-oracle crate.
-#[contracttype]
-#[derive(Clone, Debug, Eq, PartialEq)]
-pub struct PriceData {
-    pub price: i128,
-    pub timestamp: u64,
-}
-
 #[allow(dead_code)]
 #[contractclient(name = "RateOracleClient")]
 pub trait RateOracleInterface {
     fn lastprice(e: Env) -> Option<PriceData>;
+    fn get_reporter(e: Env) -> Address;
 }
 
 #[allow(dead_code)]
@@ -193,141 +153,15 @@ pub trait NoteTokenInterface {
     fn finalize_issuance(e: Env, start_ts: u64);
     fn roll_period(e: Env, end_ts: u64) -> u32;
     fn total_supply(e: Env) -> i128;
+    fn controller(e: Env) -> Address;
+    fn denomination(e: Env) -> i128;
 }
 
 #[allow(dead_code)]
 #[contractclient(name = "PayingAgentClient")]
 pub trait PayingAgentInterface {
     fn fund_period(e: Env, period: u32, allocs: Vec<ClassAlloc>);
-}
-
-// --- events -----------------------------------------------------------------
-
-#[contractevent(data_format = "vec")]
-pub struct Subscribed {
-    #[topic]
-    pub investor: Address,
-    pub class: u32,
-    pub notes: i128,
-    pub amount: i128,
-}
-
-#[contractevent(data_format = "vec")]
-pub struct SubCancelled {
-    #[topic]
-    pub investor: Address,
-    pub class: u32,
-    pub notes: i128,
-    pub amount: i128,
-}
-
-#[contractevent(data_format = "vec")]
-pub struct SubLoanFunded {
-    #[topic]
-    pub seller: Address,
-    pub amount: i128,
-    pub total: i128,
-}
-
-#[contractevent(data_format = "vec")]
-pub struct SubLoanRefunded {
-    #[topic]
-    pub seller: Address,
-    pub amount: i128,
-    pub total: i128,
-}
-
-/// The closing DvP: proceeds out, reserve funded, notes issued.
-#[contractevent(data_format = "vec")]
-pub struct DealClosed {
-    pub proceeds_to_seller: i128,
-    pub reserve: i128,
-    pub period_start_ts: u64,
-}
-
-#[contractevent(data_format = "vec")]
-pub struct DealAborted {}
-
-/// One waterfall run. `ada` = collections + reserve released + carry in.
-#[contractevent(data_format = "vec")]
-pub struct Distribution {
-    #[topic]
-    pub period: u32,
-    pub collections: i128,
-    pub reserve_released: i128,
-    pub carry_in: i128,
-    pub ada: i128,
-}
-
-#[contractevent(data_format = "vec")]
-pub struct FeesPaid {
-    #[topic]
-    pub recipient: Address,
-    pub amount: i128,
-}
-
-#[contractevent(data_format = "vec")]
-pub struct InterestPaid {
-    #[topic]
-    pub class: u32,
-    pub period: u32,
-    pub due: i128,
-    pub paid: i128,
-    pub shortfall: i128,
-    pub dust: i128,
-}
-
-#[contractevent(data_format = "vec")]
-pub struct PrincipalPaid {
-    #[topic]
-    pub class: u32,
-    pub period: u32,
-    pub paid: i128,
-    pub per_note: i128,
-    pub outstanding_after: i128,
-}
-
-#[contractevent(data_format = "vec")]
-pub struct FactorUpdated {
-    #[topic]
-    pub class: u32,
-    pub period: u32,
-    pub factor: i128,
-    pub per_note_outstanding: i128,
-}
-
-#[contractevent(data_format = "vec")]
-pub struct ReserveReleased {
-    pub amount: i128,
-}
-
-#[contractevent(data_format = "vec")]
-pub struct ReserveRefunded {
-    pub amount: i128,
-    pub balance: i128,
-}
-
-#[contractevent(data_format = "vec")]
-pub struct CarryUpdated {
-    pub period: u32,
-    pub carry: i128,
-}
-
-#[contractevent(data_format = "vec")]
-pub struct ResidualPaid {
-    #[topic]
-    pub seller: Address,
-    pub amount: i128,
-}
-
-#[contractevent(data_format = "vec")]
-pub struct Enforced {
-    pub period: u32,
-}
-
-#[contractevent(data_format = "vec")]
-pub struct Matured {
-    pub period: u32,
+    fn get_config(e: Env) -> AgentConfig;
 }
 
 #[contract]
@@ -335,21 +169,15 @@ pub struct AbsDeal;
 
 #[contractimpl]
 impl AbsDeal {
+    /// Store the configuration of the deal. `validate` refuses a
+    /// configuration that the engine cannot run, and a deal where the admin
+    /// is the servicer.
     pub fn __constructor(e: Env, config: DealConfig) {
-        if config.classes.is_empty()
-            || config.fees_per_period < 0
-            || config.required_reserve < 0
-            || config.note_denomination <= 0
-            || config.round_unit <= 0
-            || config.note_denomination % config.round_unit != 0
-        {
-            panic!("invalid config");
+        if let Err(error) = validate(&config) {
+            panic_with_error!(&e, error);
         }
         let mut sub_totals: Vec<i128> = Vec::new(&e);
-        for class in config.classes.iter() {
-            if class.total_notes <= 0 {
-                panic!("invalid class");
-            }
+        for _ in config.classes.iter() {
             sub_totals.push_back(0);
         }
         e.storage().instance().set(&DataKey::Config, &config);
@@ -358,10 +186,17 @@ impl AbsDeal {
         e.storage().instance().set(&DataKey::Reserve, &0i128);
         e.storage().instance().set(&DataKey::Carry, &0i128);
         e.storage().instance().set(&DataKey::SubLoan, &0i128);
+        e.storage().instance().set(&DataKey::OwedTotal, &0i128);
+        e.storage().instance().set(&DataKey::SubscriptionCount, &0u32);
     }
 
     /// One-shot wiring of the note tokens + paying agent (deployed after this
     /// contract, since they reference its address as controller).
+    ///
+    /// The wiring is checked: one distinct note token per class, each
+    /// controlled by this deal and with the deal's denomination, and a paying
+    /// agent for this deal, in this deal's asset, with the same note tokens in
+    /// the same order. Any difference gives `WiringMismatch`.
     pub fn set_wiring(
         e: Env,
         note_tokens: Vec<Address>,
@@ -375,6 +210,28 @@ impl AbsDeal {
         if note_tokens.len() != config.classes.len() {
             return Err(DealError::InvalidConfig);
         }
+        let this = e.current_contract_address();
+        for index in 0..note_tokens.len() {
+            let note = note_tokens.get(index).unwrap();
+            for earlier in 0..index {
+                if note_tokens.get(earlier).unwrap() == note {
+                    return Err(DealError::WiringMismatch);
+                }
+            }
+            let client = NoteTokenClient::new(&e, &note);
+            match (client.try_controller(), client.try_denomination()) {
+                (Ok(Ok(controller)), Ok(Ok(denomination)))
+                    if controller == this && denomination == config.note_denomination => {}
+                _ => return Err(DealError::WiringMismatch),
+            }
+        }
+        match PayingAgentClient::new(&e, &paying_agent).try_get_config() {
+            Ok(Ok(agent))
+                if agent.deal == this
+                    && agent.asset == config.asset
+                    && agent.note_tokens == note_tokens => {}
+            _ => return Err(DealError::WiringMismatch),
+        }
         e.storage()
             .instance()
             .set(&DataKey::Wiring, &Wiring { note_tokens, paying_agent });
@@ -383,10 +240,14 @@ impl AbsDeal {
 
     // --- Funding phase ------------------------------------------------------
 
-    /// Escrow `notes x denomination` EURC against future notes of `class`.
+    /// Escrow `notes x denomination` of the asset against future notes of
+    /// `class`. Only an investor on the deal whitelist can subscribe.
     pub fn subscribe(e: Env, investor: Address, class: u32, notes: i128) -> Result<(), DealError> {
         investor.require_auth();
         Self::require_state(&e, State::Funding)?;
+        if !Self::eligible(&e, &investor) {
+            return Err(DealError::NotEligible);
+        }
         let config = Self::read_config(&e);
         let terms = config.classes.get(class).ok_or(DealError::BadClass)?;
         if notes <= 0 {
@@ -397,22 +258,31 @@ impl AbsDeal {
         if subscribed + notes > terms.total_notes {
             return Err(DealError::ClassFull);
         }
-        let amount = notes * config.note_denomination;
-        token::Client::new(&e, &config.asset).transfer(
-            &investor,
-            &e.current_contract_address(),
-            &amount,
-        );
         let key = DataKey::Subscription(class, investor.clone());
         let existing: i128 = e.storage().persistent().get(&key).unwrap_or(0);
         if existing == 0 {
+            // A new subscription. The investor is not in the list: `cancel`
+            // removes a subscription that goes to 0. The closing issues the
+            // notes of every subscription in one transaction, so their
+            // number is limited.
+            let count: u32 = e.storage().instance().get(&DataKey::SubscriptionCount).unwrap_or(0);
+            if count >= MAX_SUBSCRIPTIONS {
+                return Err(DealError::TooManySubscriptions);
+            }
             let list_key = DataKey::Subscribers(class);
             let mut subscribers: Vec<Address> =
                 e.storage().persistent().get(&list_key).unwrap_or(Vec::new(&e));
             subscribers.push_back(investor.clone());
             e.storage().persistent().set(&list_key, &subscribers);
             bump_persistent(&e, &list_key);
+            e.storage().instance().set(&DataKey::SubscriptionCount, &(count + 1));
         }
+        let amount = notes * config.note_denomination;
+        token::Client::new(&e, &config.asset).transfer(
+            &investor,
+            &e.current_contract_address(),
+            &amount,
+        );
         e.storage().persistent().set(&key, &(existing + notes));
         bump_persistent(&e, &key);
         sub_totals.set(class, subscribed + notes);
@@ -444,6 +314,23 @@ impl AbsDeal {
         }
         e.storage().persistent().set(&key, &(existing - notes));
         bump_persistent(&e, &key);
+        if existing == notes {
+            // The subscription goes to 0: remove the investor from the
+            // closing list. Without this, a new subscription would add the
+            // investor a second time and the closing would issue its notes
+            // twice.
+            let list_key = DataKey::Subscribers(class);
+            let mut subscribers: Vec<Address> =
+                e.storage().persistent().get(&list_key).unwrap_or(Vec::new(&e));
+            if let Some(index) = subscribers.first_index_of(&investor) {
+                subscribers.remove(index);
+                e.storage().persistent().set(&list_key, &subscribers);
+                bump_persistent(&e, &list_key);
+                let count: u32 =
+                    e.storage().instance().get(&DataKey::SubscriptionCount).unwrap_or(0);
+                e.storage().instance().set(&DataKey::SubscriptionCount, &count.saturating_sub(1));
+            }
+        }
         let mut sub_totals: Vec<i128> = e.storage().instance().get(&DataKey::SubTotals).unwrap();
         sub_totals.set(class, sub_totals.get(class).unwrap() - notes);
         e.storage().instance().set(&DataKey::SubTotals, &sub_totals);
@@ -519,6 +406,10 @@ impl AbsDeal {
     /// into the cash reserve, pays the full subscription proceeds to the
     /// Seller (purchase price of the receivables - net retained = 0), issues
     /// the notes at par and opens payment period 1.
+    ///
+    /// The admin settles the issuance. A deal with a floating class refuses
+    /// the closing when the reporter of its oracle is the admin or the
+    /// servicer.
     pub fn close(e: Env) -> Result<(), DealError> {
         Self::require_state(&e, State::Funding)?;
         let config = Self::read_config(&e);
@@ -533,10 +424,12 @@ impl AbsDeal {
             }
             proceeds += terms.total_notes * config.note_denomination;
         }
+        // The required reserve at the closing, on the initial notes.
         let sub_loan: i128 = e.storage().instance().get(&DataKey::SubLoan).unwrap();
-        if sub_loan != config.required_reserve {
+        if sub_loan != engine::required_reserve(&config, false, proceeds) {
             return Err(DealError::SubLoanShort);
         }
+        Self::require_separate_reporter(&e, &config)?;
 
         // 1. Subordinated loan becomes the cash reserve ledger.
         e.storage().instance().set(&DataKey::Reserve, &sub_loan);
@@ -583,9 +476,11 @@ impl AbsDeal {
         e.storage().instance().set(&DataKey::NextPeriod, &1u32);
         e.storage().instance().set(&DataKey::State, &State::Amortizing);
 
-        // Net proceeds retained by the SPV = 0: only the reserve stays.
+        // Net proceeds retained by the SPV = 0: only the reserve stays. A
+        // surplus (a direct transfer to the deal) is accepted and stays idle;
+        // a deficit (a clawback) stops the closing.
         let balance = token::Client::new(&e, &config.asset).balance(&e.current_contract_address());
-        if balance != sub_loan {
+        if balance < sub_loan {
             panic!("closing balance invariant");
         }
         DealClosed { proceeds_to_seller: proceeds, reserve: sub_loan, period_start_ts: now }
@@ -595,9 +490,12 @@ impl AbsDeal {
 
     // --- Amortizing / Enforced ----------------------------------------------
 
-    /// Run one waterfall period. Servicer-authed; `period` must equal the
-    /// expected next period (idempotency). Zero collections are legal - the
-    /// released reserve then carries the senior interest.
+    /// Run one payment date. Servicer-authed; `period` must equal the
+    /// expected next period (idempotency). Zero collections are legal.
+    ///
+    /// The engine computes every rank from the configuration and the
+    /// ledgers. The only input of the servicer is the collections figure:
+    /// the servicer cannot change an amount or the order of the ranks.
     pub fn distribute(e: Env, period: u32, collections: i128) -> Result<Vec<i128>, DealError> {
         let state = Self::read_state(&e);
         if state != State::Amortizing && state != State::Enforced {
@@ -613,142 +511,152 @@ impl AbsDeal {
             return Err(DealError::PeriodMismatch);
         }
         let wiring = Self::read_wiring(&e)?;
+        Self::require_separate_reporter(&e, &config)?;
         let client = token::Client::new(&e, &config.asset);
         let this = e.current_contract_address();
         if collections > 0 {
             client.transfer(&config.servicer, &this, &collections);
         }
 
-        let mut class_states: Vec<ClassState> =
+        // The opening ledgers.
+        let opening_states: Vec<ClassState> =
             e.storage().instance().get(&DataKey::ClassStates).unwrap();
         let count = config.classes.len();
-
-        // ADA = collections + FULL reserve released + carry (both zeroed).
-        let reserve_released: i128 = e.storage().instance().get(&DataKey::Reserve).unwrap();
-        let carry_in: i128 = e.storage().instance().get(&DataKey::Carry).unwrap();
-        let mut ada = collections + reserve_released + carry_in;
-        let mut reserve: i128 = 0;
-        let mut carry: i128 = 0;
-        if reserve_released > 0 {
-            ReserveReleased { amount: reserve_released }.publish(&e);
-        }
-        Distribution { period, collections, reserve_released, carry_in, ada }.publish(&e);
-
-        // Interest due per class = accrued on outstanding + prior shortfall.
-        let mut interest_due: Vec<i128> = Vec::new(&e);
-        for index in 0..count {
-            let terms = config.classes.get(index).unwrap();
-            let outstanding =
-                class_states.get(index).unwrap().per_note_outstanding * terms.total_notes;
-            let accrued = Self::period_interest(&e, &config, outstanding, &terms.rate)?;
-            interest_due.push_back(accrued + class_states.get(index).unwrap().shortfall);
-        }
-
-        // Rank 1 - fees.
-        let fees = config.fees_per_period.min(ada);
-        if fees > 0 {
-            client.transfer(&this, &config.fees_recipient, &fees);
-            ada -= fees;
-            FeesPaid { recipient: config.fees_recipient.clone(), amount: fees }.publish(&e);
-        }
-
-        let mut allocs: Vec<ClassAlloc> = Vec::new(&e);
-        for _ in 0..count {
-            allocs.push_back(ClassAlloc { interest: 0, principal: 0, per_note_principal: 0 });
-        }
-
         let enforced = state == State::Enforced;
-        if enforced {
-            // Accelerated order: per class interest then principal, A fully
-            // before B before C. No reserve re-fund.
-            for index in 0..count {
-                let terms = config.classes.get(index).unwrap();
-                let mut class_state = class_states.get(index).unwrap();
-                let mut alloc = allocs.get(index).unwrap();
+        let reserve_in: i128 = e.storage().instance().get(&DataKey::Reserve).unwrap();
+        let carry_in: i128 = e.storage().instance().get(&DataKey::Carry).unwrap();
+        let mut opening = Opening {
+            enforced,
+            collections,
+            reserve: reserve_in,
+            carry: carry_in,
+            per_note: [0; CLASS_SLOTS],
+            shortfall: [0; CLASS_SLOTS],
+            triggers: [false; TRIGGER_SLOTS],
+            fixing: 0,
+        };
+        for index in 0..count {
+            let class_state = opening_states.get(index).unwrap();
+            opening.per_note[index as usize] = class_state.per_note_outstanding;
+            opening.shortfall[index as usize] = class_state.shortfall;
+        }
+        let stored = Self::read_triggers(&e);
+        for index in 0..config.triggers.len() {
+            opening.triggers[index as usize] = stored.get(index).unwrap_or(false);
+        }
+        if engine::has_floating_class(&config) {
+            opening.fixing = Self::read_fixing(&e, &config)?;
+        }
 
-                Self::pay_interest(
-                    &e,
-                    &config,
-                    period,
-                    index,
-                    interest_due.get(index).unwrap(),
-                    terms.total_notes,
-                    &mut ada,
-                    &mut carry,
-                    &mut class_state,
-                    &mut alloc,
-                );
-                Self::pay_principal(
-                    &e,
-                    &config,
-                    period,
-                    index,
-                    terms.total_notes,
-                    &mut ada,
-                    &mut carry,
-                    &mut class_state,
-                    &mut alloc,
-                );
-                class_states.set(index, class_state);
-                allocs.set(index, alloc);
+        // The engine computes the period: every rank, in the configured order.
+        let outcome = engine::run(&config, &opening);
+
+        if outcome.released > 0 {
+            ReserveReleased { amount: outcome.released }.publish(&e);
+        }
+        Distribution {
+            period,
+            collections,
+            reserve_released: outcome.released,
+            carry_in,
+            ada: outcome.available,
+        }
+        .publish(&e);
+
+        // Replay the steps in rank order: pay the fee lines, publish the
+        // events of each item, and collect the lines of the period.
+        let order = if enforced { &config.enforced } else { &config.normal };
+        let mut owed_total: i128 = e.storage().instance().get(&DataKey::OwedTotal).unwrap_or(0);
+        let mut fees_out: i128 = 0;
+        let mut lines: Vec<RankLine> = Vec::new(&e);
+        for step in outcome.steps.iter().take(outcome.count) {
+            match step.item {
+                Item::Fee(line) => {
+                    // A frozen fees recipient does not block the period: the
+                    // fee then stays in the deal, owed to the recipient.
+                    if step.alloc > 0 {
+                        let recipient = config.fees.get(line).unwrap().recipient;
+                        fees_out += step.alloc;
+                        if Self::pay_or_park(&e, &client, &recipient, step.alloc, period, RANK_FEES, &mut owed_total) {
+                            FeesPaid { recipient, amount: step.alloc }.publish(&e);
+                        }
+                    }
+                }
+                Item::Interest(class) => {
+                    if step.due > 0 {
+                        InterestPaid {
+                            class,
+                            period,
+                            due: step.due,
+                            paid: step.paid,
+                            shortfall: step.due - step.alloc,
+                            dust: step.alloc - step.paid,
+                        }
+                        .publish(&e);
+                    }
+                }
+                Item::Principal(class) => {
+                    if step.paid > 0 {
+                        let notes = config.classes.get(class).unwrap().total_notes;
+                        let per_note_outstanding = outcome.per_note[class as usize];
+                        PrincipalPaid {
+                            class,
+                            period,
+                            paid: step.paid,
+                            per_note: step.paid / notes,
+                            outstanding_after: per_note_outstanding * notes,
+                        }
+                        .publish(&e);
+                        FactorUpdated {
+                            class,
+                            period,
+                            factor: per_note_outstanding.saturating_mul(FACTOR_SCALE)
+                                / config.note_denomination,
+                            per_note_outstanding,
+                        }
+                        .publish(&e);
+                    }
+                }
+                Item::ReserveRefill => {
+                    if step.alloc > 0 {
+                        ReserveRefunded { amount: step.alloc, balance: step.balance }.publish(&e);
+                    }
+                }
+                // The Seller is paid after the noteholders, below.
+                Item::Residual => {}
             }
-        } else {
-            // Ranks 2-4 - interest, senior to junior.
-            for index in 0..count {
-                let terms = config.classes.get(index).unwrap();
-                let mut class_state = class_states.get(index).unwrap();
-                let mut alloc = allocs.get(index).unwrap();
-                Self::pay_interest(
-                    &e,
-                    &config,
-                    period,
-                    index,
-                    interest_due.get(index).unwrap(),
-                    terms.total_notes,
-                    &mut ada,
-                    &mut carry,
-                    &mut class_state,
-                    &mut alloc,
-                );
-                class_states.set(index, class_state);
-                allocs.set(index, alloc);
-            }
-            // Rank 5 - reserve re-fund to the required amount.
-            let refund = config.required_reserve.min(ada);
-            if refund > 0 {
-                reserve = refund;
-                ada -= refund;
-                ReserveRefunded { amount: refund, balance: reserve }.publish(&e);
-            }
-            // Rank 6 - sequential principal A -> B -> C.
-            for index in 0..count {
-                let terms = config.classes.get(index).unwrap();
-                let mut class_state = class_states.get(index).unwrap();
-                let mut alloc = allocs.get(index).unwrap();
-                Self::pay_principal(
-                    &e,
-                    &config,
-                    period,
-                    index,
-                    terms.total_notes,
-                    &mut ada,
-                    &mut carry,
-                    &mut class_state,
-                    &mut alloc,
-                );
-                class_states.set(index, class_state);
-                allocs.set(index, alloc);
+            if step.due > 0 {
+                lines.push_back(RankLine(
+                    order.get(step.rank).unwrap().id,
+                    step.item,
+                    step.due,
+                    step.paid,
+                    step.alloc - step.paid,
+                ));
             }
         }
 
         // Hand the noteholder money - interest AND principal - to the paying
         // agent contract, then let it know the period's split.
-        let mut agent_total: i128 = 0;
+        let mut allocs: Vec<ClassAlloc> = Vec::new(&e);
         let mut paid_totals: Vec<i128> = Vec::new(&e);
-        for index in 0..count {
-            let alloc = allocs.get(index).unwrap();
+        let mut class_states: Vec<ClassState> = Vec::new(&e);
+        let mut agent_total: i128 = 0;
+        let mut outstanding_total: i128 = 0;
+        for index in 0..count as usize {
+            let alloc = ClassAlloc {
+                interest: outcome.interest[index],
+                principal: outcome.principal[index],
+                per_note_principal: outcome.per_note_principal[index],
+            };
             agent_total += alloc.interest + alloc.principal;
             paid_totals.push_back(alloc.interest + alloc.principal);
+            allocs.push_back(alloc);
+            outstanding_total += outcome.per_note[index];
+            class_states.push_back(ClassState {
+                per_note_outstanding: outcome.per_note[index],
+                shortfall: outcome.shortfall[index],
+            });
         }
         if agent_total > 0 {
             client.transfer(&this, &wiring.paying_agent, &agent_total);
@@ -762,43 +670,80 @@ impl AbsDeal {
             NoteTokenClient::new(&e, &wiring.note_tokens.get(index).unwrap()).roll_period(&now);
         }
 
-        // Rank 7 - residual to the Seller.
-        let mut outstanding_total: i128 = 0;
-        for index in 0..count {
-            outstanding_total += class_states.get(index).unwrap().per_note_outstanding;
-        }
-        let matured = outstanding_total == 0;
-        if matured {
-            // Wind-down sweep: the released (never re-funded) reserve is the
-            // subordinated-loan repayment; carry and residual go with it.
-            let sweep = ada + reserve + carry;
+        // The residual to the Seller.
+        let mut reserve = outcome.reserve;
+        let mut carry = outcome.carry;
+        let mut residual_out = outcome.residual;
+        let mut surplus: i128 = 0;
+        if outstanding_total == 0 {
+            // Wind-down sweep: the reserve is the subordinated-loan
+            // repayment; carry and residual go with it, and so does any
+            // surplus. The amounts owed stay. On a deficit, the sweep keeps
+            // its ledger value, the transfer fails and the balance check
+            // below stops the period.
+            let ledgers = outcome.residual + reserve + carry;
+            let sweep = ledgers.max(client.balance(&this) - owed_total);
+            residual_out = ledgers;
+            surplus = sweep - ledgers;
             reserve = 0;
             carry = 0;
-            ada = 0;
-            if sweep > 0 {
-                client.transfer(&this, &config.seller, &sweep);
+            if sweep > 0
+                && Self::pay_or_park(&e, &client, &config.seller, sweep, period, RANK_RESIDUAL, &mut owed_total)
+            {
                 ResidualPaid { seller: config.seller.clone(), amount: sweep }.publish(&e);
             }
             e.storage().instance().set(&DataKey::State, &State::Matured);
             Matured { period }.publish(&e);
-        } else if ada > 0 {
-            client.transfer(&this, &config.seller, &ada);
-            ResidualPaid { seller: config.seller.clone(), amount: ada }.publish(&e);
-            ada = 0;
+        } else if outcome.residual > 0
+            && Self::pay_or_park(&e, &client, &config.seller, outcome.residual, period, RANK_RESIDUAL, &mut owed_total)
+        {
+            ResidualPaid { seller: config.seller.clone(), amount: outcome.residual }.publish(&e);
         }
 
         e.storage().instance().set(&DataKey::ClassStates, &class_states);
         e.storage().instance().set(&DataKey::Reserve, &reserve);
         e.storage().instance().set(&DataKey::Carry, &carry);
+        e.storage().instance().set(&DataKey::OwedTotal, &owed_total);
         e.storage().instance().set(&DataKey::NextPeriod, &(period + 1));
         CarryUpdated { period, carry }.publish(&e);
 
-        // The invariant that makes the SPV auditable at a glance.
+        // The trigger flags of the period.
+        if !config.triggers.is_empty() {
+            let mut flags: Vec<bool> = Vec::new(&e);
+            for index in 0..config.triggers.len() {
+                flags.push_back(outcome.triggers[index as usize]);
+                if outcome.breached[index as usize] {
+                    TriggerBreached { id: config.triggers.get(index).unwrap().id, period }.publish(&e);
+                }
+            }
+            e.storage().instance().set(&DataKey::Triggers, &flags);
+        }
+
+        // The two rules that make the SPV auditable at a glance. A surplus
+        // is accepted; a deficit (a clawback) stops the period.
         let balance = client.balance(&this);
-        if balance != reserve + carry {
+        if balance < reserve + carry + owed_total {
             panic!("distribute balance invariant");
         }
-        let _ = ada;
+        let paid_out = fees_out + agent_total + residual_out;
+        if collections + reserve_in + carry_in != paid_out + reserve + carry {
+            panic!("distribute conservation");
+        }
+        RankLines { period, enforced, lines }.publish(&e);
+        PeriodSettled {
+            period,
+            collections,
+            reserve_in,
+            carry_in,
+            drawn: outcome.drawn,
+            paid_out,
+            reserve,
+            carry,
+            owed: owed_total,
+            balance,
+            surplus,
+        }
+        .publish(&e);
         Ok(paid_totals)
     }
 
@@ -814,12 +759,67 @@ impl AbsDeal {
         Ok(())
     }
 
+    /// Replace the servicer. Admin only. The admin cannot become the
+    /// servicer: the two roles stay separate.
     pub fn set_servicer(e: Env, servicer: Address) -> Result<(), DealError> {
         let mut config = Self::read_config(&e);
         config.admin.require_auth();
+        if servicer == config.admin {
+            return Err(DealError::RoleConflict);
+        }
         config.servicer = servicer;
         e.storage().instance().set(&DataKey::Config, &config);
         Ok(())
+    }
+
+    /// The recipient takes all its parked payouts (fees or residual that a
+    /// freeze of the recipient blocked). Any state.
+    pub fn claim_owed(e: Env, recipient: Address) -> Result<i128, DealError> {
+        recipient.require_auth();
+        let key = DataKey::Owed(recipient.clone());
+        let owed: i128 = e.storage().persistent().get(&key).unwrap_or(0);
+        if owed <= 0 {
+            return Err(DealError::NothingOwed);
+        }
+        e.storage().persistent().remove(&key);
+        let total: i128 = e.storage().instance().get(&DataKey::OwedTotal).unwrap_or(0);
+        e.storage().instance().set(&DataKey::OwedTotal, &(total - owed));
+        let config = Self::read_config(&e);
+        token::Client::new(&e, &config.asset).transfer(
+            &e.current_contract_address(),
+            &recipient,
+            &owed,
+        );
+        OwedClaimed { recipient, amount: owed }.publish(&e);
+        Ok(owed)
+    }
+
+    // --- Whitelist ----------------------------------------------------------
+
+    /// Add holders to the deal whitelist (`eligible` true) or remove them
+    /// (false). Admin only. Only a listed investor can subscribe, and a note
+    /// transfer needs a listed receiver. A removed holder keeps its notes
+    /// and is still paid.
+    pub fn set_eligible(e: Env, holders: Vec<Address>, eligible: bool) -> Result<(), DealError> {
+        let config = Self::read_config(&e);
+        config.admin.require_auth();
+        for holder in holders.iter() {
+            let key = DataKey::Eligible(holder.clone());
+            if eligible {
+                e.storage().persistent().set(&key, &true);
+                bump_persistent(&e, &key);
+            } else {
+                e.storage().persistent().remove(&key);
+            }
+            EligibilitySet { holder, eligible }.publish(&e);
+        }
+        Ok(())
+    }
+
+    /// True when `holder` is on the deal whitelist. The note tokens call it
+    /// before each transfer.
+    pub fn is_eligible(e: Env, holder: Address) -> bool {
+        Self::eligible(&e, &holder)
     }
 
     // --- Views --------------------------------------------------------------
@@ -918,7 +918,81 @@ impl AbsDeal {
         e.storage().instance().get(&DataKey::NextPeriod).unwrap_or(0)
     }
 
+    /// The open subscriptions (at most `MAX_SUBSCRIPTIONS`).
+    pub fn get_subscription_count(e: Env) -> u32 {
+        e.storage().instance().get(&DataKey::SubscriptionCount).unwrap_or(0)
+    }
+
+    /// The parked payouts owed to `recipient`.
+    pub fn get_owed(e: Env, recipient: Address) -> i128 {
+        e.storage().persistent().get(&DataKey::Owed(recipient)).unwrap_or(0)
+    }
+
+    /// The sum of all parked payouts not claimed yet.
+    pub fn get_owed_total(e: Env) -> i128 {
+        e.storage().instance().get(&DataKey::OwedTotal).unwrap_or(0)
+    }
+
+    /// The required reserve for the current balance of the notes. Before the
+    /// closing, it is the subordinated loan that the Seller must fund.
+    pub fn get_required_reserve(e: Env) -> i128 {
+        let config = Self::read_config(&e);
+        let enforced = Self::read_state(&e) == State::Enforced;
+        let mut notes_open: i128 = 0;
+        for outstanding in Self::get_outstanding(e.clone()).iter() {
+            notes_open += outstanding;
+        }
+        engine::required_reserve(&config, enforced, notes_open)
+    }
+
+    /// The stored trigger flags, in the order of the triggers of the
+    /// configuration. A flag is true when its trigger held at the last
+    /// payment date.
+    pub fn get_triggers(e: Env) -> Vec<bool> {
+        let config = Self::read_config(&e);
+        let stored = Self::read_triggers(&e);
+        let mut flags: Vec<bool> = Vec::new(&e);
+        for index in 0..config.triggers.len() {
+            flags.push_back(stored.get(index).unwrap_or(false));
+        }
+        flags
+    }
+
     // --- internals ----------------------------------------------------------
+
+    fn eligible(e: &Env, holder: &Address) -> bool {
+        let key = DataKey::Eligible(holder.clone());
+        if e.storage().persistent().has(&key) {
+            bump_persistent(e, &key);
+            true
+        } else {
+            false
+        }
+    }
+
+    /// Pay `amount` to `recipient`. When the transfer fails (for example the
+    /// asset issuer froze the recipient), park the amount as owed to the
+    /// recipient and return false.
+    fn pay_or_park(
+        e: &Env,
+        client: &token::Client,
+        recipient: &Address,
+        amount: i128,
+        period: u32,
+        rank: u32,
+        owed_total: &mut i128,
+    ) -> bool {
+        if let Ok(Ok(())) = client.try_transfer(&e.current_contract_address(), recipient, &amount) {
+            return true;
+        }
+        let key = DataKey::Owed(recipient.clone());
+        let owed: i128 = e.storage().persistent().get(&key).unwrap_or(0);
+        e.storage().persistent().set(&key, &(owed + amount));
+        bump_persistent(e, &key);
+        *owed_total += amount;
+        PayoutParked { recipient: recipient.clone(), period, rank, amount }.publish(e);
+        false
+    }
 
     fn read_config(e: &Env) -> DealConfig {
         e.storage().instance().get(&DataKey::Config).unwrap()
@@ -939,123 +1013,58 @@ impl AbsDeal {
         Ok(())
     }
 
-    /// The per-note rounding primitive: floor the per-note amount to
-    /// `round_unit`, pay it times the note count, carry the dust.
+    #[cfg(test)]
     fn round_per_note(entitlement: i128, notes: i128, round_unit: i128) -> (i128, i128) {
-        let per_note = entitlement / notes / round_unit * round_unit;
-        let paid = per_note * notes;
-        (paid, entitlement - paid)
+        engine::round_per_note(entitlement, notes, round_unit)
     }
 
-    #[allow(clippy::too_many_arguments)]
-    fn pay_interest(
-        e: &Env,
-        config: &DealConfig,
-        period: u32,
-        class: u32,
-        due: i128,
-        notes: i128,
-        ada: &mut i128,
-        carry: &mut i128,
-        class_state: &mut ClassState,
-        alloc: &mut ClassAlloc,
-    ) {
-        let entitlement = due.min(*ada);
-        let (paid, dust) = Self::round_per_note(entitlement, notes, config.round_unit);
-        class_state.shortfall = due - entitlement;
-        *carry += dust;
-        *ada -= entitlement;
-        alloc.interest = paid;
-        if due > 0 {
-            InterestPaid {
-                class,
-                period,
-                due,
-                paid,
-                shortfall: class_state.shortfall,
-                dust,
-            }
-            .publish(e);
-        }
+    fn read_triggers(e: &Env) -> Vec<bool> {
+        e.storage().instance().get(&DataKey::Triggers).unwrap_or(Vec::new(e))
     }
 
-    #[allow(clippy::too_many_arguments)]
-    fn pay_principal(
-        e: &Env,
-        config: &DealConfig,
-        period: u32,
-        class: u32,
-        notes: i128,
-        ada: &mut i128,
-        carry: &mut i128,
-        class_state: &mut ClassState,
-        alloc: &mut ClassAlloc,
-    ) {
-        let outstanding = class_state.per_note_outstanding * notes;
-        let entitlement = outstanding.min(*ada);
-        if entitlement <= 0 {
-            return;
+    /// The fixing of the rate oracle, in rate units. A missing fixing or a
+    /// fixing older than `oracle_max_staleness_secs` stops the payment date.
+    fn read_fixing(e: &Env, config: &DealConfig) -> Result<i128, DealError> {
+        let oracle = RateOracleClient::new(e, &config.oracle);
+        let fixing = oracle.lastprice().ok_or(DealError::RateUnavailable)?;
+        let now = e.ledger().timestamp();
+        if now.saturating_sub(fixing.timestamp) > config.oracle_max_staleness_secs {
+            return Err(DealError::RateStale);
         }
-        let (paid, dust) = Self::round_per_note(entitlement, notes, config.round_unit);
-        let per_note = paid / notes;
-        class_state.per_note_outstanding -= per_note;
-        *carry += dust;
-        *ada -= entitlement;
-        alloc.principal = paid;
-        alloc.per_note_principal = per_note;
-        if paid > 0 {
-            PrincipalPaid {
-                class,
-                period,
-                paid,
-                per_note,
-                outstanding_after: class_state.per_note_outstanding * notes,
-            }
-            .publish(e);
-            FactorUpdated {
-                class,
-                period,
-                factor: class_state
-                    .per_note_outstanding
-                    .saturating_mul(FACTOR_SCALE)
-                    / config.note_denomination,
-                per_note_outstanding: class_state.per_note_outstanding,
-            }
-            .publish(e);
-        }
+        Ok(fixing.price)
     }
 
-    /// Period interest on an outstanding nominal, actual/360. Floating legs
-    /// read the oracle (staleness-checked) and floor the all-in at 0%.
-    fn period_interest(
-        e: &Env,
-        config: &DealConfig,
-        nominal: i128,
-        rate: &RateSpec,
-    ) -> Result<i128, DealError> {
-        let annual_rate = match rate {
-            RateSpec::Fixed(rate_units) => *rate_units,
-            RateSpec::Floating(spread_units) => {
-                let oracle = RateOracleClient::new(e, &config.oracle);
-                let fixing = oracle.lastprice().ok_or(DealError::RateUnavailable)?;
-                let now = e.ledger().timestamp();
-                if now.saturating_sub(fixing.timestamp) > config.oracle_max_staleness_secs {
-                    return Err(DealError::RateStale);
-                }
-                // The prospectus 0% floor - Class A only, applied to the all-in.
-                (fixing.price + spread_units).max(0)
-            }
-        };
-        if annual_rate <= 0 || nominal <= 0 {
-            return Ok(0);
+    /// The role that publishes the reference rate is separate from the two
+    /// roles of the deal. A deal with a floating class asks its oracle for
+    /// the reporter. It refuses a reporter that is the admin or the
+    /// servicer, and an oracle that does not name its reporter. A deal with
+    /// fixed rates only does not read the oracle.
+    fn require_separate_reporter(e: &Env, config: &DealConfig) -> Result<(), DealError> {
+        if !engine::has_floating_class(config) {
+            return Ok(());
         }
-        Ok(nominal
-            .saturating_mul(annual_rate)
-            .saturating_mul(config.days_in_period as i128)
-            / DAY_COUNT_BASE
-            / RATE_SCALE)
+        match RateOracleClient::new(e, &config.oracle).try_get_reporter() {
+            Ok(Ok(reporter)) if reporter != config.admin && reporter != config.servicer => Ok(()),
+            _ => Err(DealError::RoleConflict),
+        }
     }
 }
 
 #[cfg(test)]
+mod fixture;
+#[cfg(test)]
+mod reference;
+#[cfg(test)]
 mod test;
+#[cfg(test)]
+mod test_d1;
+#[cfg(test)]
+mod test_d2;
+#[cfg(test)]
+mod test_roles;
+#[cfg(test)]
+mod test_settle;
+#[cfg(test)]
+mod test_validate;
+#[cfg(test)]
+mod test_vectors;

@@ -66,6 +66,38 @@
     ],
     [
       [
+        "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4",
+        {
+          "function": {
+            "contract_fn": {
+              "contract_address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARQG5",
+              "function_name": "set_eligible",
+              "args": [
+                {
+                  "vec": [
+                    {
+                      "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2ZMN"
+                    },
+                    {
+                      "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4BV5"
+                    },
+                    {
+                      "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA6J5N"
+                    }
+                  ]
+                },
+                {
+                  "bool": true
+                }
+              ]
+            }
+          },
+          "sub_invocations": []
+        }
+      ]
+    ],
+    [
+      [
         "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
         {
           "function": {
@@ -433,26 +465,6 @@
               "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
               "key": {
                 "ledger_key_nonce": {
-                  "nonce": "1033654523790656264"
-                }
-              },
-              "durability": "temporary",
-              "val": "void"
-            }
-          },
-          "ext": "v0"
-        },
-        "live_until": 6311999
-      },
-      {
-        "entry": {
-          "last_modified_ledger_seq": 0,
-          "data": {
-            "contract_data": {
-              "ext": "v0",
-              "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
-              "key": {
-                "ledger_key_nonce": {
                   "nonce": "2032731177588607455"
                 }
               },
@@ -494,6 +506,26 @@
               "key": {
                 "ledger_key_nonce": {
                   "nonce": "4837995959683129791"
+                }
+              },
+              "durability": "temporary",
+              "val": "void"
+            }
+          },
+          "ext": "v0"
+        },
+        "live_until": 6311999
+      },
+      {
+        "entry": {
+          "last_modified_ledger_seq": 0,
+          "data": {
+            "contract_data": {
+              "ext": "v0",
+              "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAD2KM",
+              "key": {
+                "ledger_key_nonce": {
+                  "nonce": "8370022561469687789"
                 }
               },
               "durability": "temporary",
@@ -562,7 +594,27 @@
               "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4",
               "key": {
                 "ledger_key_nonce": {
-                  "nonce": "115220454072064130"
+                  "nonce": "1033654523790656264"
+                }
+              },
+              "durability": "temporary",
+              "val": "void"
+            }
+          },
+          "ext": "v0"
+        },
+        "live_until": 6311999
+      },
+      {
+        "entry": {
+          "last_modified_ledger_seq": 0,
+          "data": {
+            "contract_data": {
+              "ext": "v0",
+              "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAITA4",
+              "key": {
+                "ledger_key_nonce": {
+                  "nonce": "3126073502131104533"
                 }
               },
               "durability": "temporary",
@@ -602,7 +654,7 @@
               "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM",
               "key": {
                 "ledger_key_nonce": {
-                  "nonce": "3126073502131104533"
+                  "nonce": "1301173170172112462"
                 }
               },
               "durability": "temporary",
@@ -622,7 +674,7 @@
               "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAMDR4",
               "key": {
                 "ledger_key_nonce": {
-                  "nonce": "1194852393571756375"
+                  "nonce": "115220454072064130"
                 }
               },
               "durability": "temporary",
@@ -632,6 +684,87 @@
           "ext": "v0"
         },
         "live_until": 6311999
+      },
+      {
+        "entry": {
+          "last_modified_ledger_seq": 0,
+          "data": {
+            "contract_data": {
+              "ext": "v0",
+              "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARQG5",
+              "key": {
+                "vec": [
+                  {
+                    "symbol": "Eligible"
+                  },
+                  {
+                    "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2ZMN"
+                  }
+                ]
+              },
+              "durability": "persistent",
+              "val": {
+                "bool": true
+              }
+            }
+          },
+          "ext": "v0"
+        },
+        "live_until": 518400
+      },
+      {
+        "entry": {
+          "last_modified_ledger_seq": 0,
+          "data": {
+            "contract_data": {
+              "ext": "v0",
+              "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARQG5",
+              "key": {
+                "vec": [
+                  {
+                    "symbol": "Eligible"
+                  },
+                  {
+                    "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4BV5"
+                  }
+                ]
+              },
+              "durability": "persistent",
+              "val": {
+                "bool": true
+              }
+            }
+          },
+          "ext": "v0"
+        },
+        "live_until": 518400
+      },
+      {
+        "entry": {
+          "last_modified_ledger_seq": 0,
+          "data": {
+            "contract_data": {
+              "ext": "v0",
+              "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAARQG5",
+              "key": {
+                "vec": [
+                  {
+                    "symbol": "Eligible"
+                  },
+                  {
+                    "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA6J5N"
+                  }
+                ]
+              },
+              "durability": "persistent",
+              "val": {
+                "bool": true
+              }
+            }
+          },
+          "ext": "v0"
+        },
+        "live_until": 518400
       },
       {
         "entry": {
@@ -952,6 +1085,20 @@
                                   "map": [
                                     {
                                       "key": {
+                                        "symbol": "floor"
+                                      },
+                                      "val": {
+                                        "i128": "0"
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "index_floor"
+                                      },
+                                      "val": "void"
+                                    },
+                                    {
+                                      "key": {
                                         "symbol": "rate"
                                       },
                                       "val": {
@@ -979,6 +1126,18 @@
                                   "map": [
                                     {
                                       "key": {
+                                        "symbol": "floor"
+                                      },
+                                      "val": "void"
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "index_floor"
+                                      },
+                                      "val": "void"
+                                    },
+                                    {
+                                      "key": {
                                         "symbol": "rate"
                                       },
                                       "val": {
@@ -1004,6 +1163,18 @@
                                 },
                                 {
                                   "map": [
+                                    {
+                                      "key": {
+                                        "symbol": "floor"
+                                      },
+                                      "val": "void"
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "index_floor"
+                                      },
+                                      "val": "void"
+                                    },
                                     {
                                       "key": {
                                         "symbol": "rate"
@@ -1042,18 +1213,757 @@
                           },
                           {
                             "key": {
-                              "symbol": "fees_per_period"
+                              "symbol": "enforced"
                             },
                             "val": {
-                              "i128": "50"
+                              "vec": [
+                                {
+                                  "map": [
+                                    {
+                                      "key": {
+                                        "symbol": "alloc"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Sequential"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "id"
+                                      },
+                                      "val": {
+                                        "symbol": "fees"
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "items"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "vec": [
+                                              {
+                                                "symbol": "Fee"
+                                              },
+                                              {
+                                                "u32": 0
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "when"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Always"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "map": [
+                                    {
+                                      "key": {
+                                        "symbol": "alloc"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Sequential"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "id"
+                                      },
+                                      "val": {
+                                        "symbol": "acc_a"
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "items"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "vec": [
+                                              {
+                                                "symbol": "Interest"
+                                              },
+                                              {
+                                                "u32": 0
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "vec": [
+                                              {
+                                                "symbol": "Principal"
+                                              },
+                                              {
+                                                "u32": 0
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "when"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Always"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "map": [
+                                    {
+                                      "key": {
+                                        "symbol": "alloc"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Sequential"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "id"
+                                      },
+                                      "val": {
+                                        "symbol": "acc_b"
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "items"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "vec": [
+                                              {
+                                                "symbol": "Interest"
+                                              },
+                                              {
+                                                "u32": 1
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "vec": [
+                                              {
+                                                "symbol": "Principal"
+                                              },
+                                              {
+                                                "u32": 1
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "when"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Always"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "map": [
+                                    {
+                                      "key": {
+                                        "symbol": "alloc"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Sequential"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "id"
+                                      },
+                                      "val": {
+                                        "symbol": "acc_c"
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "items"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "vec": [
+                                              {
+                                                "symbol": "Interest"
+                                              },
+                                              {
+                                                "u32": 2
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "vec": [
+                                              {
+                                                "symbol": "Principal"
+                                              },
+                                              {
+                                                "u32": 2
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "when"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Always"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "map": [
+                                    {
+                                      "key": {
+                                        "symbol": "alloc"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Sequential"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "id"
+                                      },
+                                      "val": {
+                                        "symbol": "residual"
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "items"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "vec": [
+                                              {
+                                                "symbol": "Residual"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "when"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Always"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
                             }
                           },
                           {
                             "key": {
-                              "symbol": "fees_recipient"
+                              "symbol": "fees"
                             },
                             "val": {
-                              "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOLZM"
+                              "vec": [
+                                {
+                                  "map": [
+                                    {
+                                      "key": {
+                                        "symbol": "amount"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Fixed"
+                                          },
+                                          {
+                                            "i128": "50"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "recipient"
+                                      },
+                                      "val": {
+                                        "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAOLZM"
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
+                            }
+                          },
+                          {
+                            "key": {
+                              "symbol": "normal"
+                            },
+                            "val": {
+                              "vec": [
+                                {
+                                  "map": [
+                                    {
+                                      "key": {
+                                        "symbol": "alloc"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Sequential"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "id"
+                                      },
+                                      "val": {
+                                        "symbol": "fees"
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "items"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "vec": [
+                                              {
+                                                "symbol": "Fee"
+                                              },
+                                              {
+                                                "u32": 0
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "when"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Always"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "map": [
+                                    {
+                                      "key": {
+                                        "symbol": "alloc"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Sequential"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "id"
+                                      },
+                                      "val": {
+                                        "symbol": "int_a"
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "items"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "vec": [
+                                              {
+                                                "symbol": "Interest"
+                                              },
+                                              {
+                                                "u32": 0
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "when"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Always"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "map": [
+                                    {
+                                      "key": {
+                                        "symbol": "alloc"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Sequential"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "id"
+                                      },
+                                      "val": {
+                                        "symbol": "int_b"
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "items"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "vec": [
+                                              {
+                                                "symbol": "Interest"
+                                              },
+                                              {
+                                                "u32": 1
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "when"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Always"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "map": [
+                                    {
+                                      "key": {
+                                        "symbol": "alloc"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Sequential"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "id"
+                                      },
+                                      "val": {
+                                        "symbol": "int_c"
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "items"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "vec": [
+                                              {
+                                                "symbol": "Interest"
+                                              },
+                                              {
+                                                "u32": 2
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "when"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Always"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "map": [
+                                    {
+                                      "key": {
+                                        "symbol": "alloc"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Sequential"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "id"
+                                      },
+                                      "val": {
+                                        "symbol": "reserve"
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "items"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "vec": [
+                                              {
+                                                "symbol": "ReserveRefill"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "when"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Always"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "map": [
+                                    {
+                                      "key": {
+                                        "symbol": "alloc"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Sequential"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "id"
+                                      },
+                                      "val": {
+                                        "symbol": "principal"
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "items"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "vec": [
+                                              {
+                                                "symbol": "Principal"
+                                              },
+                                              {
+                                                "u32": 0
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "vec": [
+                                              {
+                                                "symbol": "Principal"
+                                              },
+                                              {
+                                                "u32": 1
+                                              }
+                                            ]
+                                          },
+                                          {
+                                            "vec": [
+                                              {
+                                                "symbol": "Principal"
+                                              },
+                                              {
+                                                "u32": 2
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "when"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Always"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                },
+                                {
+                                  "map": [
+                                    {
+                                      "key": {
+                                        "symbol": "alloc"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Sequential"
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "id"
+                                      },
+                                      "val": {
+                                        "symbol": "residual"
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "items"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "vec": [
+                                              {
+                                                "symbol": "Residual"
+                                              }
+                                            ]
+                                          }
+                                        ]
+                                      }
+                                    },
+                                    {
+                                      "key": {
+                                        "symbol": "when"
+                                      },
+                                      "val": {
+                                        "vec": [
+                                          {
+                                            "symbol": "Always"
+                                          }
+                                        ]
+                                      }
+                                    }
+                                  ]
+                                }
+                              ]
                             }
                           },
                           {
@@ -1082,10 +1992,46 @@
                           },
                           {
                             "key": {
-                              "symbol": "required_reserve"
+                              "symbol": "reserve"
                             },
                             "val": {
-                              "i128": "5000"
+                              "map": [
+                                {
+                                  "key": {
+                                    "symbol": "draw_ranks"
+                                  },
+                                  "val": {
+                                    "vec": []
+                                  }
+                                },
+                                {
+                                  "key": {
+                                    "symbol": "release"
+                                  },
+                                  "val": {
+                                    "vec": [
+                                      {
+                                        "symbol": "Full"
+                                      }
+                                    ]
+                                  }
+                                },
+                                {
+                                  "key": {
+                                    "symbol": "required"
+                                  },
+                                  "val": {
+                                    "vec": [
+                                      {
+                                        "symbol": "Fixed"
+                                      },
+                                      {
+                                        "i128": "5000"
+                                      }
+                                    ]
+                                  }
+                                }
+                              ]
                             }
                           },
                           {
@@ -1111,6 +2057,14 @@
                             "val": {
                               "address": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAK3IM"
                             }
+                          },
+                          {
+                            "key": {
+                              "symbol": "triggers"
+                            },
+                            "val": {
+                              "vec": []
+                            }
                           }
                         ]
                       }
@@ -1125,6 +2079,18 @@
                       },
                       "val": {
                         "u32": 2
+                      }
+                    },
+                    {
+                      "key": {
+                        "vec": [
+                          {
+                            "symbol": "OwedTotal"
+                          }
+                        ]
+                      },
+                      "val": {
+                        "i128": "0"
                       }
                     },
                     {
@@ -1187,6 +2153,18 @@
                             "i128": "450"
                           }
                         ]
+                      }
+                    },
+                    {
+                      "key": {
+                        "vec": [
+                          {
+                            "symbol": "SubscriptionCount"
+                          }
+                        ]
+                      },
+                      "val": {
+                        "u32": 3
                       }
                     },
                     {
@@ -2235,7 +3213,7 @@
               "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA2ZMN",
               "key": {
                 "ledger_key_nonce": {
-                  "nonce": "8370022561469687789"
+                  "nonce": "6277191135259896685"
                 }
               },
               "durability": "temporary",
@@ -2255,7 +3233,7 @@
               "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA4BV5",
               "key": {
                 "ledger_key_nonce": {
-                  "nonce": "6277191135259896685"
+                  "nonce": "5806905060045992000"
                 }
               },
               "durability": "temporary",
@@ -2275,7 +3253,7 @@
               "contract": "CAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA6J5N",
               "key": {
                 "ledger_key_nonce": {
-                  "nonce": "5806905060045992000"
+                  "nonce": "1194852393571756375"
                 }
               },
               "durability": "temporary",
