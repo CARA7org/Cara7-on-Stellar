@@ -1,6 +1,9 @@
 import { nativeToScVal } from '@stellar/stellar-sdk';
 import { environment } from '../config.js';
-import { invokeSigned, readContract } from '../waterfall/soroban.js';
+import { isMainModule, runCli, scriptArguments } from '../custody/cli.js';
+import { defaultOperatorServices } from '../custody/services.js';
+import { runAndWait } from '../custody/wait.js';
+import { readContract } from '../waterfall/soroban.js';
 
 /**
  * EURIBOR 1M relay - the off-chain leg of the Data Spec Book's rate oracle.
@@ -12,6 +15,12 @@ import { invokeSigned, readContract } from '../waterfall/soroban.js';
  * to the RateOracle contract, which enforces staleness and deviation checks
  * on-chain. Run with `pnpm oracle:push` (cron-able; the prospectus cadence
  * is the Interest Determination Date, 2 business days before each period).
+ * `pnpm oracle:push 2.209` pushes this value in place of the fixing of the
+ * source. The script pushes to RATE_ORACLE_CONTRACT_ID: set it to the oracle
+ * of the deal.
+ *
+ * The reporter wallet in Dfns signs `set_rate`. Its policy asks a person to
+ * approve, so the script waits for the decision in app.dfns.io.
  */
 interface Fixing {
   ratePct: number;
@@ -33,7 +42,7 @@ async function fetchEuribor1M(): Promise<Fixing> {
 }
 
 async function main(): Promise<void> {
-  const override = process.argv[2];
+  const [override] = scriptArguments();
   const fixing: Fixing = override
     ? { ratePct: Number(override), date: 'manual override' }
     : await fetchEuribor1M();
@@ -46,11 +55,21 @@ async function main(): Promise<void> {
     `[oracle-relay] EURIBOR 1M = ${fixing.ratePct}% (${fixing.date}) -> ${units} units`,
   );
 
-  const outcome = (await invokeSigned(environment.RATE_ORACLE_CONTRACT_ID, 'set_rate', [
-    nativeToScVal(BigInt(units), { type: 'i128' }),
-    nativeToScVal(timestamp, { type: 'u64' }),
-  ])) as { hash: string };
-  console.log(`[oracle-relay] pushed (tx ${outcome.hash.slice(0, 8)})`);
+  const { operator } = defaultOperatorServices();
+  const outcome = await runAndWait(operator, {
+    kind: 'set-rate',
+    role: 'reporter',
+    call: {
+      type: 'contract',
+      contractId: environment.RATE_ORACLE_CONTRACT_ID,
+      method: 'set_rate',
+      args: [
+        nativeToScVal(BigInt(units), { type: 'i128' }),
+        nativeToScVal(timestamp, { type: 'u64' }),
+      ],
+    },
+  });
+  console.log(`[oracle-relay] pushed (tx ${outcome.hash})`);
 
   const last = (await readContract(environment.RATE_ORACLE_CONTRACT_ID, 'lastprice')) as {
     price: bigint;
@@ -59,4 +78,4 @@ async function main(): Promise<void> {
   console.log(`[oracle-relay] on-chain lastprice: ${last?.price} units`);
 }
 
-await main();
+if (isMainModule(import.meta.url)) runCli(main);

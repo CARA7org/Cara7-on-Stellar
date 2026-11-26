@@ -1,0 +1,27 @@
+{
+  "version": 1,
+  "network": "testnet",
+  "name": "Bavarian Sky French Auto Leases 5 (D3 custody demo)",
+  "series": "D3",
+  "asset": "CBEO2RDQKBM7S3TYOYKBWAJEC6WMYPCW6JJWX47UCLFMUJI2EUZPJOXW",
+  "denominationCurrency": "EUR",
+  "denomination": "100",
+  "roundUnit": "0.01",
+  "reserve": "100",
+  "feesPerPeriod": "5",
+  "daysInPeriod": 30,
+  "oracle": "<FILL: the rate oracle of the custody demo, with the Dfns reporter wallet as reporter (C...)>",
+  "oracleMaxStalenessSecs": 604800,
+  "seller": "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI",
+  "feesRecipient": "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI",
+  "classes": [
+    { "letter": "A", "label": "SENIOR", "rate": { "kind": "floating", "spreadPct": "0.60" }, "notes": 10 },
+    { "letter": "B", "label": "MEZZANINE", "rate": { "kind": "fixed", "ratePct": "1.00" }, "notes": 5 },
+    { "letter": "C", "label": "JUNIOR", "rate": { "kind": "fixed", "ratePct": "1.50" }, "notes": 3 }
+  ],
+  "eligible": [
+    "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI",
+    "<FILL: the Dfns policy wallet of the investor (G...)>",
+    "<FILL: the browser wallet of the self-custody step (G...)>"
+  ]
+}

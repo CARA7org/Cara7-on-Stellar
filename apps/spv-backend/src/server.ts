@@ -11,8 +11,16 @@ import { tokensRoutes } from './tokens/routes.js';
 import { waterfallRoutes } from './waterfall/routes.js';
 import { reportingRoutes } from './reporting/dashboard.js';
 import { edwRoutes } from './reporting/edw-export.js';
+import { operationRoutes } from './custody/routes.js';
+import { defaultOperatorServices, type OperatorServices } from './custody/services.js';
 
-export async function buildServer(): Promise<FastifyInstance> {
+/**
+ * `services` holds the custody port and the network port. Production uses
+ * Dfns and Soroban RPC. Tests give fakes, so they run offline.
+ */
+export async function buildServer(
+  services: OperatorServices = defaultOperatorServices(),
+): Promise<FastifyInstance> {
   const app = Fastify({ logger: false });
   // The clickable Data Spec Book map is the home page.
   await app.register(fastifyStatic, { root: mapDirectory });
@@ -20,7 +28,8 @@ export async function buildServer(): Promise<FastifyInstance> {
   await app.register(assetPoolRoutes);
   await app.register(ipfsRoutes);
   await app.register(tokensRoutes);
-  await app.register(waterfallRoutes);
+  await app.register(waterfallRoutes(services));
+  await app.register(operationRoutes(services.operator));
   await app.register(reportingRoutes);
   await app.register(edwRoutes);
   return app;

@@ -1,0 +1,71 @@
+{
+  "version": 2,
+  "network": "testnet",
+  "name": "Bavarian Sky French Auto Leases 5 (D2 demo, Circle EURC)",
+  "series": "D2",
+  "asset": "CCUUDM434BMZMYWYDITHFXHDMIVTGGD6T2I5UKNX5BSLXLW7HVR4MCGZ",
+  "denominationCurrency": "EUR",
+  "denomination": "10",
+  "roundUnit": "0.01",
+  "daysInPeriod": 90,
+  "oracle": "CAMRPVLUPYCMXAMDJXYSTSTUR3FC4JBDE3C7HOF2SMOQHK4KOQ4N2N5Z",
+  "oracleMaxStalenessSecs": 604800,
+  "seller": "<FILL: the seller account (G...)>",
+  "classes": [
+    { "letter": "A", "label": "SENIOR", "rate": { "kind": "floating", "spreadPct": "0.60", "floorPct": "0" }, "notes": 4 },
+    { "letter": "B", "label": "MEZZANINE", "rate": { "kind": "fixed", "ratePct": "1.50" }, "notes": 3 },
+    { "letter": "C", "label": "MEZZANINE", "rate": { "kind": "fixed", "ratePct": "2.50" }, "notes": 2 },
+    { "letter": "D", "label": "JUNIOR", "rate": { "kind": "fixed", "ratePct": "4.00" }, "notes": 1 }
+  ],
+  "eligible": ["<FILL: an investor account on the initial whitelist (G...), one entry for each investor>"],
+  "waterfall": {
+    "fees": [
+      { "recipient": "<FILL: the fees recipient account (G...)>", "amount": { "kind": "fixed", "amount": "0.10" } }
+    ],
+    "reserve": { "required": { "kind": "fixed", "amount": "5" }, "release": "full", "drawRanks": [] },
+    "triggers": [],
+    "normal": [
+      { "id": "fees", "alloc": "sequential", "items": [{ "kind": "fee", "index": 0 }] },
+      { "id": "int_a", "alloc": "sequential", "items": [{ "kind": "interest", "class": "A" }] },
+      { "id": "int_b", "alloc": "sequential", "items": [{ "kind": "interest", "class": "B" }] },
+      { "id": "int_c", "alloc": "sequential", "items": [{ "kind": "interest", "class": "C" }] },
+      { "id": "int_d", "alloc": "sequential", "items": [{ "kind": "interest", "class": "D" }] },
+      { "id": "reserve", "alloc": "sequential", "items": [{ "kind": "reserveRefill" }] },
+      {
+        "id": "principal",
+        "alloc": "sequential",
+        "items": [
+          { "kind": "principal", "class": "A" },
+          { "kind": "principal", "class": "B" },
+          { "kind": "principal", "class": "C" },
+          { "kind": "principal", "class": "D" }
+        ]
+      },
+      { "id": "residual", "alloc": "sequential", "items": [{ "kind": "residual" }] }
+    ],
+    "enforced": [
+      { "id": "fees", "alloc": "sequential", "items": [{ "kind": "fee", "index": 0 }] },
+      {
+        "id": "acc_a",
+        "alloc": "sequential",
+        "items": [{ "kind": "interest", "class": "A" }, { "kind": "principal", "class": "A" }]
+      },
+      {
+        "id": "acc_b",
+        "alloc": "sequential",
+        "items": [{ "kind": "interest", "class": "B" }, { "kind": "principal", "class": "B" }]
+      },
+      {
+        "id": "acc_c",
+        "alloc": "sequential",
+        "items": [{ "kind": "interest", "class": "C" }, { "kind": "principal", "class": "C" }]
+      },
+      {
+        "id": "acc_d",
+        "alloc": "sequential",
+        "items": [{ "kind": "interest", "class": "D" }, { "kind": "principal", "class": "D" }]
+      },
+      { "id": "residual", "alloc": "sequential", "items": [{ "kind": "residual" }] }
+    ]
+  }
+}

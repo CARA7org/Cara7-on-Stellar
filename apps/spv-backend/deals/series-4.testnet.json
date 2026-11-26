@@ -1,0 +1,23 @@
+{
+  "version": 1,
+  "network": "testnet",
+  "name": "Bavarian Sky French Auto Leases 5 (Series 4)",
+  "series": "4",
+  "asset": "CBEO2RDQKBM7S3TYOYKBWAJEC6WMYPCW6JJWX47UCLFMUJI2EUZPJOXW",
+  "denominationCurrency": "EUR",
+  "denomination": "100",
+  "roundUnit": "0.01",
+  "reserve": "500",
+  "feesPerPeriod": "5",
+  "daysInPeriod": 30,
+  "oracle": "CAAOMPQADAW34FU4VUXDUHS6RDF6SVGCTK4S2T2YONIKNQA22IBYA72X",
+  "oracleMaxStalenessSecs": 604800,
+  "seller": "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI",
+  "feesRecipient": "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI",
+  "classes": [
+    { "letter": "A", "label": "SENIOR", "rate": { "kind": "floating", "spreadPct": "0.60" }, "notes": 100 },
+    { "letter": "B", "label": "MEZZANINE", "rate": { "kind": "fixed", "ratePct": "1.00" }, "notes": 70 },
+    { "letter": "C", "label": "JUNIOR", "rate": { "kind": "fixed", "ratePct": "1.50" }, "notes": 45 }
+  ],
+  "eligible": []
+}

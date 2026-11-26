@@ -1,0 +1,77 @@
+{
+  "version": 2,
+  "network": "testnet",
+  "name": "CARA7 demo deal (D1, pro rata principal)",
+  "series": "D1P",
+  "asset": "CBEO2RDQKBM7S3TYOYKBWAJEC6WMYPCW6JJWX47UCLFMUJI2EUZPJOXW",
+  "denominationCurrency": "EUR",
+  "denomination": "100",
+  "roundUnit": "0.01",
+  "daysInPeriod": 30,
+  "oracle": "CAMRPVLUPYCMXAMDJXYSTSTUR3FC4JBDE3C7HOF2SMOQHK4KOQ4N2N5Z",
+  "oracleMaxStalenessSecs": 604800,
+  "seller": "<FILL: the seller account (G...)>",
+  "classes": [
+    { "letter": "A", "label": "SENIOR", "rate": { "kind": "floating", "spreadPct": "0.70", "indexFloorPct": "0" }, "notes": 6 },
+    { "letter": "B", "label": "MEZZANINE", "rate": { "kind": "fixed", "ratePct": "2.00" }, "notes": 3 },
+    { "letter": "C", "label": "JUNIOR", "rate": { "kind": "fixed", "ratePct": "5.00" }, "notes": 1 }
+  ],
+  "eligible": ["<FILL: an investor account on the initial whitelist (G...), one entry for each investor>"],
+  "waterfall": {
+    "fees": [
+      { "recipient": "<FILL: the recipient of the fixed fee (G...)>", "amount": { "kind": "fixed", "amount": "1" } },
+      { "recipient": "<FILL: the recipient of the servicing fee (G...)>", "amount": { "kind": "perAnnum", "ratePct": "1.00" } }
+    ],
+    "reserve": { "required": { "kind": "pctOfNotes", "pct": "5", "floor": "20" }, "release": "onNeed", "drawRanks": ["fees", "int_a", "int_b"] },
+    "triggers": [
+      { "id": "seq", "metric": { "kind": "notesFactor" }, "op": "lt", "threshold": "50", "latch": true }
+    ],
+    "normal": [
+      { "id": "fees", "alloc": "sequential", "items": [{ "kind": "fee", "index": 0 }, { "kind": "fee", "index": 1 }] },
+      { "id": "int_a", "alloc": "sequential", "items": [{ "kind": "interest", "class": "A" }] },
+      { "id": "int_b", "alloc": "sequential", "items": [{ "kind": "interest", "class": "B" }] },
+      { "id": "reserve", "alloc": "sequential", "items": [{ "kind": "reserveRefill" }] },
+      { "id": "int_c", "alloc": "sequential", "items": [{ "kind": "interest", "class": "C" }] },
+      {
+        "id": "prin_pr",
+        "when": { "kind": "notTrigger", "id": "seq" },
+        "alloc": "pariPassu",
+        "items": [
+          { "kind": "principal", "class": "A" },
+          { "kind": "principal", "class": "B" },
+          { "kind": "principal", "class": "C" }
+        ]
+      },
+      {
+        "id": "prin_seq",
+        "when": { "kind": "trigger", "id": "seq" },
+        "alloc": "sequential",
+        "items": [
+          { "kind": "principal", "class": "A" },
+          { "kind": "principal", "class": "B" },
+          { "kind": "principal", "class": "C" }
+        ]
+      },
+      { "id": "residual", "alloc": "sequential", "items": [{ "kind": "residual" }] }
+    ],
+    "enforced": [
+      { "id": "fees", "alloc": "sequential", "items": [{ "kind": "fee", "index": 0 }, { "kind": "fee", "index": 1 }] },
+      {
+        "id": "acc_a",
+        "alloc": "sequential",
+        "items": [{ "kind": "interest", "class": "A" }, { "kind": "principal", "class": "A" }]
+      },
+      {
+        "id": "acc_b",
+        "alloc": "sequential",
+        "items": [{ "kind": "interest", "class": "B" }, { "kind": "principal", "class": "B" }]
+      },
+      {
+        "id": "acc_c",
+        "alloc": "sequential",
+        "items": [{ "kind": "interest", "class": "C" }, { "kind": "principal", "class": "C" }]
+      },
+      { "id": "residual", "alloc": "sequential", "items": [{ "kind": "residual" }] }
+    ]
+  }
+}

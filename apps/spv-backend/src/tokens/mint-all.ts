@@ -10,7 +10,9 @@ import {
   poolTokenMetadata,
 } from './metadata.js';
 import { putMetadata } from '../ipfs/store.js';
-import { invokeSigned, addressArg, servicerPublicKey } from '../waterfall/soroban.js';
+import { addressArg } from '../waterfall/soroban.js';
+import { defaultOperatorServices } from '../custody/services.js';
+import { runAndWait } from '../custody/wait.js';
 import { saveRegistry, type MintedToken, type NftRegistry } from './registry.js';
 import { environment } from '../config.js';
 
@@ -18,6 +20,9 @@ import { environment } from '../config.js';
  * Mints the Data Spec Book's 61 tokens: 20 Auto + 20 Battery + 20 Obligor + 1
  * Pool. Metadata goes to the content-addressed store first (real CIDv1), then
  * mint_batch() writes ipfs://CID URIs on-chain in chunks - 7 transactions total.
+ *
+ * The admin wallet in Dfns signs each mint_batch and holds the tokens. Its
+ * policy asks a person to approve, so the script waits for each decision.
  */
 const BATCH_SIZE = 10;
 
@@ -38,20 +43,28 @@ function chunk<T>(items: T[], size: number): T[][] {
   return chunks;
 }
 
+const { operator } = defaultOperatorServices();
+
 async function mintBatches(
   tokenType: MintedToken['tokenType'],
   contractId: string,
   entries: { vin: string | null; cid: string }[],
 ): Promise<MintedToken[]> {
-  const holder = servicerPublicKey();
+  const holder = (await operator.resolve('admin')).address;
   const minted: MintedToken[] = [];
   for (const batch of chunk(entries, BATCH_SIZE)) {
     const uris = batch.map((entry) => `ipfs://${entry.cid}`);
     const urisArg = xdr.ScVal.scvVec(uris.map((uri) => xdr.ScVal.scvString(uri)));
-    const outcome = (await invokeSigned(contractId, 'mint_batch', [
-      addressArg(holder),
-      urisArg,
-    ])) as { hash: string; result: unknown };
+    const outcome = await runAndWait(operator, {
+      kind: 'mint',
+      role: 'admin',
+      call: {
+        type: 'contract',
+        contractId,
+        method: 'mint_batch',
+        args: [addressArg(holder), urisArg],
+      },
+    });
     const ids = (outcome.result as number[] | bigint[]).map(Number);
     ids.forEach((tokenId, index) => {
       const entry = batch[index];
@@ -109,7 +122,7 @@ async function main(): Promise<void> {
 
   const registry: NftRegistry = {
     network: environment.NETWORK_PASSPHRASE,
-    admin: servicerPublicKey(),
+    admin: (await operator.resolve('admin')).address,
     mintedAt: new Date().toISOString(),
     contracts,
     tokens,

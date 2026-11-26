@@ -16,9 +16,17 @@
     "check:map": "tsx scripts/check-map.ts",
     "mint": "tsx src/tokens/mint-all.ts",
     "oracle:push": "tsx src/oracle-relay/push-fixing.ts",
+    "deal:wire": "tsx src/custody/wire-deal.ts",
+    "deal:deploy": "tsx src/custody/deploy-deal.ts",
+    "deal:eligible": "tsx src/custody/eligible.ts",
+    "deal:evidence": "tsx src/evidence/cli.ts",
+    "custody:status": "tsx src/custody/status.ts",
+    "custody:trust": "tsx src/custody/trust.ts",
     "export-reports": "tsx scripts/export-agent-reports.ts"
   },
   "dependencies": {
+    "@dfns/sdk": "0.8.35",
+    "@dfns/sdk-keysigner": "0.8.35",
     "@fastify/static": "^10.1.2",
     "@modelcontextprotocol/sdk": "^1.30.0",
     "@stellar/stellar-sdk": "16.0.1",
