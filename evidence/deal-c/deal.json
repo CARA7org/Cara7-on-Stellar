@@ -1,0 +1,51 @@
+{
+  "version": 1,
+  "network": "testnet",
+  "name": "Bavarian Sky French Auto Leases 5 (D3 custody demo)",
+  "series": "D3",
+  "asset": "CBEO2RDQKBM7S3TYOYKBWAJEC6WMYPCW6JJWX47UCLFMUJI2EUZPJOXW",
+  "denominationCurrency": "EUR",
+  "denomination": "100",
+  "roundUnit": "0.01",
+  "reserve": "100",
+  "feesPerPeriod": "5",
+  "daysInPeriod": 30,
+  "oracle": "CATT7CLFJ5HMF62NCX3AQ644R47BKA37QCNO3JO2XGFJBP4XDI56O3F2",
+  "oracleMaxStalenessSecs": 604800,
+  "seller": "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI",
+  "feesRecipient": "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI",
+  "classes": [
+    {
+      "letter": "A",
+      "label": "SENIOR",
+      "rate": {
+        "kind": "floating",
+        "spreadPct": "0.60"
+      },
+      "notes": 10
+    },
+    {
+      "letter": "B",
+      "label": "MEZZANINE",
+      "rate": {
+        "kind": "fixed",
+        "ratePct": "1.00"
+      },
+      "notes": 5
+    },
+    {
+      "letter": "C",
+      "label": "JUNIOR",
+      "rate": {
+        "kind": "fixed",
+        "ratePct": "1.50"
+      },
+      "notes": 3
+    }
+  ],
+  "eligible": [
+    "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI",
+    "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV",
+    "GBYGTYZK2FWRJ7KTTWBMXIUMHZXO7GFM6KQ6C45Y3Q6W3ABTWBJ5KY7V"
+  ]
+}

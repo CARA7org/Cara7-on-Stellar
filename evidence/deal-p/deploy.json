@@ -1,0 +1,57 @@
+{
+  "configFile": "deal.json",
+  "name": "CARA7 demo deal (D1, pro rata principal)",
+  "network": "testnet",
+  "deal": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+  "notes": [
+    "CC65LFMB2EUBCKVURUYE7ELZOFTDDVUCC5NG4ZNKU332QPWQBDIGVHJO",
+    "CBKSDTYBZAQALDC2SLBYSN3ZTYMVJ24PPVKC5F42CKO2RDZKUOVNBDMT",
+    "CC3BTSPG4PDOXYNRGCVPY5AVQ6QTQQY2UP3SIIBTBPLQTZCN7FIWUVM7"
+  ],
+  "payingAgent": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+  "oracle": "CAMRPVLUPYCMXAMDJXYSTSTUR3FC4JBDE3C7HOF2SMOQHK4KOQ4N2N5Z",
+  "asset": "CBEO2RDQKBM7S3TYOYKBWAJEC6WMYPCW6JJWX47UCLFMUJI2EUZPJOXW",
+  "roles": {
+    "crank": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2",
+    "admin": "GC5FLOFIOEKU75I3L6GFJFPBY7AABHYH5SYO77G2H2SDWEIY5NZAYLDU",
+    "servicer": "GDKAUFUS6KNDECWWQM4UETOAPHZU2AEOSUYVWHLKBXC6IBXWSGIFYIO4",
+    "reporter": "GB6N5XUASLSGRGRYUFQZ5IHWCMGYVBJZYSZX7FDLOXCD6WYPC274G5QI"
+  },
+  "code": {
+    "deal": "5a5fedeaff280170ea28fb618a2587d992012e2fab4cab02504b7e50eaaead7a",
+    "note": "4498e0661fa55f2ee71899fe4bba88a49b4d2f195ee390905e1e01cf544201a2",
+    "agent": "667fc2fdea335f73a1e2a8a141eb4ba1525a4202124073cec059c45a5d8c1603"
+  },
+  "initialReserve": "500000000",
+  "registryDealId": 40,
+  "transactions": [
+    {
+      "kind": "deploy-deal",
+      "hash": "8ffc2996aa6e88765115c8fe56cb0950c0b57f08b26e3ca71aa772d9f1b2adcc"
+    },
+    {
+      "kind": "deploy-note-A",
+      "hash": "62f6285e6aae62281fca2176e13fe2f82980ea0dc01c923b1004e5a32d274eec"
+    },
+    {
+      "kind": "deploy-note-B",
+      "hash": "ad32b7030558721b65d26fd3ab591217c571868aa5aa3165fe2d7539879b2bf3"
+    },
+    {
+      "kind": "deploy-note-C",
+      "hash": "7ee7646e32d94bb08b091b4597ad4c343f62e51917b136ba6271620e79f4aaf4"
+    },
+    {
+      "kind": "deploy-paying-agent",
+      "hash": "a66b4a8198dba2b6da52296fb245234f1fcd8a6c8fd4e7142b4c8096e8f511c0"
+    },
+    {
+      "kind": "set-wiring",
+      "hash": "0794160d173f7b357e949cc2f98dd6eea536a5cbef4f21781217eb1cbef2e780"
+    },
+    {
+      "kind": "set-eligible",
+      "hash": "a2c5a58b82eef5f422c95620ba075ac82bc2317595f85e3506c2665cfc6de7ee"
+    }
+  ]
+}

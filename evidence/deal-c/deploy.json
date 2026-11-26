@@ -1,0 +1,57 @@
+{
+  "configFile": "deal.json",
+  "name": "Bavarian Sky French Auto Leases 5 (D3 custody demo)",
+  "network": "testnet",
+  "deal": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+  "notes": [
+    "CAFJORGHJ63AQD55JATT5VX7LZ7WHNA25UQ74I73WL55IEA4FJB543IJ",
+    "CDNCI4CVPSD6LOJH3Z6N5OFPDWT6442SPO3Q6XFG4323DYG3DNOSQCYY",
+    "CAMNNSHHKJFYMPZSFSEMVZMT7INTIDFYASAJXRTZIZ6OPAV5MXBWPSFN"
+  ],
+  "payingAgent": "CCP7LGA3W6GYEP2CFMIGMFILYDW5HWVDTOVYXNYEDEGQ6IFBCHTLJLQR",
+  "oracle": "CATT7CLFJ5HMF62NCX3AQ644R47BKA37QCNO3JO2XGFJBP4XDI56O3F2",
+  "asset": "CBEO2RDQKBM7S3TYOYKBWAJEC6WMYPCW6JJWX47UCLFMUJI2EUZPJOXW",
+  "roles": {
+    "crank": "GAJ2IQ2UCUFFGJYSLAJOHTOIKEDQXETWXRJ6I6YD2RPJABY3J5J5REHO",
+    "admin": "GAETDRSUVCR3WIMUXDSMTMG3ZVTYVLGIEW4C4ISPTWZWEEVM436ZCMHK",
+    "servicer": "GBHYXZJPKYQA4L4N52LUFSKRZ4QKZHKDEPUWMNEBTOACGA5T3IMKYNSG",
+    "reporter": "GAQ7GZ2OSPIPIIF6WQ5XPHZJZ4IPOSZVH6X4IOHGWT32CYJB45ZJUIQM"
+  },
+  "code": {
+    "deal": "5a5fedeaff280170ea28fb618a2587d992012e2fab4cab02504b7e50eaaead7a",
+    "note": "4498e0661fa55f2ee71899fe4bba88a49b4d2f195ee390905e1e01cf544201a2",
+    "agent": "667fc2fdea335f73a1e2a8a141eb4ba1525a4202124073cec059c45a5d8c1603"
+  },
+  "initialReserve": "1000000000",
+  "registryDealId": 46,
+  "transactions": [
+    {
+      "kind": "deploy-deal",
+      "hash": "addddd8ebb2adcbbf67802a880fa10591e49a1ee7e71a3ebbcc0d3371951f87a"
+    },
+    {
+      "kind": "deploy-note-A",
+      "hash": "14443b1486ec998e30fc7b4d88ee77a1f4630d966d41a7c5c820323d01f3f3d9"
+    },
+    {
+      "kind": "deploy-note-B",
+      "hash": "d127b7ba5699a58169882488f0bac774cf049829e4d5b1a9525085c4018c2b34"
+    },
+    {
+      "kind": "deploy-note-C",
+      "hash": "ddfaca31a7cf4b58bff2f8a82e69fa58d34ce950697f0b2e9505a29ffdbbc4a8"
+    },
+    {
+      "kind": "deploy-paying-agent",
+      "hash": "a7f017148dbb739c02dc6c7411c9ea7b01199a510acb2df0ac5253c9655abf22"
+    },
+    {
+      "kind": "set-wiring",
+      "hash": "d76c76e14e01b353d9938e4f0ebc90764526046d3f47f74d905321a13d388d45"
+    },
+    {
+      "kind": "set-eligible",
+      "hash": "f3904b8a3554a1b432df9e751ee39aa3c34fd48461b3799adc34f66232d92d6a"
+    }
+  ]
+}

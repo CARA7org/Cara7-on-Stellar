@@ -1,0 +1,3653 @@
+{
+ "label": "Deal P (D1, pro rata then sequential)",
+ "network": "testnet",
+ "collectedAt": "2026-11-23T13:39:59.359Z",
+ "fromLedger": 5882909,
+ "latestLedger": 5883508,
+ "snapshot": {
+  "deal": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+  "payingAgent": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+  "notes": [
+   "CC65LFMB2EUBCKVURUYE7ELZOFTDDVUCC5NG4ZNKU332QPWQBDIGVHJO",
+   "CBKSDTYBZAQALDC2SLBYSN3ZTYMVJ24PPVKC5F42CKO2RDZKUOVNBDMT",
+   "CC3BTSPG4PDOXYNRGCVPY5AVQ6QTQQY2UP3SIIBTBPLQTZCN7FIWUVM7"
+  ],
+  "asset": {
+   "contractId": "CBEO2RDQKBM7S3TYOYKBWAJEC6WMYPCW6JJWX47UCLFMUJI2EUZPJOXW",
+   "symbol": "EURC",
+   "decimals": 7
+  },
+  "config": {
+   "admin": "GC5FLOFIOEKU75I3L6GFJFPBY7AABHYH5SYO77G2H2SDWEIY5NZAYLDU",
+   "asset": "CBEO2RDQKBM7S3TYOYKBWAJEC6WMYPCW6JJWX47UCLFMUJI2EUZPJOXW",
+   "oracle": "CAMRPVLUPYCMXAMDJXYSTSTUR3FC4JBDE3C7HOF2SMOQHK4KOQ4N2N5Z",
+   "seller": "GCEJ3AEJZF764K2IKREKTZGCGRXLPK6CJF2YEKQNEWXBNMGAH6EX4P5L",
+   "servicer": "GDKAUFUS6KNDECWWQM4UETOAPHZU2AEOSUYVWHLKBXC6IBXWSGIFYIO4",
+   "daysInPeriod": 30,
+   "oracleMaxStalenessSecs": {
+    "$bigint": "604800"
+   },
+   "noteDenomination": {
+    "$bigint": "1000000000"
+   },
+   "roundUnit": {
+    "$bigint": "100000"
+   },
+   "classes": [
+    {
+     "rate": {
+      "kind": "floating",
+      "units": {
+       "$bigint": "700"
+      }
+     },
+     "totalNotes": {
+      "$bigint": "6"
+     },
+     "floor": null,
+     "indexFloor": {
+      "$bigint": "0"
+     }
+    },
+    {
+     "rate": {
+      "kind": "fixed",
+      "units": {
+       "$bigint": "2000"
+      }
+     },
+     "totalNotes": {
+      "$bigint": "3"
+     },
+     "floor": null,
+     "indexFloor": null
+    },
+    {
+     "rate": {
+      "kind": "fixed",
+      "units": {
+       "$bigint": "5000"
+      }
+     },
+     "totalNotes": {
+      "$bigint": "1"
+     },
+     "floor": null,
+     "indexFloor": null
+    }
+   ],
+   "fees": [
+    {
+     "recipient": "GCYWY7U2RPZ5PHJRIY7PBZS6QA4M2OPVILODYMD47CWMA5DVGS7DZVRM",
+     "amount": {
+      "kind": "fixed",
+      "amount": {
+       "$bigint": "10000000"
+      }
+     }
+    },
+    {
+     "recipient": "GDKAUFUS6KNDECWWQM4UETOAPHZU2AEOSUYVWHLKBXC6IBXWSGIFYIO4",
+     "amount": {
+      "kind": "perAnnum",
+      "rate": {
+       "$bigint": "1000"
+      }
+     }
+    }
+   ],
+   "reserve": {
+    "required": {
+     "kind": "pctOfNotes",
+     "pct": {
+      "$bigint": "5000"
+     },
+     "floor": {
+      "$bigint": "200000000"
+     }
+    },
+    "release": "onNeed",
+    "drawRanks": [
+     "fees",
+     "int_a",
+     "int_b"
+    ]
+   },
+   "triggers": [
+    {
+     "id": "seq",
+     "metric": {
+      "kind": "notesFactor"
+     },
+     "op": "lt",
+     "threshold": {
+      "$bigint": "5000000"
+     },
+     "latch": true
+    }
+   ],
+   "normal": [
+    {
+     "id": "fees",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "fee",
+       "index": 0
+      },
+      {
+       "kind": "fee",
+       "index": 1
+      }
+     ]
+    },
+    {
+     "id": "int_a",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "interest",
+       "class": 0
+      }
+     ]
+    },
+    {
+     "id": "int_b",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "interest",
+       "class": 1
+      }
+     ]
+    },
+    {
+     "id": "reserve",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "reserveRefill"
+      }
+     ]
+    },
+    {
+     "id": "int_c",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "interest",
+       "class": 2
+      }
+     ]
+    },
+    {
+     "id": "prin_pr",
+     "when": {
+      "kind": "notTrigger",
+      "id": "seq"
+     },
+     "alloc": "pariPassu",
+     "items": [
+      {
+       "kind": "principal",
+       "class": 0
+      },
+      {
+       "kind": "principal",
+       "class": 1
+      },
+      {
+       "kind": "principal",
+       "class": 2
+      }
+     ]
+    },
+    {
+     "id": "prin_seq",
+     "when": {
+      "kind": "trigger",
+      "id": "seq"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "principal",
+       "class": 0
+      },
+      {
+       "kind": "principal",
+       "class": 1
+      },
+      {
+       "kind": "principal",
+       "class": 2
+      }
+     ]
+    },
+    {
+     "id": "residual",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "residual"
+      }
+     ]
+    }
+   ],
+   "enforced": [
+    {
+     "id": "fees",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "fee",
+       "index": 0
+      },
+      {
+       "kind": "fee",
+       "index": 1
+      }
+     ]
+    },
+    {
+     "id": "acc_a",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "interest",
+       "class": 0
+      },
+      {
+       "kind": "principal",
+       "class": 0
+      }
+     ]
+    },
+    {
+     "id": "acc_b",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "interest",
+       "class": 1
+      },
+      {
+       "kind": "principal",
+       "class": 1
+      }
+     ]
+    },
+    {
+     "id": "acc_c",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "interest",
+       "class": 2
+      },
+      {
+       "kind": "principal",
+       "class": 2
+      }
+     ]
+    },
+    {
+     "id": "residual",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "residual"
+      }
+     ]
+    }
+   ]
+  },
+  "reporter": "GB6N5XUASLSGRGRYUFQZ5IHWCMGYVBJZYSZX7FDLOXCD6WYPC274G5QI",
+  "crank": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2",
+  "fixingHistory": [
+   {
+    "price": {
+     "$bigint": "2484"
+    },
+    "timestamp": {
+     "$bigint": "1795435749"
+    }
+   },
+   {
+    "price": {
+     "$bigint": "2484"
+    },
+    "timestamp": {
+     "$bigint": "1795438315"
+    }
+   }
+  ],
+  "state": "Matured",
+  "nextPeriod": 5,
+  "reserve": {
+   "$bigint": "0"
+  },
+  "carry": {
+   "$bigint": "0"
+  },
+  "owedTotal": {
+   "$bigint": "0"
+  },
+  "balance": {
+   "$bigint": "0"
+  },
+  "agentBalance": {
+   "$bigint": "0"
+  },
+  "perNote": [
+   {
+    "$bigint": "0"
+   },
+   {
+    "$bigint": "0"
+   },
+   {
+    "$bigint": "0"
+   }
+  ],
+  "shortfall": [
+   {
+    "$bigint": "0"
+   },
+   {
+    "$bigint": "0"
+   },
+   {
+    "$bigint": "0"
+   }
+  ],
+  "dust": [
+   {
+    "$bigint": "0"
+   },
+   {
+    "$bigint": "0"
+   },
+   {
+    "$bigint": "0"
+   }
+  ],
+  "holders": [
+   {
+    "class": 0,
+    "holder": "GCWQGIECM7NNQ7NV6OQVTCSDVUSCGM3TQB5NWOQV3O5QA6BT2MZFUA7L",
+    "notes": {
+     "$bigint": "6"
+    },
+    "interestPaid": {
+     "$bigint": "34800000"
+    },
+    "principalPaid": {
+     "$bigint": "6000000000"
+    },
+    "claimableInterest": {
+     "$bigint": "0"
+    },
+    "claimablePrincipal": {
+     "$bigint": "0"
+    }
+   },
+   {
+    "class": 1,
+    "holder": "GC57KOHW37LN3YFIPXW7A462DZZBOM4KFRLYKBHHQWLE4AVCZYCNTYXE",
+    "notes": {
+     "$bigint": "3"
+    },
+    "interestPaid": {
+     "$bigint": "11700000"
+    },
+    "principalPaid": {
+     "$bigint": "3000000000"
+    },
+    "claimableInterest": {
+     "$bigint": "0"
+    },
+    "claimablePrincipal": {
+     "$bigint": "0"
+    }
+   },
+   {
+    "class": 2,
+    "holder": "GCXLOCBQPAS54C3MSBMA223COJE7HRAGJ3KJEN376FNDUL7LQ5JKIQXM",
+    "notes": {
+     "$bigint": "1"
+    },
+    "interestPaid": {
+     "$bigint": "10000000"
+    },
+    "principalPaid": {
+     "$bigint": "1000000000"
+    },
+    "claimableInterest": {
+     "$bigint": "0"
+    },
+    "claimablePrincipal": {
+     "$bigint": "0"
+    }
+   }
+  ],
+  "code": {
+   "deal": "5a5fedeaff280170ea28fb618a2587d992012e2fab4cab02504b7e50eaaead7a",
+   "note": "4498e0661fa55f2ee71899fe4bba88a49b4d2f195ee390905e1e01cf544201a2",
+   "agent": "667fc2fdea335f73a1e2a8a141eb4ba1525a4202124073cec059c45a5d8c1603"
+  },
+  "compare": [
+   {
+    "deal": "CAYGDU72HJ6LBDOEEIFH2J3DTPCXECQ5WVTTCFZV6JVH76D2HXOEZRUF",
+    "code": {
+     "deal": "5a5fedeaff280170ea28fb618a2587d992012e2fab4cab02504b7e50eaaead7a",
+     "note": "4498e0661fa55f2ee71899fe4bba88a49b4d2f195ee390905e1e01cf544201a2",
+     "agent": "667fc2fdea335f73a1e2a8a141eb4ba1525a4202124073cec059c45a5d8c1603"
+    }
+   }
+  ]
+ },
+ "events": [
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "eligibility_set",
+   "topics": [
+    "GCWQGIECM7NNQ7NV6OQVTCSDVUSCGM3TQB5NWOQV3O5QA6BT2MZFUA7L"
+   ],
+   "data": [
+    true
+   ],
+   "ledger": 5882915,
+   "closedAt": 1795438217,
+   "txHash": "a2c5a58b82eef5f422c95620ba075ac82bc2317595f85e3506c2665cfc6de7ee",
+   "id": "0025266927530217472-0000000000"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "eligibility_set",
+   "topics": [
+    "GC57KOHW37LN3YFIPXW7A462DZZBOM4KFRLYKBHHQWLE4AVCZYCNTYXE"
+   ],
+   "data": [
+    true
+   ],
+   "ledger": 5882915,
+   "closedAt": 1795438217,
+   "txHash": "a2c5a58b82eef5f422c95620ba075ac82bc2317595f85e3506c2665cfc6de7ee",
+   "id": "0025266927530217472-0000000001"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "eligibility_set",
+   "topics": [
+    "GCXLOCBQPAS54C3MSBMA223COJE7HRAGJ3KJEN376FNDUL7LQ5JKIQXM"
+   ],
+   "data": [
+    true
+   ],
+   "ledger": 5882915,
+   "closedAt": 1795438217,
+   "txHash": "a2c5a58b82eef5f422c95620ba075ac82bc2317595f85e3506c2665cfc6de7ee",
+   "id": "0025266927530217472-0000000002"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "subscribed",
+   "topics": [
+    "GCWQGIECM7NNQ7NV6OQVTCSDVUSCGM3TQB5NWOQV3O5QA6BT2MZFUA7L"
+   ],
+   "data": [
+    0,
+    {
+     "$bigint": "6"
+    },
+    {
+     "$bigint": "6000000000"
+    }
+   ],
+   "ledger": 5882921,
+   "closedAt": 1795438247,
+   "txHash": "4ab3d78bfaea7baa6837148fecef630c3074a73c9bf3a08aef7dbb1989a6dba5",
+   "id": "0025266953300025344-0000000001"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "subscribed",
+   "topics": [
+    "GC57KOHW37LN3YFIPXW7A462DZZBOM4KFRLYKBHHQWLE4AVCZYCNTYXE"
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "3"
+    },
+    {
+     "$bigint": "3000000000"
+    }
+   ],
+   "ledger": 5882923,
+   "closedAt": 1795438257,
+   "txHash": "6f2925e1c8b595718648233094029cf43e4a2b7113a466528db953b9e84296f1",
+   "id": "0025266961889939456-0000000001"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "subscribed",
+   "topics": [
+    "GCXLOCBQPAS54C3MSBMA223COJE7HRAGJ3KJEN376FNDUL7LQ5JKIQXM"
+   ],
+   "data": [
+    2,
+    {
+     "$bigint": "1"
+    },
+    {
+     "$bigint": "1000000000"
+    }
+   ],
+   "ledger": 5882925,
+   "closedAt": 1795438267,
+   "txHash": "cd12cfcc583bbff64c4b6d4b0c0abb9b42963d52dd8216c3fd12d614dcb750b0",
+   "id": "0025266970479894528-0000000001"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "sub_loan_funded",
+   "topics": [
+    "GCEJ3AEJZF764K2IKREKTZGCGRXLPK6CJF2YEKQNEWXBNMGAH6EX4P5L"
+   ],
+   "data": [
+    {
+     "$bigint": "500000000"
+    },
+    {
+     "$bigint": "500000000"
+    }
+   ],
+   "ledger": 5882927,
+   "closedAt": 1795438277,
+   "txHash": "592299fe9b69dfb136e907adceebbf6059c766cc40572baf27ef7a66f9f27876",
+   "id": "0025266979069825024-0000000001"
+  },
+  {
+   "contractId": "CC65LFMB2EUBCKVURUYE7ELZOFTDDVUCC5NG4ZNKU332QPWQBDIGVHJO",
+   "type": "issue",
+   "topics": [
+    "GCWQGIECM7NNQ7NV6OQVTCSDVUSCGM3TQB5NWOQV3O5QA6BT2MZFUA7L"
+   ],
+   "data": [
+    {
+     "$bigint": "6"
+    }
+   ],
+   "ledger": 5882933,
+   "closedAt": 1795438307,
+   "txHash": "0e6df8dbe3cac3619a4d85530b12f467d324e078390dcba70dbeb7cbf34cd29a",
+   "id": "0025267004839608320-0000000001"
+  },
+  {
+   "contractId": "CBKSDTYBZAQALDC2SLBYSN3ZTYMVJ24PPVKC5F42CKO2RDZKUOVNBDMT",
+   "type": "issue",
+   "topics": [
+    "GC57KOHW37LN3YFIPXW7A462DZZBOM4KFRLYKBHHQWLE4AVCZYCNTYXE"
+   ],
+   "data": [
+    {
+     "$bigint": "3"
+    }
+   ],
+   "ledger": 5882933,
+   "closedAt": 1795438307,
+   "txHash": "0e6df8dbe3cac3619a4d85530b12f467d324e078390dcba70dbeb7cbf34cd29a",
+   "id": "0025267004839608320-0000000002"
+  },
+  {
+   "contractId": "CC3BTSPG4PDOXYNRGCVPY5AVQ6QTQQY2UP3SIIBTBPLQTZCN7FIWUVM7",
+   "type": "issue",
+   "topics": [
+    "GCXLOCBQPAS54C3MSBMA223COJE7HRAGJ3KJEN376FNDUL7LQ5JKIQXM"
+   ],
+   "data": [
+    {
+     "$bigint": "1"
+    }
+   ],
+   "ledger": 5882933,
+   "closedAt": 1795438307,
+   "txHash": "0e6df8dbe3cac3619a4d85530b12f467d324e078390dcba70dbeb7cbf34cd29a",
+   "id": "0025267004839608320-0000000003"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "deal_closed",
+   "topics": [],
+   "data": [
+    {
+     "$bigint": "10000000000"
+    },
+    {
+     "$bigint": "500000000"
+    },
+    {
+     "$bigint": "1795438307"
+    }
+   ],
+   "ledger": 5882933,
+   "closedAt": 1795438307,
+   "txHash": "0e6df8dbe3cac3619a4d85530b12f467d324e078390dcba70dbeb7cbf34cd29a",
+   "id": "0025267004839608320-0000000004"
+  },
+  {
+   "contractId": "CAMRPVLUPYCMXAMDJXYSTSTUR3FC4JBDE3C7HOF2SMOQHK4KOQ4N2N5Z",
+   "type": "rate_set",
+   "topics": [],
+   "data": [
+    {
+     "$bigint": "2484"
+    },
+    {
+     "$bigint": "1795438315"
+    }
+   ],
+   "ledger": 5882937,
+   "closedAt": 1795438327,
+   "txHash": "35c224283b9aa656dac4adb0fd6d5987b1a6895bc7aaee8e0e766e42d9f1d25f",
+   "id": "0025267022019489792-0000000000"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "distribution",
+   "topics": [
+    1
+   ],
+   "data": [
+    {
+     "$bigint": "3050000000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "3050000000"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000001"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "fees_paid",
+   "topics": [
+    "GCYWY7U2RPZ5PHJRIY7PBZS6QA4M2OPVILODYMD47CWMA5DVGS7DZVRM"
+   ],
+   "data": [
+    {
+     "$bigint": "10000000"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000003"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "fees_paid",
+   "topics": [
+    "GDKAUFUS6KNDECWWQM4UETOAPHZU2AEOSUYVWHLKBXC6IBXWSGIFYIO4"
+   ],
+   "data": [
+    {
+     "$bigint": "8333333"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000005"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "interest_paid",
+   "topics": [
+    0
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "15920000"
+    },
+    {
+     "$bigint": "15600000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "320000"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000006"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "interest_paid",
+   "topics": [
+    1
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "5000000"
+    },
+    {
+     "$bigint": "4800000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "200000"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000007"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "interest_paid",
+   "topics": [
+    2
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "4166666"
+    },
+    {
+     "$bigint": "4100000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "66666"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000008"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "principal_paid",
+   "topics": [
+    0
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "1803600000"
+    },
+    {
+     "$bigint": "300600000"
+    },
+    {
+     "$bigint": "4196400000"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000009"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "factor_updated",
+   "topics": [
+    0
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "6994000"
+    },
+    {
+     "$bigint": "699400000"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000010"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "principal_paid",
+   "topics": [
+    1
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "901800000"
+    },
+    {
+     "$bigint": "300600000"
+    },
+    {
+     "$bigint": "2098200000"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000011"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "factor_updated",
+   "topics": [
+    1
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "6994000"
+    },
+    {
+     "$bigint": "699400000"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000012"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "principal_paid",
+   "topics": [
+    2
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "300600000"
+    },
+    {
+     "$bigint": "300600000"
+    },
+    {
+     "$bigint": "699400000"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000013"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "factor_updated",
+   "topics": [
+    2
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "6994000"
+    },
+    {
+     "$bigint": "699400000"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000014"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "period_funded",
+   "topics": [
+    1
+   ],
+   "data": [
+    0,
+    {
+     "$bigint": "15600000"
+    },
+    {
+     "$bigint": "1803600000"
+    },
+    {
+     "$bigint": "300600000"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000016"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "period_funded",
+   "topics": [
+    1
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "4800000"
+    },
+    {
+     "$bigint": "901800000"
+    },
+    {
+     "$bigint": "300600000"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000017"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "period_funded",
+   "topics": [
+    1
+   ],
+   "data": [
+    2,
+    {
+     "$bigint": "4100000"
+    },
+    {
+     "$bigint": "300600000"
+    },
+    {
+     "$bigint": "300600000"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000018"
+  },
+  {
+   "contractId": "CC65LFMB2EUBCKVURUYE7ELZOFTDDVUCC5NG4ZNKU332QPWQBDIGVHJO",
+   "type": "period_rolled",
+   "topics": [],
+   "data": [
+    1,
+    {
+     "$bigint": "1795438307"
+    },
+    {
+     "$bigint": "1795438337"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000019"
+  },
+  {
+   "contractId": "CBKSDTYBZAQALDC2SLBYSN3ZTYMVJ24PPVKC5F42CKO2RDZKUOVNBDMT",
+   "type": "period_rolled",
+   "topics": [],
+   "data": [
+    1,
+    {
+     "$bigint": "1795438307"
+    },
+    {
+     "$bigint": "1795438337"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000020"
+  },
+  {
+   "contractId": "CC3BTSPG4PDOXYNRGCVPY5AVQ6QTQQY2UP3SIIBTBPLQTZCN7FIWUVM7",
+   "type": "period_rolled",
+   "topics": [],
+   "data": [
+    1,
+    {
+     "$bigint": "1795438307"
+    },
+    {
+     "$bigint": "1795438337"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000021"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "carry_updated",
+   "topics": [],
+   "data": [
+    1,
+    {
+     "$bigint": "1166667"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000022"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "rank_lines",
+   "topics": [
+    1
+   ],
+   "data": [
+    false,
+    [
+     [
+      "fees",
+      [
+       "Fee",
+       0
+      ],
+      {
+       "$bigint": "10000000"
+      },
+      {
+       "$bigint": "10000000"
+      },
+      {
+       "$bigint": "0"
+      }
+     ],
+     [
+      "fees",
+      [
+       "Fee",
+       1
+      ],
+      {
+       "$bigint": "8333333"
+      },
+      {
+       "$bigint": "8333333"
+      },
+      {
+       "$bigint": "0"
+      }
+     ],
+     [
+      "int_a",
+      [
+       "Interest",
+       0
+      ],
+      {
+       "$bigint": "15920000"
+      },
+      {
+       "$bigint": "15600000"
+      },
+      {
+       "$bigint": "320000"
+      }
+     ],
+     [
+      "int_b",
+      [
+       "Interest",
+       1
+      ],
+      {
+       "$bigint": "5000000"
+      },
+      {
+       "$bigint": "4800000"
+      },
+      {
+       "$bigint": "200000"
+      }
+     ],
+     [
+      "int_c",
+      [
+       "Interest",
+       2
+      ],
+      {
+       "$bigint": "4166666"
+      },
+      {
+       "$bigint": "4100000"
+      },
+      {
+       "$bigint": "66666"
+      }
+     ],
+     [
+      "prin_pr",
+      [
+       "Principal",
+       0
+      ],
+      {
+       "$bigint": "6000000000"
+      },
+      {
+       "$bigint": "1803600000"
+      },
+      {
+       "$bigint": "348001"
+      }
+     ],
+     [
+      "prin_pr",
+      [
+       "Principal",
+       1
+      ],
+      {
+       "$bigint": "3000000000"
+      },
+      {
+       "$bigint": "901800000"
+      },
+      {
+       "$bigint": "174000"
+      }
+     ],
+     [
+      "prin_pr",
+      [
+       "Principal",
+       2
+      ],
+      {
+       "$bigint": "1000000000"
+      },
+      {
+       "$bigint": "300600000"
+      },
+      {
+       "$bigint": "58000"
+      }
+     ]
+    ]
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000023"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "period_settled",
+   "topics": [
+    1
+   ],
+   "data": [
+    {
+     "$bigint": "3050000000"
+    },
+    {
+     "$bigint": "500000000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "3048833333"
+    },
+    {
+     "$bigint": "500000000"
+    },
+    {
+     "$bigint": "1166667"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "501166667"
+    },
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5882939,
+   "closedAt": 1795438337,
+   "txHash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "id": "0025267030609391616-0000000024"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "holder_paid",
+   "topics": [
+    "GCWQGIECM7NNQ7NV6OQVTCSDVUSCGM3TQB5NWOQV3O5QA6BT2MZFUA7L"
+   ],
+   "data": [
+    1,
+    0,
+    {
+     "$bigint": "15600000"
+    },
+    {
+     "$bigint": "1803600000"
+    }
+   ],
+   "ledger": 5882940,
+   "closedAt": 1795438342,
+   "txHash": "95dcd7ecc538473a6b35e2b7aabbb963a693c6bd20bf855dcc9254eb9d9664b1",
+   "id": "0025267034904379392-0000000001"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "batch_done",
+   "topics": [
+    1
+   ],
+   "data": [
+    0,
+    1,
+    true
+   ],
+   "ledger": 5882940,
+   "closedAt": 1795438342,
+   "txHash": "95dcd7ecc538473a6b35e2b7aabbb963a693c6bd20bf855dcc9254eb9d9664b1",
+   "id": "0025267034904379392-0000000002"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "holder_paid",
+   "topics": [
+    "GC57KOHW37LN3YFIPXW7A462DZZBOM4KFRLYKBHHQWLE4AVCZYCNTYXE"
+   ],
+   "data": [
+    1,
+    1,
+    {
+     "$bigint": "4800000"
+    },
+    {
+     "$bigint": "901800000"
+    }
+   ],
+   "ledger": 5882943,
+   "closedAt": 1795438357,
+   "txHash": "dabc260b281bf9450c32d8390d3f102a5028b0776008da75ee117631a31c5a08",
+   "id": "0025267047789252608-0000000001"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "batch_done",
+   "topics": [
+    1
+   ],
+   "data": [
+    1,
+    1,
+    true
+   ],
+   "ledger": 5882943,
+   "closedAt": 1795438357,
+   "txHash": "dabc260b281bf9450c32d8390d3f102a5028b0776008da75ee117631a31c5a08",
+   "id": "0025267047789252608-0000000002"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "holder_paid",
+   "topics": [
+    "GCXLOCBQPAS54C3MSBMA223COJE7HRAGJ3KJEN376FNDUL7LQ5JKIQXM"
+   ],
+   "data": [
+    1,
+    2,
+    {
+     "$bigint": "4100000"
+    },
+    {
+     "$bigint": "300600000"
+    }
+   ],
+   "ledger": 5882944,
+   "closedAt": 1795438362,
+   "txHash": "d1b394b0e5d1dcbc0cad8aee8ba5eb7efd750ad54882a23af098b443454b948b",
+   "id": "0025267052084248576-0000000001"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "batch_done",
+   "topics": [
+    1
+   ],
+   "data": [
+    2,
+    1,
+    true
+   ],
+   "ledger": 5882944,
+   "closedAt": 1795438362,
+   "txHash": "d1b394b0e5d1dcbc0cad8aee8ba5eb7efd750ad54882a23af098b443454b948b",
+   "id": "0025267052084248576-0000000002"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "reserve_released",
+   "topics": [],
+   "data": [
+    {
+     "$bigint": "150300000"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000001"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "distribution",
+   "topics": [
+    2
+   ],
+   "data": [
+    {
+     "$bigint": "3050000000"
+    },
+    {
+     "$bigint": "150300000"
+    },
+    {
+     "$bigint": "1166667"
+    },
+    {
+     "$bigint": "3201466667"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000002"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "fees_paid",
+   "topics": [
+    "GCYWY7U2RPZ5PHJRIY7PBZS6QA4M2OPVILODYMD47CWMA5DVGS7DZVRM"
+   ],
+   "data": [
+    {
+     "$bigint": "10000000"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000004"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "fees_paid",
+   "topics": [
+    "GDKAUFUS6KNDECWWQM4UETOAPHZU2AEOSUYVWHLKBXC6IBXWSGIFYIO4"
+   ],
+   "data": [
+    {
+     "$bigint": "5828333"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000006"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "interest_paid",
+   "topics": [
+    0
+   ],
+   "data": [
+    2,
+    {
+     "$bigint": "11134448"
+    },
+    {
+     "$bigint": "10800000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "334448"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000007"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "interest_paid",
+   "topics": [
+    1
+   ],
+   "data": [
+    2,
+    {
+     "$bigint": "3497000"
+    },
+    {
+     "$bigint": "3300000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "197000"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000008"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "interest_paid",
+   "topics": [
+    2
+   ],
+   "data": [
+    2,
+    {
+     "$bigint": "2914166"
+    },
+    {
+     "$bigint": "2900000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "14166"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000009"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "principal_paid",
+   "topics": [
+    0
+   ],
+   "data": [
+    2,
+    {
+     "$bigint": "1900800000"
+    },
+    {
+     "$bigint": "316800000"
+    },
+    {
+     "$bigint": "2295600000"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000010"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "factor_updated",
+   "topics": [
+    0
+   ],
+   "data": [
+    2,
+    {
+     "$bigint": "3826000"
+    },
+    {
+     "$bigint": "382600000"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000011"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "principal_paid",
+   "topics": [
+    1
+   ],
+   "data": [
+    2,
+    {
+     "$bigint": "950400000"
+    },
+    {
+     "$bigint": "316800000"
+    },
+    {
+     "$bigint": "1147800000"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000012"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "factor_updated",
+   "topics": [
+    1
+   ],
+   "data": [
+    2,
+    {
+     "$bigint": "3826000"
+    },
+    {
+     "$bigint": "382600000"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000013"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "principal_paid",
+   "topics": [
+    2
+   ],
+   "data": [
+    2,
+    {
+     "$bigint": "316800000"
+    },
+    {
+     "$bigint": "316800000"
+    },
+    {
+     "$bigint": "382600000"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000014"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "factor_updated",
+   "topics": [
+    2
+   ],
+   "data": [
+    2,
+    {
+     "$bigint": "3826000"
+    },
+    {
+     "$bigint": "382600000"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000015"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "period_funded",
+   "topics": [
+    2
+   ],
+   "data": [
+    0,
+    {
+     "$bigint": "10800000"
+    },
+    {
+     "$bigint": "1900800000"
+    },
+    {
+     "$bigint": "316800000"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000017"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "period_funded",
+   "topics": [
+    2
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "3300000"
+    },
+    {
+     "$bigint": "950400000"
+    },
+    {
+     "$bigint": "316800000"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000018"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "period_funded",
+   "topics": [
+    2
+   ],
+   "data": [
+    2,
+    {
+     "$bigint": "2900000"
+    },
+    {
+     "$bigint": "316800000"
+    },
+    {
+     "$bigint": "316800000"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000019"
+  },
+  {
+   "contractId": "CC65LFMB2EUBCKVURUYE7ELZOFTDDVUCC5NG4ZNKU332QPWQBDIGVHJO",
+   "type": "period_rolled",
+   "topics": [],
+   "data": [
+    2,
+    {
+     "$bigint": "1795438337"
+    },
+    {
+     "$bigint": "1795438377"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000020"
+  },
+  {
+   "contractId": "CBKSDTYBZAQALDC2SLBYSN3ZTYMVJ24PPVKC5F42CKO2RDZKUOVNBDMT",
+   "type": "period_rolled",
+   "topics": [],
+   "data": [
+    2,
+    {
+     "$bigint": "1795438337"
+    },
+    {
+     "$bigint": "1795438377"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000021"
+  },
+  {
+   "contractId": "CC3BTSPG4PDOXYNRGCVPY5AVQ6QTQQY2UP3SIIBTBPLQTZCN7FIWUVM7",
+   "type": "period_rolled",
+   "topics": [],
+   "data": [
+    2,
+    {
+     "$bigint": "1795438337"
+    },
+    {
+     "$bigint": "1795438377"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000022"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "carry_updated",
+   "topics": [],
+   "data": [
+    2,
+    {
+     "$bigint": "638334"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000023"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "rank_lines",
+   "topics": [
+    2
+   ],
+   "data": [
+    false,
+    [
+     [
+      "fees",
+      [
+       "Fee",
+       0
+      ],
+      {
+       "$bigint": "10000000"
+      },
+      {
+       "$bigint": "10000000"
+      },
+      {
+       "$bigint": "0"
+      }
+     ],
+     [
+      "fees",
+      [
+       "Fee",
+       1
+      ],
+      {
+       "$bigint": "5828333"
+      },
+      {
+       "$bigint": "5828333"
+      },
+      {
+       "$bigint": "0"
+      }
+     ],
+     [
+      "int_a",
+      [
+       "Interest",
+       0
+      ],
+      {
+       "$bigint": "11134448"
+      },
+      {
+       "$bigint": "10800000"
+      },
+      {
+       "$bigint": "334448"
+      }
+     ],
+     [
+      "int_b",
+      [
+       "Interest",
+       1
+      ],
+      {
+       "$bigint": "3497000"
+      },
+      {
+       "$bigint": "3300000"
+      },
+      {
+       "$bigint": "197000"
+      }
+     ],
+     [
+      "int_c",
+      [
+       "Interest",
+       2
+      ],
+      {
+       "$bigint": "2914166"
+      },
+      {
+       "$bigint": "2900000"
+      },
+      {
+       "$bigint": "14166"
+      }
+     ],
+     [
+      "prin_pr",
+      [
+       "Principal",
+       0
+      ],
+      {
+       "$bigint": "4196400000"
+      },
+      {
+       "$bigint": "1900800000"
+      },
+      {
+       "$bigint": "55632"
+      }
+     ],
+     [
+      "prin_pr",
+      [
+       "Principal",
+       1
+      ],
+      {
+       "$bigint": "2098200000"
+      },
+      {
+       "$bigint": "950400000"
+      },
+      {
+       "$bigint": "27816"
+      }
+     ],
+     [
+      "prin_pr",
+      [
+       "Principal",
+       2
+      ],
+      {
+       "$bigint": "699400000"
+      },
+      {
+       "$bigint": "316800000"
+      },
+      {
+       "$bigint": "9272"
+      }
+     ]
+    ]
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000024"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "period_settled",
+   "topics": [
+    2
+   ],
+   "data": [
+    {
+     "$bigint": "3050000000"
+    },
+    {
+     "$bigint": "500000000"
+    },
+    {
+     "$bigint": "1166667"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "3200828333"
+    },
+    {
+     "$bigint": "349700000"
+    },
+    {
+     "$bigint": "638334"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "350338334"
+    },
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5882947,
+   "closedAt": 1795438377,
+   "txHash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "id": "0025267064969129984-0000000025"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "holder_paid",
+   "topics": [
+    "GCWQGIECM7NNQ7NV6OQVTCSDVUSCGM3TQB5NWOQV3O5QA6BT2MZFUA7L"
+   ],
+   "data": [
+    2,
+    0,
+    {
+     "$bigint": "10800000"
+    },
+    {
+     "$bigint": "1900800000"
+    }
+   ],
+   "ledger": 5882948,
+   "closedAt": 1795438382,
+   "txHash": "783e48b6b1aae62dde20410081a4085e2ffafc5ecbb1d216c15ba838f33ff632",
+   "id": "0025267069264125952-0000000001"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "batch_done",
+   "topics": [
+    2
+   ],
+   "data": [
+    0,
+    1,
+    true
+   ],
+   "ledger": 5882948,
+   "closedAt": 1795438382,
+   "txHash": "783e48b6b1aae62dde20410081a4085e2ffafc5ecbb1d216c15ba838f33ff632",
+   "id": "0025267069264125952-0000000002"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "holder_paid",
+   "topics": [
+    "GC57KOHW37LN3YFIPXW7A462DZZBOM4KFRLYKBHHQWLE4AVCZYCNTYXE"
+   ],
+   "data": [
+    2,
+    1,
+    {
+     "$bigint": "3300000"
+    },
+    {
+     "$bigint": "950400000"
+    }
+   ],
+   "ledger": 5882949,
+   "closedAt": 1795438387,
+   "txHash": "d3d8c0bf4879afcfb31a78f0c3924c65dd43a958c7143b1cc4bc47bbffb41678",
+   "id": "0025267073559113728-0000000001"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "batch_done",
+   "topics": [
+    2
+   ],
+   "data": [
+    1,
+    1,
+    true
+   ],
+   "ledger": 5882949,
+   "closedAt": 1795438387,
+   "txHash": "d3d8c0bf4879afcfb31a78f0c3924c65dd43a958c7143b1cc4bc47bbffb41678",
+   "id": "0025267073559113728-0000000002"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "holder_paid",
+   "topics": [
+    "GCXLOCBQPAS54C3MSBMA223COJE7HRAGJ3KJEN376FNDUL7LQ5JKIQXM"
+   ],
+   "data": [
+    2,
+    2,
+    {
+     "$bigint": "2900000"
+    },
+    {
+     "$bigint": "316800000"
+    }
+   ],
+   "ledger": 5882950,
+   "closedAt": 1795438392,
+   "txHash": "e32fcdc379b53e048146544230418075b6fae1aefa1afc7b1a65b492f475bba1",
+   "id": "0025267077854056448-0000000001"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "batch_done",
+   "topics": [
+    2
+   ],
+   "data": [
+    2,
+    1,
+    true
+   ],
+   "ledger": 5882950,
+   "closedAt": 1795438392,
+   "txHash": "e32fcdc379b53e048146544230418075b6fae1aefa1afc7b1a65b492f475bba1",
+   "id": "0025267077854056448-0000000002"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "reserve_released",
+   "topics": [],
+   "data": [
+    {
+     "$bigint": "149700000"
+    }
+   ],
+   "ledger": 5882953,
+   "closedAt": 1795438407,
+   "txHash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "id": "0025267090738982912-0000000001"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "distribution",
+   "topics": [
+    3
+   ],
+   "data": [
+    {
+     "$bigint": "1050000000"
+    },
+    {
+     "$bigint": "149700000"
+    },
+    {
+     "$bigint": "638334"
+    },
+    {
+     "$bigint": "1200338334"
+    }
+   ],
+   "ledger": 5882953,
+   "closedAt": 1795438407,
+   "txHash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "id": "0025267090738982912-0000000002"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "fees_paid",
+   "topics": [
+    "GCYWY7U2RPZ5PHJRIY7PBZS6QA4M2OPVILODYMD47CWMA5DVGS7DZVRM"
+   ],
+   "data": [
+    {
+     "$bigint": "10000000"
+    }
+   ],
+   "ledger": 5882953,
+   "closedAt": 1795438407,
+   "txHash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "id": "0025267090738982912-0000000004"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "fees_paid",
+   "topics": [
+    "GDKAUFUS6KNDECWWQM4UETOAPHZU2AEOSUYVWHLKBXC6IBXWSGIFYIO4"
+   ],
+   "data": [
+    {
+     "$bigint": "3188333"
+    }
+   ],
+   "ledger": 5882953,
+   "closedAt": 1795438407,
+   "txHash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "id": "0025267090738982912-0000000006"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "interest_paid",
+   "topics": [
+    0
+   ],
+   "data": [
+    3,
+    {
+     "$bigint": "6090992"
+    },
+    {
+     "$bigint": "6000000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "90992"
+    }
+   ],
+   "ledger": 5882953,
+   "closedAt": 1795438407,
+   "txHash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "id": "0025267090738982912-0000000007"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "interest_paid",
+   "topics": [
+    1
+   ],
+   "data": [
+    3,
+    {
+     "$bigint": "1913000"
+    },
+    {
+     "$bigint": "1800000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "113000"
+    }
+   ],
+   "ledger": 5882953,
+   "closedAt": 1795438407,
+   "txHash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "id": "0025267090738982912-0000000008"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "interest_paid",
+   "topics": [
+    2
+   ],
+   "data": [
+    3,
+    {
+     "$bigint": "1594166"
+    },
+    {
+     "$bigint": "1500000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "94166"
+    }
+   ],
+   "ledger": 5882953,
+   "closedAt": 1795438407,
+   "txHash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "id": "0025267090738982912-0000000009"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "principal_paid",
+   "topics": [
+    0
+   ],
+   "data": [
+    3,
+    {
+     "$bigint": "1177200000"
+    },
+    {
+     "$bigint": "196200000"
+    },
+    {
+     "$bigint": "1118400000"
+    }
+   ],
+   "ledger": 5882953,
+   "closedAt": 1795438407,
+   "txHash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "id": "0025267090738982912-0000000010"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "factor_updated",
+   "topics": [
+    0
+   ],
+   "data": [
+    3,
+    {
+     "$bigint": "1864000"
+    },
+    {
+     "$bigint": "186400000"
+    }
+   ],
+   "ledger": 5882953,
+   "closedAt": 1795438407,
+   "txHash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "id": "0025267090738982912-0000000011"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "period_funded",
+   "topics": [
+    3
+   ],
+   "data": [
+    0,
+    {
+     "$bigint": "6000000"
+    },
+    {
+     "$bigint": "1177200000"
+    },
+    {
+     "$bigint": "196200000"
+    }
+   ],
+   "ledger": 5882953,
+   "closedAt": 1795438407,
+   "txHash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "id": "0025267090738982912-0000000013"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "period_funded",
+   "topics": [
+    3
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "1800000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5882953,
+   "closedAt": 1795438407,
+   "txHash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "id": "0025267090738982912-0000000014"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "period_funded",
+   "topics": [
+    3
+   ],
+   "data": [
+    2,
+    {
+     "$bigint": "1500000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5882953,
+   "closedAt": 1795438407,
+   "txHash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "id": "0025267090738982912-0000000015"
+  },
+  {
+   "contractId": "CC65LFMB2EUBCKVURUYE7ELZOFTDDVUCC5NG4ZNKU332QPWQBDIGVHJO",
+   "type": "period_rolled",
+   "topics": [],
+   "data": [
+    3,
+    {
+     "$bigint": "1795438377"
+    },
+    {
+     "$bigint": "1795438407"
+    }
+   ],
+   "ledger": 5882953,
+   "closedAt": 1795438407,
+   "txHash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "id": "0025267090738982912-0000000016"
+  },
+  {
+   "contractId": "CBKSDTYBZAQALDC2SLBYSN3ZTYMVJ24PPVKC5F42CKO2RDZKUOVNBDMT",
+   "type": "period_rolled",
+   "topics": [],
+   "data": [
+    3,
+    {
+     "$bigint": "1795438377"
+    },
+    {
+     "$bigint": "1795438407"
+    }
+   ],
+   "ledger": 5882953,
+   "closedAt": 1795438407,
+   "txHash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "id": "0025267090738982912-0000000017"
+  },
+  {
+   "contractId": "CC3BTSPG4PDOXYNRGCVPY5AVQ6QTQQY2UP3SIIBTBPLQTZCN7FIWUVM7",
+   "type": "period_rolled",
+   "topics": [],
+   "data": [
+    3,
+    {
+     "$bigint": "1795438377"
+    },
+    {
+     "$bigint": "1795438407"
+    }
+   ],
+   "ledger": 5882953,
+   "closedAt": 1795438407,
+   "txHash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "id": "0025267090738982912-0000000018"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "carry_updated",
+   "topics": [],
+   "data": [
+    3,
+    {
+     "$bigint": "650001"
+    }
+   ],
+   "ledger": 5882953,
+   "closedAt": 1795438407,
+   "txHash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "id": "0025267090738982912-0000000019"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "trigger_breached",
+   "topics": [
+    "seq"
+   ],
+   "data": [
+    3
+   ],
+   "ledger": 5882953,
+   "closedAt": 1795438407,
+   "txHash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "id": "0025267090738982912-0000000020"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "rank_lines",
+   "topics": [
+    3
+   ],
+   "data": [
+    false,
+    [
+     [
+      "fees",
+      [
+       "Fee",
+       0
+      ],
+      {
+       "$bigint": "10000000"
+      },
+      {
+       "$bigint": "10000000"
+      },
+      {
+       "$bigint": "0"
+      }
+     ],
+     [
+      "fees",
+      [
+       "Fee",
+       1
+      ],
+      {
+       "$bigint": "3188333"
+      },
+      {
+       "$bigint": "3188333"
+      },
+      {
+       "$bigint": "0"
+      }
+     ],
+     [
+      "int_a",
+      [
+       "Interest",
+       0
+      ],
+      {
+       "$bigint": "6090992"
+      },
+      {
+       "$bigint": "6000000"
+      },
+      {
+       "$bigint": "90992"
+      }
+     ],
+     [
+      "int_b",
+      [
+       "Interest",
+       1
+      ],
+      {
+       "$bigint": "1913000"
+      },
+      {
+       "$bigint": "1800000"
+      },
+      {
+       "$bigint": "113000"
+      }
+     ],
+     [
+      "int_c",
+      [
+       "Interest",
+       2
+      ],
+      {
+       "$bigint": "1594166"
+      },
+      {
+       "$bigint": "1500000"
+      },
+      {
+       "$bigint": "94166"
+      }
+     ],
+     [
+      "prin_seq",
+      [
+       "Principal",
+       0
+      ],
+      {
+       "$bigint": "2295600000"
+      },
+      {
+       "$bigint": "1177200000"
+      },
+      {
+       "$bigint": "351843"
+      }
+     ],
+     [
+      "prin_seq",
+      [
+       "Principal",
+       1
+      ],
+      {
+       "$bigint": "1147800000"
+      },
+      {
+       "$bigint": "0"
+      },
+      {
+       "$bigint": "0"
+      }
+     ],
+     [
+      "prin_seq",
+      [
+       "Principal",
+       2
+      ],
+      {
+       "$bigint": "382600000"
+      },
+      {
+       "$bigint": "0"
+      },
+      {
+       "$bigint": "0"
+      }
+     ]
+    ]
+   ],
+   "ledger": 5882953,
+   "closedAt": 1795438407,
+   "txHash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "id": "0025267090738982912-0000000021"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "period_settled",
+   "topics": [
+    3
+   ],
+   "data": [
+    {
+     "$bigint": "1050000000"
+    },
+    {
+     "$bigint": "349700000"
+    },
+    {
+     "$bigint": "638334"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "1199688333"
+    },
+    {
+     "$bigint": "200000000"
+    },
+    {
+     "$bigint": "650001"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "200650001"
+    },
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5882953,
+   "closedAt": 1795438407,
+   "txHash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "id": "0025267090738982912-0000000022"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "holder_paid",
+   "topics": [
+    "GCWQGIECM7NNQ7NV6OQVTCSDVUSCGM3TQB5NWOQV3O5QA6BT2MZFUA7L"
+   ],
+   "data": [
+    3,
+    0,
+    {
+     "$bigint": "6000000"
+    },
+    {
+     "$bigint": "1177200000"
+    }
+   ],
+   "ledger": 5882954,
+   "closedAt": 1795438412,
+   "txHash": "ab96c9b301d04812019eaea84df8eedb3b7ec128cfdccc6ea4278818ee8ad185",
+   "id": "0025267095033917440-0000000001"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "batch_done",
+   "topics": [
+    3
+   ],
+   "data": [
+    0,
+    1,
+    true
+   ],
+   "ledger": 5882954,
+   "closedAt": 1795438412,
+   "txHash": "ab96c9b301d04812019eaea84df8eedb3b7ec128cfdccc6ea4278818ee8ad185",
+   "id": "0025267095033917440-0000000002"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "holder_paid",
+   "topics": [
+    "GC57KOHW37LN3YFIPXW7A462DZZBOM4KFRLYKBHHQWLE4AVCZYCNTYXE"
+   ],
+   "data": [
+    3,
+    1,
+    {
+     "$bigint": "1800000"
+    },
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5882955,
+   "closedAt": 1795438417,
+   "txHash": "06170a8545746614c986ce130162ae08a5a64046f80ee7cf03665d6e77e8607f",
+   "id": "0025267099328970752-0000000001"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "batch_done",
+   "topics": [
+    3
+   ],
+   "data": [
+    1,
+    1,
+    true
+   ],
+   "ledger": 5882955,
+   "closedAt": 1795438417,
+   "txHash": "06170a8545746614c986ce130162ae08a5a64046f80ee7cf03665d6e77e8607f",
+   "id": "0025267099328970752-0000000002"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "holder_paid",
+   "topics": [
+    "GCXLOCBQPAS54C3MSBMA223COJE7HRAGJ3KJEN376FNDUL7LQ5JKIQXM"
+   ],
+   "data": [
+    3,
+    2,
+    {
+     "$bigint": "1500000"
+    },
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5882956,
+   "closedAt": 1795438422,
+   "txHash": "2c562a331d62cf796f60c235e4f88ff67321bc61c01216e67977f5cba53ae82b",
+   "id": "0025267103623839744-0000000001"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "batch_done",
+   "topics": [
+    3
+   ],
+   "data": [
+    2,
+    1,
+    true
+   ],
+   "ledger": 5882956,
+   "closedAt": 1795438422,
+   "txHash": "2c562a331d62cf796f60c235e4f88ff67321bc61c01216e67977f5cba53ae82b",
+   "id": "0025267103623839744-0000000002"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "distribution",
+   "topics": [
+    4
+   ],
+   "data": [
+    {
+     "$bigint": "2666831986"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "650001"
+    },
+    {
+     "$bigint": "2667481987"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000001"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "fees_paid",
+   "topics": [
+    "GCYWY7U2RPZ5PHJRIY7PBZS6QA4M2OPVILODYMD47CWMA5DVGS7DZVRM"
+   ],
+   "data": [
+    {
+     "$bigint": "10000000"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000003"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "fees_paid",
+   "topics": [
+    "GDKAUFUS6KNDECWWQM4UETOAPHZU2AEOSUYVWHLKBXC6IBXWSGIFYIO4"
+   ],
+   "data": [
+    {
+     "$bigint": "2207333"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000005"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "interest_paid",
+   "topics": [
+    0
+   ],
+   "data": [
+    4,
+    {
+     "$bigint": "2967488"
+    },
+    {
+     "$bigint": "2400000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "567488"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000006"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "interest_paid",
+   "topics": [
+    1
+   ],
+   "data": [
+    4,
+    {
+     "$bigint": "1913000"
+    },
+    {
+     "$bigint": "1800000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "113000"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000007"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "interest_paid",
+   "topics": [
+    2
+   ],
+   "data": [
+    4,
+    {
+     "$bigint": "1594166"
+    },
+    {
+     "$bigint": "1500000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "94166"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000008"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "principal_paid",
+   "topics": [
+    0
+   ],
+   "data": [
+    4,
+    {
+     "$bigint": "1118400000"
+    },
+    {
+     "$bigint": "186400000"
+    },
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000009"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "factor_updated",
+   "topics": [
+    0
+   ],
+   "data": [
+    4,
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000010"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "principal_paid",
+   "topics": [
+    1
+   ],
+   "data": [
+    4,
+    {
+     "$bigint": "1147800000"
+    },
+    {
+     "$bigint": "382600000"
+    },
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000011"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "factor_updated",
+   "topics": [
+    1
+   ],
+   "data": [
+    4,
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000012"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "principal_paid",
+   "topics": [
+    2
+   ],
+   "data": [
+    4,
+    {
+     "$bigint": "382600000"
+    },
+    {
+     "$bigint": "382600000"
+    },
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000013"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "factor_updated",
+   "topics": [
+    2
+   ],
+   "data": [
+    4,
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000014"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "period_funded",
+   "topics": [
+    4
+   ],
+   "data": [
+    0,
+    {
+     "$bigint": "2400000"
+    },
+    {
+     "$bigint": "1118400000"
+    },
+    {
+     "$bigint": "186400000"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000016"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "period_funded",
+   "topics": [
+    4
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "1800000"
+    },
+    {
+     "$bigint": "1147800000"
+    },
+    {
+     "$bigint": "382600000"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000017"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "period_funded",
+   "topics": [
+    4
+   ],
+   "data": [
+    2,
+    {
+     "$bigint": "1500000"
+    },
+    {
+     "$bigint": "382600000"
+    },
+    {
+     "$bigint": "382600000"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000018"
+  },
+  {
+   "contractId": "CC65LFMB2EUBCKVURUYE7ELZOFTDDVUCC5NG4ZNKU332QPWQBDIGVHJO",
+   "type": "period_rolled",
+   "topics": [],
+   "data": [
+    4,
+    {
+     "$bigint": "1795438407"
+    },
+    {
+     "$bigint": "1795438437"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000019"
+  },
+  {
+   "contractId": "CBKSDTYBZAQALDC2SLBYSN3ZTYMVJ24PPVKC5F42CKO2RDZKUOVNBDMT",
+   "type": "period_rolled",
+   "topics": [],
+   "data": [
+    4,
+    {
+     "$bigint": "1795438407"
+    },
+    {
+     "$bigint": "1795438437"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000020"
+  },
+  {
+   "contractId": "CC3BTSPG4PDOXYNRGCVPY5AVQ6QTQQY2UP3SIIBTBPLQTZCN7FIWUVM7",
+   "type": "period_rolled",
+   "topics": [],
+   "data": [
+    4,
+    {
+     "$bigint": "1795438407"
+    },
+    {
+     "$bigint": "1795438437"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000021"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "residual_paid",
+   "topics": [
+    "GCEJ3AEJZF764K2IKREKTZGCGRXLPK6CJF2YEKQNEWXBNMGAH6EX4P5L"
+   ],
+   "data": [
+    {
+     "$bigint": "200774654"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000023"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "matured",
+   "topics": [],
+   "data": [
+    4
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000024"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "carry_updated",
+   "topics": [],
+   "data": [
+    4,
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000025"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "rank_lines",
+   "topics": [
+    4
+   ],
+   "data": [
+    false,
+    [
+     [
+      "fees",
+      [
+       "Fee",
+       0
+      ],
+      {
+       "$bigint": "10000000"
+      },
+      {
+       "$bigint": "10000000"
+      },
+      {
+       "$bigint": "0"
+      }
+     ],
+     [
+      "fees",
+      [
+       "Fee",
+       1
+      ],
+      {
+       "$bigint": "2207333"
+      },
+      {
+       "$bigint": "2207333"
+      },
+      {
+       "$bigint": "0"
+      }
+     ],
+     [
+      "int_a",
+      [
+       "Interest",
+       0
+      ],
+      {
+       "$bigint": "2967488"
+      },
+      {
+       "$bigint": "2400000"
+      },
+      {
+       "$bigint": "567488"
+      }
+     ],
+     [
+      "int_b",
+      [
+       "Interest",
+       1
+      ],
+      {
+       "$bigint": "1913000"
+      },
+      {
+       "$bigint": "1800000"
+      },
+      {
+       "$bigint": "113000"
+      }
+     ],
+     [
+      "int_c",
+      [
+       "Interest",
+       2
+      ],
+      {
+       "$bigint": "1594166"
+      },
+      {
+       "$bigint": "1500000"
+      },
+      {
+       "$bigint": "94166"
+      }
+     ],
+     [
+      "prin_seq",
+      [
+       "Principal",
+       0
+      ],
+      {
+       "$bigint": "1118400000"
+      },
+      {
+       "$bigint": "1118400000"
+      },
+      {
+       "$bigint": "0"
+      }
+     ],
+     [
+      "prin_seq",
+      [
+       "Principal",
+       1
+      ],
+      {
+       "$bigint": "1147800000"
+      },
+      {
+       "$bigint": "1147800000"
+      },
+      {
+       "$bigint": "0"
+      }
+     ],
+     [
+      "prin_seq",
+      [
+       "Principal",
+       2
+      ],
+      {
+       "$bigint": "382600000"
+      },
+      {
+       "$bigint": "382600000"
+      },
+      {
+       "$bigint": "0"
+      }
+     ]
+    ]
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000026"
+  },
+  {
+   "contractId": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+   "type": "period_settled",
+   "topics": [
+    4
+   ],
+   "data": [
+    {
+     "$bigint": "2666831986"
+    },
+    {
+     "$bigint": "200000000"
+    },
+    {
+     "$bigint": "650001"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "2867481987"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5882959,
+   "closedAt": 1795438437,
+   "txHash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "id": "0025267116508753920-0000000027"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "holder_paid",
+   "topics": [
+    "GCWQGIECM7NNQ7NV6OQVTCSDVUSCGM3TQB5NWOQV3O5QA6BT2MZFUA7L"
+   ],
+   "data": [
+    4,
+    0,
+    {
+     "$bigint": "2400000"
+    },
+    {
+     "$bigint": "1118400000"
+    }
+   ],
+   "ledger": 5882960,
+   "closedAt": 1795438442,
+   "txHash": "3952331bb52e071b023996181cce21adcb37991422ec3584d823823b65a9bc56",
+   "id": "0025267120803717120-0000000001"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "batch_done",
+   "topics": [
+    4
+   ],
+   "data": [
+    0,
+    1,
+    true
+   ],
+   "ledger": 5882960,
+   "closedAt": 1795438442,
+   "txHash": "3952331bb52e071b023996181cce21adcb37991422ec3584d823823b65a9bc56",
+   "id": "0025267120803717120-0000000002"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "holder_paid",
+   "topics": [
+    "GC57KOHW37LN3YFIPXW7A462DZZBOM4KFRLYKBHHQWLE4AVCZYCNTYXE"
+   ],
+   "data": [
+    4,
+    1,
+    {
+     "$bigint": "1800000"
+    },
+    {
+     "$bigint": "1147800000"
+    }
+   ],
+   "ledger": 5882961,
+   "closedAt": 1795438447,
+   "txHash": "f18e9c58a43653ec4bf1b07372986b21ec8993a74051f0b045cdd9c9e61ce3d9",
+   "id": "0025267125098688512-0000000001"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "batch_done",
+   "topics": [
+    4
+   ],
+   "data": [
+    1,
+    1,
+    true
+   ],
+   "ledger": 5882961,
+   "closedAt": 1795438447,
+   "txHash": "f18e9c58a43653ec4bf1b07372986b21ec8993a74051f0b045cdd9c9e61ce3d9",
+   "id": "0025267125098688512-0000000002"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "holder_paid",
+   "topics": [
+    "GCXLOCBQPAS54C3MSBMA223COJE7HRAGJ3KJEN376FNDUL7LQ5JKIQXM"
+   ],
+   "data": [
+    4,
+    2,
+    {
+     "$bigint": "1500000"
+    },
+    {
+     "$bigint": "382600000"
+    }
+   ],
+   "ledger": 5882962,
+   "closedAt": 1795438452,
+   "txHash": "0c42b1a0ab77754deea4ad73cc926b8932314540e762274f003fe099a94e698a",
+   "id": "0025267129393684480-0000000001"
+  },
+  {
+   "contractId": "CBGB7CXQPGVBIDMPOZCYZU3ZS32YQYU26SJD3B5VA7IS2IHHVTMXRBHC",
+   "type": "batch_done",
+   "topics": [
+    4
+   ],
+   "data": [
+    2,
+    1,
+    true
+   ],
+   "ledger": 5882962,
+   "closedAt": 1795438452,
+   "txHash": "0c42b1a0ab77754deea4ad73cc926b8932314540e762274f003fe099a94e698a",
+   "id": "0025267129393684480-0000000002"
+  }
+ ],
+ "transactions": [
+  {
+   "hash": "8ffc2996aa6e88765115c8fe56cb0950c0b57f08b26e3ca71aa772d9f1b2adcc",
+   "step": "deploy-deal",
+   "signer": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2",
+   "ledger": 5882909
+  },
+  {
+   "hash": "62f6285e6aae62281fca2176e13fe2f82980ea0dc01c923b1004e5a32d274eec",
+   "step": "deploy-note-A",
+   "signer": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2",
+   "ledger": 5882910
+  },
+  {
+   "hash": "ad32b7030558721b65d26fd3ab591217c571868aa5aa3165fe2d7539879b2bf3",
+   "step": "deploy-note-B",
+   "signer": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2",
+   "ledger": 5882911
+  },
+  {
+   "hash": "7ee7646e32d94bb08b091b4597ad4c343f62e51917b136ba6271620e79f4aaf4",
+   "step": "deploy-note-C",
+   "signer": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2",
+   "ledger": 5882912
+  },
+  {
+   "hash": "a66b4a8198dba2b6da52296fb245234f1fcd8a6c8fd4e7142b4c8096e8f511c0",
+   "step": "deploy-paying-agent",
+   "signer": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2",
+   "ledger": 5882913
+  },
+  {
+   "hash": "0794160d173f7b357e949cc2f98dd6eea536a5cbef4f21781217eb1cbef2e780",
+   "step": "set-wiring",
+   "signer": "GC5FLOFIOEKU75I3L6GFJFPBY7AABHYH5SYO77G2H2SDWEIY5NZAYLDU",
+   "ledger": 5882914
+  },
+  {
+   "hash": "a2c5a58b82eef5f422c95620ba075ac82bc2317595f85e3506c2665cfc6de7ee",
+   "step": "set-eligible",
+   "signer": "GC5FLOFIOEKU75I3L6GFJFPBY7AABHYH5SYO77G2H2SDWEIY5NZAYLDU",
+   "ledger": 5882915
+  },
+  {
+   "hash": "4ab3d78bfaea7baa6837148fecef630c3074a73c9bf3a08aef7dbb1989a6dba5",
+   "ledger": 5882921,
+   "step": "subscribe, Class A, 6 note(s)",
+   "signer": "GCWQGIECM7NNQ7NV6OQVTCSDVUSCGM3TQB5NWOQV3O5QA6BT2MZFUA7L"
+  },
+  {
+   "hash": "6f2925e1c8b595718648233094029cf43e4a2b7113a466528db953b9e84296f1",
+   "ledger": 5882923,
+   "step": "subscribe, Class B, 3 note(s)",
+   "signer": "GC57KOHW37LN3YFIPXW7A462DZZBOM4KFRLYKBHHQWLE4AVCZYCNTYXE"
+  },
+  {
+   "hash": "cd12cfcc583bbff64c4b6d4b0c0abb9b42963d52dd8216c3fd12d614dcb750b0",
+   "ledger": 5882925,
+   "step": "subscribe, Class C, 1 note(s)",
+   "signer": "GCXLOCBQPAS54C3MSBMA223COJE7HRAGJ3KJEN376FNDUL7LQ5JKIQXM"
+  },
+  {
+   "hash": "592299fe9b69dfb136e907adceebbf6059c766cc40572baf27ef7a66f9f27876",
+   "ledger": 5882927,
+   "step": "fund_sub_loan",
+   "signer": "GCEJ3AEJZF764K2IKREKTZGCGRXLPK6CJF2YEKQNEWXBNMGAH6EX4P5L"
+  },
+  {
+   "hash": "0e6df8dbe3cac3619a4d85530b12f467d324e078390dcba70dbeb7cbf34cd29a",
+   "ledger": 5882933,
+   "step": "close (closing DvP)",
+   "signer": "GC5FLOFIOEKU75I3L6GFJFPBY7AABHYH5SYO77G2H2SDWEIY5NZAYLDU"
+  },
+  {
+   "hash": "35c224283b9aa656dac4adb0fd6d5987b1a6895bc7aaee8e0e766e42d9f1d25f",
+   "ledger": 5882937,
+   "step": "set_rate, 2484 units",
+   "signer": "GB6N5XUASLSGRGRYUFQZ5IHWCMGYVBJZYSZX7FDLOXCD6WYPC274G5QI"
+  },
+  {
+   "hash": "5846de605e051691611313c7041ee971a60bb995934ab7c71d58bc87633c906a",
+   "ledger": 5882939,
+   "step": "distribute, period 1",
+   "signer": "GDKAUFUS6KNDECWWQM4UETOAPHZU2AEOSUYVWHLKBXC6IBXWSGIFYIO4"
+  },
+  {
+   "hash": "95dcd7ecc538473a6b35e2b7aabbb963a693c6bd20bf855dcc9254eb9d9664b1",
+   "ledger": 5882940,
+   "step": "push_batch, period 1, Class A",
+   "signer": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2"
+  },
+  {
+   "hash": "dabc260b281bf9450c32d8390d3f102a5028b0776008da75ee117631a31c5a08",
+   "ledger": 5882943,
+   "step": "push_batch, period 1, Class B",
+   "signer": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2"
+  },
+  {
+   "hash": "d1b394b0e5d1dcbc0cad8aee8ba5eb7efd750ad54882a23af098b443454b948b",
+   "ledger": 5882944,
+   "step": "push_batch, period 1, Class C",
+   "signer": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2"
+  },
+  {
+   "hash": "b7010f2393cb57451ed7ccdf3c1ba803204df0a58a6d1bd1c20b240e427e32f7",
+   "ledger": 5882947,
+   "step": "distribute, period 2",
+   "signer": "GDKAUFUS6KNDECWWQM4UETOAPHZU2AEOSUYVWHLKBXC6IBXWSGIFYIO4"
+  },
+  {
+   "hash": "783e48b6b1aae62dde20410081a4085e2ffafc5ecbb1d216c15ba838f33ff632",
+   "ledger": 5882948,
+   "step": "push_batch, period 2, Class A",
+   "signer": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2"
+  },
+  {
+   "hash": "d3d8c0bf4879afcfb31a78f0c3924c65dd43a958c7143b1cc4bc47bbffb41678",
+   "ledger": 5882949,
+   "step": "push_batch, period 2, Class B",
+   "signer": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2"
+  },
+  {
+   "hash": "e32fcdc379b53e048146544230418075b6fae1aefa1afc7b1a65b492f475bba1",
+   "ledger": 5882950,
+   "step": "push_batch, period 2, Class C",
+   "signer": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2"
+  },
+  {
+   "hash": "98abe04941f62fb4cde9d6e1f063e8e70e44035f47ce970a4661bcd98eec6e7c",
+   "ledger": 5882953,
+   "step": "distribute, period 3",
+   "signer": "GDKAUFUS6KNDECWWQM4UETOAPHZU2AEOSUYVWHLKBXC6IBXWSGIFYIO4"
+  },
+  {
+   "hash": "ab96c9b301d04812019eaea84df8eedb3b7ec128cfdccc6ea4278818ee8ad185",
+   "ledger": 5882954,
+   "step": "push_batch, period 3, Class A",
+   "signer": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2"
+  },
+  {
+   "hash": "06170a8545746614c986ce130162ae08a5a64046f80ee7cf03665d6e77e8607f",
+   "ledger": 5882955,
+   "step": "push_batch, period 3, Class B",
+   "signer": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2"
+  },
+  {
+   "hash": "2c562a331d62cf796f60c235e4f88ff67321bc61c01216e67977f5cba53ae82b",
+   "ledger": 5882956,
+   "step": "push_batch, period 3, Class C",
+   "signer": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2"
+  },
+  {
+   "hash": "580b69bb648d58210839c6b35d04b8d06ef89e23e6e2dd5aa36d3f18ce842884",
+   "ledger": 5882959,
+   "step": "distribute, period 4 (maturity)",
+   "signer": "GDKAUFUS6KNDECWWQM4UETOAPHZU2AEOSUYVWHLKBXC6IBXWSGIFYIO4"
+  },
+  {
+   "hash": "3952331bb52e071b023996181cce21adcb37991422ec3584d823823b65a9bc56",
+   "ledger": 5882960,
+   "step": "push_batch, period 4, Class A",
+   "signer": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2"
+  },
+  {
+   "hash": "f18e9c58a43653ec4bf1b07372986b21ec8993a74051f0b045cdd9c9e61ce3d9",
+   "ledger": 5882961,
+   "step": "push_batch, period 4, Class B",
+   "signer": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2"
+  },
+  {
+   "hash": "0c42b1a0ab77754deea4ad73cc926b8932314540e762274f003fe099a94e698a",
+   "ledger": 5882962,
+   "step": "push_batch, period 4, Class C",
+   "signer": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2"
+  }
+ ],
+ "accounts": [],
+ "fixings": {}
+}

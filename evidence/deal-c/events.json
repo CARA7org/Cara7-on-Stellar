@@ -1,0 +1,1693 @@
+{
+ "label": "Deal C (D3 Dfns custody, self-issued test EURC)",
+ "network": "testnet",
+ "collectedAt": "2026-11-24T06:55:42.883Z",
+ "fromLedger": 5893150,
+ "latestLedger": 5895936,
+ "snapshot": {
+  "deal": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+  "payingAgent": "CCP7LGA3W6GYEP2CFMIGMFILYDW5HWVDTOVYXNYEDEGQ6IFBCHTLJLQR",
+  "notes": [
+   "CAFJORGHJ63AQD55JATT5VX7LZ7WHNA25UQ74I73WL55IEA4FJB543IJ",
+   "CDNCI4CVPSD6LOJH3Z6N5OFPDWT6442SPO3Q6XFG4323DYG3DNOSQCYY",
+   "CAMNNSHHKJFYMPZSFSEMVZMT7INTIDFYASAJXRTZIZ6OPAV5MXBWPSFN"
+  ],
+  "asset": {
+   "contractId": "CBEO2RDQKBM7S3TYOYKBWAJEC6WMYPCW6JJWX47UCLFMUJI2EUZPJOXW",
+   "symbol": "EURC",
+   "decimals": 7
+  },
+  "config": {
+   "admin": "GAETDRSUVCR3WIMUXDSMTMG3ZVTYVLGIEW4C4ISPTWZWEEVM436ZCMHK",
+   "asset": "CBEO2RDQKBM7S3TYOYKBWAJEC6WMYPCW6JJWX47UCLFMUJI2EUZPJOXW",
+   "oracle": "CATT7CLFJ5HMF62NCX3AQ644R47BKA37QCNO3JO2XGFJBP4XDI56O3F2",
+   "seller": "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI",
+   "servicer": "GBHYXZJPKYQA4L4N52LUFSKRZ4QKZHKDEPUWMNEBTOACGA5T3IMKYNSG",
+   "daysInPeriod": 30,
+   "oracleMaxStalenessSecs": {
+    "$bigint": "604800"
+   },
+   "noteDenomination": {
+    "$bigint": "1000000000"
+   },
+   "roundUnit": {
+    "$bigint": "100000"
+   },
+   "classes": [
+    {
+     "rate": {
+      "kind": "floating",
+      "units": {
+       "$bigint": "600"
+      }
+     },
+     "totalNotes": {
+      "$bigint": "10"
+     },
+     "floor": {
+      "$bigint": "0"
+     },
+     "indexFloor": null
+    },
+    {
+     "rate": {
+      "kind": "fixed",
+      "units": {
+       "$bigint": "1000"
+      }
+     },
+     "totalNotes": {
+      "$bigint": "5"
+     },
+     "floor": null,
+     "indexFloor": null
+    },
+    {
+     "rate": {
+      "kind": "fixed",
+      "units": {
+       "$bigint": "1500"
+      }
+     },
+     "totalNotes": {
+      "$bigint": "3"
+     },
+     "floor": null,
+     "indexFloor": null
+    }
+   ],
+   "fees": [
+    {
+     "recipient": "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI",
+     "amount": {
+      "kind": "fixed",
+      "amount": {
+       "$bigint": "50000000"
+      }
+     }
+    }
+   ],
+   "reserve": {
+    "required": {
+     "kind": "fixed",
+     "amount": {
+      "$bigint": "1000000000"
+     }
+    },
+    "release": "full",
+    "drawRanks": []
+   },
+   "triggers": [],
+   "normal": [
+    {
+     "id": "fees",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "fee",
+       "index": 0
+      }
+     ]
+    },
+    {
+     "id": "int_a",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "interest",
+       "class": 0
+      }
+     ]
+    },
+    {
+     "id": "int_b",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "interest",
+       "class": 1
+      }
+     ]
+    },
+    {
+     "id": "int_c",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "interest",
+       "class": 2
+      }
+     ]
+    },
+    {
+     "id": "reserve",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "reserveRefill"
+      }
+     ]
+    },
+    {
+     "id": "principal",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "principal",
+       "class": 0
+      },
+      {
+       "kind": "principal",
+       "class": 1
+      },
+      {
+       "kind": "principal",
+       "class": 2
+      }
+     ]
+    },
+    {
+     "id": "residual",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "residual"
+      }
+     ]
+    }
+   ],
+   "enforced": [
+    {
+     "id": "fees",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "fee",
+       "index": 0
+      }
+     ]
+    },
+    {
+     "id": "acc_a",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "interest",
+       "class": 0
+      },
+      {
+       "kind": "principal",
+       "class": 0
+      }
+     ]
+    },
+    {
+     "id": "acc_b",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "interest",
+       "class": 1
+      },
+      {
+       "kind": "principal",
+       "class": 1
+      }
+     ]
+    },
+    {
+     "id": "acc_c",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "interest",
+       "class": 2
+      },
+      {
+       "kind": "principal",
+       "class": 2
+      }
+     ]
+    },
+    {
+     "id": "residual",
+     "when": {
+      "kind": "always"
+     },
+     "alloc": "sequential",
+     "items": [
+      {
+       "kind": "residual"
+      }
+     ]
+    }
+   ]
+  },
+  "reporter": "GAQ7GZ2OSPIPIIF6WQ5XPHZJZ4IPOSZVH6X4IOHGWT32CYJB45ZJUIQM",
+  "crank": "GAJ2IQ2UCUFFGJYSLAJOHTOIKEDQXETWXRJ6I6YD2RPJABY3J5J5REHO",
+  "fixingHistory": [
+   {
+    "price": {
+     "$bigint": "2484"
+    },
+    "timestamp": {
+     "$bigint": "1795502873"
+    }
+   }
+  ],
+  "state": "Amortizing",
+  "nextPeriod": 2,
+  "reserve": {
+   "$bigint": "1000000000"
+  },
+  "carry": {
+   "$bigint": "1400000"
+  },
+  "owedTotal": {
+   "$bigint": "0"
+  },
+  "balance": {
+   "$bigint": "1001400000"
+  },
+  "agentBalance": {
+   "$bigint": "0"
+  },
+  "perNote": [
+   {
+    "$bigint": "708400000"
+   },
+   {
+    "$bigint": "1000000000"
+   },
+   {
+    "$bigint": "1000000000"
+   }
+  ],
+  "shortfall": [
+   {
+    "$bigint": "0"
+   },
+   {
+    "$bigint": "0"
+   },
+   {
+    "$bigint": "0"
+   }
+  ],
+  "dust": [
+   {
+    "$bigint": "0"
+   },
+   {
+    "$bigint": "0"
+   },
+   {
+    "$bigint": "0"
+   }
+  ],
+  "holders": [
+   {
+    "class": 0,
+    "holder": "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV",
+    "notes": {
+     "$bigint": "7"
+    },
+    "interestPaid": {
+     "$bigint": "17500000"
+    },
+    "principalPaid": {
+     "$bigint": "2041200000"
+    },
+    "claimableInterest": {
+     "$bigint": "0"
+    },
+    "claimablePrincipal": {
+     "$bigint": "0"
+    }
+   },
+   {
+    "class": 0,
+    "holder": "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI",
+    "notes": {
+     "$bigint": "3"
+    },
+    "interestPaid": {
+     "$bigint": "7500000"
+    },
+    "principalPaid": {
+     "$bigint": "874800000"
+    },
+    "claimableInterest": {
+     "$bigint": "0"
+    },
+    "claimablePrincipal": {
+     "$bigint": "0"
+    }
+   },
+   {
+    "class": 1,
+    "holder": "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI",
+    "notes": {
+     "$bigint": "5"
+    },
+    "interestPaid": {
+     "$bigint": "4000000"
+    },
+    "principalPaid": {
+     "$bigint": "0"
+    },
+    "claimableInterest": {
+     "$bigint": "0"
+    },
+    "claimablePrincipal": {
+     "$bigint": "0"
+    }
+   },
+   {
+    "class": 2,
+    "holder": "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI",
+    "notes": {
+     "$bigint": "3"
+    },
+    "interestPaid": {
+     "$bigint": "3600000"
+    },
+    "principalPaid": {
+     "$bigint": "0"
+    },
+    "claimableInterest": {
+     "$bigint": "0"
+    },
+    "claimablePrincipal": {
+     "$bigint": "0"
+    }
+   }
+  ],
+  "code": {
+   "deal": "5a5fedeaff280170ea28fb618a2587d992012e2fab4cab02504b7e50eaaead7a",
+   "note": "4498e0661fa55f2ee71899fe4bba88a49b4d2f195ee390905e1e01cf544201a2",
+   "agent": "667fc2fdea335f73a1e2a8a141eb4ba1525a4202124073cec059c45a5d8c1603"
+  },
+  "compare": [
+   {
+    "deal": "CAYGDU72HJ6LBDOEEIFH2J3DTPCXECQ5WVTTCFZV6JVH76D2HXOEZRUF",
+    "code": {
+     "deal": "5a5fedeaff280170ea28fb618a2587d992012e2fab4cab02504b7e50eaaead7a",
+     "note": "4498e0661fa55f2ee71899fe4bba88a49b4d2f195ee390905e1e01cf544201a2",
+     "agent": "667fc2fdea335f73a1e2a8a141eb4ba1525a4202124073cec059c45a5d8c1603"
+    }
+   },
+   {
+    "deal": "CCEW5FTOZHOPQLZPJESF7F6RCZCOVAEDIQDXU6FD66XGYINQKLJ4CQI3",
+    "code": {
+     "deal": "5a5fedeaff280170ea28fb618a2587d992012e2fab4cab02504b7e50eaaead7a",
+     "note": "4498e0661fa55f2ee71899fe4bba88a49b4d2f195ee390905e1e01cf544201a2",
+     "agent": "667fc2fdea335f73a1e2a8a141eb4ba1525a4202124073cec059c45a5d8c1603"
+    }
+   }
+  ]
+ },
+ "events": [
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "eligibility_set",
+   "topics": [
+    "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI"
+   ],
+   "data": [
+    true
+   ],
+   "ledger": 5893172,
+   "closedAt": 1795489502,
+   "txHash": "f3904b8a3554a1b432df9e751ee39aa3c34fd48461b3799adc34f66232d92d6a",
+   "id": "0025310981009768448-0000000000"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "eligibility_set",
+   "topics": [
+    "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV"
+   ],
+   "data": [
+    true
+   ],
+   "ledger": 5893172,
+   "closedAt": 1795489502,
+   "txHash": "f3904b8a3554a1b432df9e751ee39aa3c34fd48461b3799adc34f66232d92d6a",
+   "id": "0025310981009768448-0000000001"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "eligibility_set",
+   "topics": [
+    "GBYGTYZK2FWRJ7KTTWBMXIUMHZXO7GFM6KQ6C45Y3Q6W3ABTWBJ5KY7V"
+   ],
+   "data": [
+    true
+   ],
+   "ledger": 5893172,
+   "closedAt": 1795489502,
+   "txHash": "f3904b8a3554a1b432df9e751ee39aa3c34fd48461b3799adc34f66232d92d6a",
+   "id": "0025310981009768448-0000000002"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "subscribed",
+   "topics": [
+    "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV"
+   ],
+   "data": [
+    0,
+    {
+     "$bigint": "2"
+    },
+    {
+     "$bigint": "2000000000"
+    }
+   ],
+   "ledger": 5893207,
+   "closedAt": 1795489677,
+   "txHash": "5edaab51eb1d20e92afc08fac2e36c7a1647f655ebe2ff4d04da1c059792e91c",
+   "id": "0025311131333607424-0000000001"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "subscribed",
+   "topics": [
+    "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV"
+   ],
+   "data": [
+    0,
+    {
+     "$bigint": "5"
+    },
+    {
+     "$bigint": "5000000000"
+    }
+   ],
+   "ledger": 5893247,
+   "closedAt": 1795489877,
+   "txHash": "0f83b44cb92bb701f657b440306d78463da3658ce4a4c62851d25809fc8d7667",
+   "id": "0025311303132270592-0000000001"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "sub_cancelled",
+   "topics": [
+    "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV"
+   ],
+   "data": [
+    0,
+    {
+     "$bigint": "1"
+    },
+    {
+     "$bigint": "1000000000"
+    }
+   ],
+   "ledger": 5893254,
+   "closedAt": 1795489912,
+   "txHash": "d5e1bd52738e70076027b9d853a586dc82b12e92d3b6f7a66aa58552d65edac8",
+   "id": "0025311333197058048-0000000001"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "subscribed",
+   "topics": [
+    "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV"
+   ],
+   "data": [
+    0,
+    {
+     "$bigint": "1"
+    },
+    {
+     "$bigint": "1000000000"
+    }
+   ],
+   "ledger": 5893260,
+   "closedAt": 1795489942,
+   "txHash": "b060179132a5db96138faac6b5e9419fb64b491156142c80dea8e8d172e0e87d",
+   "id": "0025311358966861824-0000000001"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "subscribed",
+   "topics": [
+    "GBYGTYZK2FWRJ7KTTWBMXIUMHZXO7GFM6KQ6C45Y3Q6W3ABTWBJ5KY7V"
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "1"
+    },
+    {
+     "$bigint": "1000000000"
+    }
+   ],
+   "ledger": 5893414,
+   "closedAt": 1795490712,
+   "txHash": "1c83e4f0c571cd3a967bc530841f1cbcb4834d24e166eb8302cfe62af86977a3",
+   "id": "0025312020391837696-0000000001"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "sub_cancelled",
+   "topics": [
+    "GBYGTYZK2FWRJ7KTTWBMXIUMHZXO7GFM6KQ6C45Y3Q6W3ABTWBJ5KY7V"
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "1"
+    },
+    {
+     "$bigint": "1000000000"
+    }
+   ],
+   "ledger": 5893892,
+   "closedAt": 1795493102,
+   "txHash": "5ad50b7a580725f72ae96276277124f782f8f405763183916d775c1b0b711d2b",
+   "id": "0025314073386188800-0000000001"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "subscribed",
+   "topics": [
+    "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI"
+   ],
+   "data": [
+    0,
+    {
+     "$bigint": "3"
+    },
+    {
+     "$bigint": "3000000000"
+    }
+   ],
+   "ledger": 5893902,
+   "closedAt": 1795493152,
+   "txHash": "567782b9475769c687885a6a2c81127720accee5dfcdabfaede3085053d70a09",
+   "id": "0025314116335878144-0000000001"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "subscribed",
+   "topics": [
+    "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI"
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "5"
+    },
+    {
+     "$bigint": "5000000000"
+    }
+   ],
+   "ledger": 5893904,
+   "closedAt": 1795493162,
+   "txHash": "49467d54c756263854d571a94585177d2fc1cc760e712c6484ab5c1265b524a9",
+   "id": "0025314124925808640-0000000001"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "subscribed",
+   "topics": [
+    "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI"
+   ],
+   "data": [
+    2,
+    {
+     "$bigint": "3"
+    },
+    {
+     "$bigint": "3000000000"
+    }
+   ],
+   "ledger": 5893905,
+   "closedAt": 1795493167,
+   "txHash": "cf16dc4ca6d17a7212d949e3b4adce3b5206b8a067277552d0697ce60538425f",
+   "id": "0025314129220763648-0000000001"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "sub_loan_funded",
+   "topics": [
+    "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI"
+   ],
+   "data": [
+    {
+     "$bigint": "1000000000"
+    },
+    {
+     "$bigint": "1000000000"
+    }
+   ],
+   "ledger": 5893906,
+   "closedAt": 1795493172,
+   "txHash": "540f2b992a8a72cc466522bf3cb884e08acb28943c0aafda5d960f60ce8ba7a7",
+   "id": "0025314133515755520-0000000001"
+  },
+  {
+   "contractId": "CAFJORGHJ63AQD55JATT5VX7LZ7WHNA25UQ74I73WL55IEA4FJB543IJ",
+   "type": "issue",
+   "topics": [
+    "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV"
+   ],
+   "data": [
+    {
+     "$bigint": "7"
+    }
+   ],
+   "ledger": 5895828,
+   "closedAt": 1795502782,
+   "txHash": "2513f5c1c8f14abb2e3cce7e63e39e09cbce25829f6d1b488cdec56c80218b68",
+   "id": "0025322388442890240-0000000001"
+  },
+  {
+   "contractId": "CAFJORGHJ63AQD55JATT5VX7LZ7WHNA25UQ74I73WL55IEA4FJB543IJ",
+   "type": "issue",
+   "topics": [
+    "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI"
+   ],
+   "data": [
+    {
+     "$bigint": "3"
+    }
+   ],
+   "ledger": 5895828,
+   "closedAt": 1795502782,
+   "txHash": "2513f5c1c8f14abb2e3cce7e63e39e09cbce25829f6d1b488cdec56c80218b68",
+   "id": "0025322388442890240-0000000002"
+  },
+  {
+   "contractId": "CDNCI4CVPSD6LOJH3Z6N5OFPDWT6442SPO3Q6XFG4323DYG3DNOSQCYY",
+   "type": "issue",
+   "topics": [
+    "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI"
+   ],
+   "data": [
+    {
+     "$bigint": "5"
+    }
+   ],
+   "ledger": 5895828,
+   "closedAt": 1795502782,
+   "txHash": "2513f5c1c8f14abb2e3cce7e63e39e09cbce25829f6d1b488cdec56c80218b68",
+   "id": "0025322388442890240-0000000003"
+  },
+  {
+   "contractId": "CAMNNSHHKJFYMPZSFSEMVZMT7INTIDFYASAJXRTZIZ6OPAV5MXBWPSFN",
+   "type": "issue",
+   "topics": [
+    "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI"
+   ],
+   "data": [
+    {
+     "$bigint": "3"
+    }
+   ],
+   "ledger": 5895828,
+   "closedAt": 1795502782,
+   "txHash": "2513f5c1c8f14abb2e3cce7e63e39e09cbce25829f6d1b488cdec56c80218b68",
+   "id": "0025322388442890240-0000000004"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "deal_closed",
+   "topics": [],
+   "data": [
+    {
+     "$bigint": "18000000000"
+    },
+    {
+     "$bigint": "1000000000"
+    },
+    {
+     "$bigint": "1795502782"
+    }
+   ],
+   "ledger": 5895828,
+   "closedAt": 1795502782,
+   "txHash": "2513f5c1c8f14abb2e3cce7e63e39e09cbce25829f6d1b488cdec56c80218b68",
+   "id": "0025322388442890240-0000000005"
+  },
+  {
+   "contractId": "CATT7CLFJ5HMF62NCX3AQ644R47BKA37QCNO3JO2XGFJBP4XDI56O3F2",
+   "type": "rate_set",
+   "topics": [],
+   "data": [
+    {
+     "$bigint": "2484"
+    },
+    {
+     "$bigint": "1795502873"
+    }
+   ],
+   "ledger": 5895902,
+   "closedAt": 1795503152,
+   "txHash": "faf9ce1f2e9323ee1268bc20cc7a13654df898558d0ebfc22e9184872c029e6b",
+   "id": "0025322706270457856-0000000000"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "reserve_released",
+   "topics": [],
+   "data": [
+    {
+     "$bigint": "1000000000"
+    }
+   ],
+   "ledger": 5895913,
+   "closedAt": 1795503207,
+   "txHash": "32010a285df5cb4b63d660f0f209f3c49c523194de876100ecd1f8b9843dbe23",
+   "id": "0025322753515098112-0000000001"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "distribution",
+   "topics": [
+    1
+   ],
+   "data": [
+    {
+     "$bigint": "3000000000"
+    },
+    {
+     "$bigint": "1000000000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "4000000000"
+    }
+   ],
+   "ledger": 5895913,
+   "closedAt": 1795503207,
+   "txHash": "32010a285df5cb4b63d660f0f209f3c49c523194de876100ecd1f8b9843dbe23",
+   "id": "0025322753515098112-0000000002"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "fees_paid",
+   "topics": [
+    "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI"
+   ],
+   "data": [
+    {
+     "$bigint": "50000000"
+    }
+   ],
+   "ledger": 5895913,
+   "closedAt": 1795503207,
+   "txHash": "32010a285df5cb4b63d660f0f209f3c49c523194de876100ecd1f8b9843dbe23",
+   "id": "0025322753515098112-0000000004"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "interest_paid",
+   "topics": [
+    0
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "25700000"
+    },
+    {
+     "$bigint": "25000000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "700000"
+    }
+   ],
+   "ledger": 5895913,
+   "closedAt": 1795503207,
+   "txHash": "32010a285df5cb4b63d660f0f209f3c49c523194de876100ecd1f8b9843dbe23",
+   "id": "0025322753515098112-0000000005"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "interest_paid",
+   "topics": [
+    1
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "4166666"
+    },
+    {
+     "$bigint": "4000000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "166666"
+    }
+   ],
+   "ledger": 5895913,
+   "closedAt": 1795503207,
+   "txHash": "32010a285df5cb4b63d660f0f209f3c49c523194de876100ecd1f8b9843dbe23",
+   "id": "0025322753515098112-0000000006"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "interest_paid",
+   "topics": [
+    2
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "3750000"
+    },
+    {
+     "$bigint": "3600000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "150000"
+    }
+   ],
+   "ledger": 5895913,
+   "closedAt": 1795503207,
+   "txHash": "32010a285df5cb4b63d660f0f209f3c49c523194de876100ecd1f8b9843dbe23",
+   "id": "0025322753515098112-0000000007"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "reserve_refunded",
+   "topics": [],
+   "data": [
+    {
+     "$bigint": "1000000000"
+    },
+    {
+     "$bigint": "1000000000"
+    }
+   ],
+   "ledger": 5895913,
+   "closedAt": 1795503207,
+   "txHash": "32010a285df5cb4b63d660f0f209f3c49c523194de876100ecd1f8b9843dbe23",
+   "id": "0025322753515098112-0000000008"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "principal_paid",
+   "topics": [
+    0
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "2916000000"
+    },
+    {
+     "$bigint": "291600000"
+    },
+    {
+     "$bigint": "7084000000"
+    }
+   ],
+   "ledger": 5895913,
+   "closedAt": 1795503207,
+   "txHash": "32010a285df5cb4b63d660f0f209f3c49c523194de876100ecd1f8b9843dbe23",
+   "id": "0025322753515098112-0000000009"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "factor_updated",
+   "topics": [
+    0
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "7084000"
+    },
+    {
+     "$bigint": "708400000"
+    }
+   ],
+   "ledger": 5895913,
+   "closedAt": 1795503207,
+   "txHash": "32010a285df5cb4b63d660f0f209f3c49c523194de876100ecd1f8b9843dbe23",
+   "id": "0025322753515098112-0000000010"
+  },
+  {
+   "contractId": "CCP7LGA3W6GYEP2CFMIGMFILYDW5HWVDTOVYXNYEDEGQ6IFBCHTLJLQR",
+   "type": "period_funded",
+   "topics": [
+    1
+   ],
+   "data": [
+    0,
+    {
+     "$bigint": "25000000"
+    },
+    {
+     "$bigint": "2916000000"
+    },
+    {
+     "$bigint": "291600000"
+    }
+   ],
+   "ledger": 5895913,
+   "closedAt": 1795503207,
+   "txHash": "32010a285df5cb4b63d660f0f209f3c49c523194de876100ecd1f8b9843dbe23",
+   "id": "0025322753515098112-0000000012"
+  },
+  {
+   "contractId": "CCP7LGA3W6GYEP2CFMIGMFILYDW5HWVDTOVYXNYEDEGQ6IFBCHTLJLQR",
+   "type": "period_funded",
+   "topics": [
+    1
+   ],
+   "data": [
+    1,
+    {
+     "$bigint": "4000000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5895913,
+   "closedAt": 1795503207,
+   "txHash": "32010a285df5cb4b63d660f0f209f3c49c523194de876100ecd1f8b9843dbe23",
+   "id": "0025322753515098112-0000000013"
+  },
+  {
+   "contractId": "CCP7LGA3W6GYEP2CFMIGMFILYDW5HWVDTOVYXNYEDEGQ6IFBCHTLJLQR",
+   "type": "period_funded",
+   "topics": [
+    1
+   ],
+   "data": [
+    2,
+    {
+     "$bigint": "3600000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5895913,
+   "closedAt": 1795503207,
+   "txHash": "32010a285df5cb4b63d660f0f209f3c49c523194de876100ecd1f8b9843dbe23",
+   "id": "0025322753515098112-0000000014"
+  },
+  {
+   "contractId": "CAFJORGHJ63AQD55JATT5VX7LZ7WHNA25UQ74I73WL55IEA4FJB543IJ",
+   "type": "period_rolled",
+   "topics": [],
+   "data": [
+    1,
+    {
+     "$bigint": "1795502782"
+    },
+    {
+     "$bigint": "1795503207"
+    }
+   ],
+   "ledger": 5895913,
+   "closedAt": 1795503207,
+   "txHash": "32010a285df5cb4b63d660f0f209f3c49c523194de876100ecd1f8b9843dbe23",
+   "id": "0025322753515098112-0000000015"
+  },
+  {
+   "contractId": "CDNCI4CVPSD6LOJH3Z6N5OFPDWT6442SPO3Q6XFG4323DYG3DNOSQCYY",
+   "type": "period_rolled",
+   "topics": [],
+   "data": [
+    1,
+    {
+     "$bigint": "1795502782"
+    },
+    {
+     "$bigint": "1795503207"
+    }
+   ],
+   "ledger": 5895913,
+   "closedAt": 1795503207,
+   "txHash": "32010a285df5cb4b63d660f0f209f3c49c523194de876100ecd1f8b9843dbe23",
+   "id": "0025322753515098112-0000000016"
+  },
+  {
+   "contractId": "CAMNNSHHKJFYMPZSFSEMVZMT7INTIDFYASAJXRTZIZ6OPAV5MXBWPSFN",
+   "type": "period_rolled",
+   "topics": [],
+   "data": [
+    1,
+    {
+     "$bigint": "1795502782"
+    },
+    {
+     "$bigint": "1795503207"
+    }
+   ],
+   "ledger": 5895913,
+   "closedAt": 1795503207,
+   "txHash": "32010a285df5cb4b63d660f0f209f3c49c523194de876100ecd1f8b9843dbe23",
+   "id": "0025322753515098112-0000000017"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "carry_updated",
+   "topics": [],
+   "data": [
+    1,
+    {
+     "$bigint": "1400000"
+    }
+   ],
+   "ledger": 5895913,
+   "closedAt": 1795503207,
+   "txHash": "32010a285df5cb4b63d660f0f209f3c49c523194de876100ecd1f8b9843dbe23",
+   "id": "0025322753515098112-0000000018"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "rank_lines",
+   "topics": [
+    1
+   ],
+   "data": [
+    false,
+    [
+     [
+      "fees",
+      [
+       "Fee",
+       0
+      ],
+      {
+       "$bigint": "50000000"
+      },
+      {
+       "$bigint": "50000000"
+      },
+      {
+       "$bigint": "0"
+      }
+     ],
+     [
+      "int_a",
+      [
+       "Interest",
+       0
+      ],
+      {
+       "$bigint": "25700000"
+      },
+      {
+       "$bigint": "25000000"
+      },
+      {
+       "$bigint": "700000"
+      }
+     ],
+     [
+      "int_b",
+      [
+       "Interest",
+       1
+      ],
+      {
+       "$bigint": "4166666"
+      },
+      {
+       "$bigint": "4000000"
+      },
+      {
+       "$bigint": "166666"
+      }
+     ],
+     [
+      "int_c",
+      [
+       "Interest",
+       2
+      ],
+      {
+       "$bigint": "3750000"
+      },
+      {
+       "$bigint": "3600000"
+      },
+      {
+       "$bigint": "150000"
+      }
+     ],
+     [
+      "reserve",
+      [
+       "ReserveRefill"
+      ],
+      {
+       "$bigint": "1000000000"
+      },
+      {
+       "$bigint": "1000000000"
+      },
+      {
+       "$bigint": "0"
+      }
+     ],
+     [
+      "principal",
+      [
+       "Principal",
+       0
+      ],
+      {
+       "$bigint": "10000000000"
+      },
+      {
+       "$bigint": "2916000000"
+      },
+      {
+       "$bigint": "383334"
+      }
+     ],
+     [
+      "principal",
+      [
+       "Principal",
+       1
+      ],
+      {
+       "$bigint": "5000000000"
+      },
+      {
+       "$bigint": "0"
+      },
+      {
+       "$bigint": "0"
+      }
+     ],
+     [
+      "principal",
+      [
+       "Principal",
+       2
+      ],
+      {
+       "$bigint": "3000000000"
+      },
+      {
+       "$bigint": "0"
+      },
+      {
+       "$bigint": "0"
+      }
+     ]
+    ]
+   ],
+   "ledger": 5895913,
+   "closedAt": 1795503207,
+   "txHash": "32010a285df5cb4b63d660f0f209f3c49c523194de876100ecd1f8b9843dbe23",
+   "id": "0025322753515098112-0000000019"
+  },
+  {
+   "contractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+   "type": "period_settled",
+   "topics": [
+    1
+   ],
+   "data": [
+    {
+     "$bigint": "3000000000"
+    },
+    {
+     "$bigint": "1000000000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "2998600000"
+    },
+    {
+     "$bigint": "1000000000"
+    },
+    {
+     "$bigint": "1400000"
+    },
+    {
+     "$bigint": "0"
+    },
+    {
+     "$bigint": "1001400000"
+    },
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5895913,
+   "closedAt": 1795503207,
+   "txHash": "32010a285df5cb4b63d660f0f209f3c49c523194de876100ecd1f8b9843dbe23",
+   "id": "0025322753515098112-0000000020"
+  },
+  {
+   "contractId": "CCP7LGA3W6GYEP2CFMIGMFILYDW5HWVDTOVYXNYEDEGQ6IFBCHTLJLQR",
+   "type": "push_failed",
+   "topics": [
+    "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV"
+   ],
+   "data": [
+    1,
+    0,
+    {
+     "$bigint": "2058700000"
+    }
+   ],
+   "ledger": 5895914,
+   "closedAt": 1795503212,
+   "txHash": "a989bb25bcdd095ea7e1f0df7279d163ef0aec2d0c19c15cddf4c58eb6bfe41a",
+   "id": "0025322757810065408-0000000000"
+  },
+  {
+   "contractId": "CCP7LGA3W6GYEP2CFMIGMFILYDW5HWVDTOVYXNYEDEGQ6IFBCHTLJLQR",
+   "type": "holder_paid",
+   "topics": [
+    "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI"
+   ],
+   "data": [
+    1,
+    0,
+    {
+     "$bigint": "7500000"
+    },
+    {
+     "$bigint": "874800000"
+    }
+   ],
+   "ledger": 5895914,
+   "closedAt": 1795503212,
+   "txHash": "a989bb25bcdd095ea7e1f0df7279d163ef0aec2d0c19c15cddf4c58eb6bfe41a",
+   "id": "0025322757810065408-0000000002"
+  },
+  {
+   "contractId": "CCP7LGA3W6GYEP2CFMIGMFILYDW5HWVDTOVYXNYEDEGQ6IFBCHTLJLQR",
+   "type": "batch_done",
+   "topics": [
+    1
+   ],
+   "data": [
+    0,
+    2,
+    true
+   ],
+   "ledger": 5895914,
+   "closedAt": 1795503212,
+   "txHash": "a989bb25bcdd095ea7e1f0df7279d163ef0aec2d0c19c15cddf4c58eb6bfe41a",
+   "id": "0025322757810065408-0000000003"
+  },
+  {
+   "contractId": "CCP7LGA3W6GYEP2CFMIGMFILYDW5HWVDTOVYXNYEDEGQ6IFBCHTLJLQR",
+   "type": "holder_paid",
+   "topics": [
+    "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI"
+   ],
+   "data": [
+    1,
+    1,
+    {
+     "$bigint": "4000000"
+    },
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5895915,
+   "closedAt": 1795503217,
+   "txHash": "a4b3a7791d9220c0b3753e18768204d0d6480baed2744b18ea17f7ee98d8bfbe",
+   "id": "0025322762105012224-0000000001"
+  },
+  {
+   "contractId": "CCP7LGA3W6GYEP2CFMIGMFILYDW5HWVDTOVYXNYEDEGQ6IFBCHTLJLQR",
+   "type": "batch_done",
+   "topics": [
+    1
+   ],
+   "data": [
+    1,
+    1,
+    true
+   ],
+   "ledger": 5895915,
+   "closedAt": 1795503217,
+   "txHash": "a4b3a7791d9220c0b3753e18768204d0d6480baed2744b18ea17f7ee98d8bfbe",
+   "id": "0025322762105012224-0000000002"
+  },
+  {
+   "contractId": "CCP7LGA3W6GYEP2CFMIGMFILYDW5HWVDTOVYXNYEDEGQ6IFBCHTLJLQR",
+   "type": "holder_paid",
+   "topics": [
+    "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI"
+   ],
+   "data": [
+    1,
+    2,
+    {
+     "$bigint": "3600000"
+    },
+    {
+     "$bigint": "0"
+    }
+   ],
+   "ledger": 5895916,
+   "closedAt": 1795503222,
+   "txHash": "29dd0a4ae5e8db8147da3d1d62b9d2f2ebf1a0ec6fe70bd8d2ca63038bf35121",
+   "id": "0025322766399991808-0000000001"
+  },
+  {
+   "contractId": "CCP7LGA3W6GYEP2CFMIGMFILYDW5HWVDTOVYXNYEDEGQ6IFBCHTLJLQR",
+   "type": "batch_done",
+   "topics": [
+    1
+   ],
+   "data": [
+    2,
+    1,
+    true
+   ],
+   "ledger": 5895916,
+   "closedAt": 1795503222,
+   "txHash": "29dd0a4ae5e8db8147da3d1d62b9d2f2ebf1a0ec6fe70bd8d2ca63038bf35121",
+   "id": "0025322766399991808-0000000002"
+  },
+  {
+   "contractId": "CCP7LGA3W6GYEP2CFMIGMFILYDW5HWVDTOVYXNYEDEGQ6IFBCHTLJLQR",
+   "type": "claimed",
+   "topics": [
+    "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV"
+   ],
+   "data": [
+    0,
+    {
+     "$bigint": "17500000"
+    },
+    {
+     "$bigint": "2041200000"
+    }
+   ],
+   "ledger": 5895928,
+   "closedAt": 1795503282,
+   "txHash": "1561e7836777d73fd5e0fef3beee0841266ac4c1599fb12dd7defb27ecd95013",
+   "id": "0025322817939644416-0000000000"
+  }
+ ],
+ "transactions": [
+  {
+   "hash": "addddd8ebb2adcbbf67802a880fa10591e49a1ee7e71a3ebbcc0d3371951f87a",
+   "step": "deploy-deal",
+   "signer": "GAJ2IQ2UCUFFGJYSLAJOHTOIKEDQXETWXRJ6I6YD2RPJABY3J5J5REHO",
+   "ledger": 5893150
+  },
+  {
+   "hash": "14443b1486ec998e30fc7b4d88ee77a1f4630d966d41a7c5c820323d01f3f3d9",
+   "step": "deploy-note-A",
+   "signer": "GAJ2IQ2UCUFFGJYSLAJOHTOIKEDQXETWXRJ6I6YD2RPJABY3J5J5REHO",
+   "ledger": 5893151
+  },
+  {
+   "hash": "d127b7ba5699a58169882488f0bac774cf049829e4d5b1a9525085c4018c2b34",
+   "step": "deploy-note-B",
+   "signer": "GAJ2IQ2UCUFFGJYSLAJOHTOIKEDQXETWXRJ6I6YD2RPJABY3J5J5REHO",
+   "ledger": 5893152
+  },
+  {
+   "hash": "ddfaca31a7cf4b58bff2f8a82e69fa58d34ce950697f0b2e9505a29ffdbbc4a8",
+   "step": "deploy-note-C",
+   "signer": "GAJ2IQ2UCUFFGJYSLAJOHTOIKEDQXETWXRJ6I6YD2RPJABY3J5J5REHO",
+   "ledger": 5893153
+  },
+  {
+   "hash": "a7f017148dbb739c02dc6c7411c9ea7b01199a510acb2df0ac5253c9655abf22",
+   "step": "deploy-paying-agent",
+   "signer": "GAJ2IQ2UCUFFGJYSLAJOHTOIKEDQXETWXRJ6I6YD2RPJABY3J5J5REHO",
+   "ledger": 5893154
+  },
+  {
+   "hash": "d76c76e14e01b353d9938e4f0ebc90764526046d3f47f74d905321a13d388d45",
+   "step": "set-wiring",
+   "signer": "GAETDRSUVCR3WIMUXDSMTMG3ZVTYVLGIEW4C4ISPTWZWEEVM436ZCMHK",
+   "ledger": 5893166
+  },
+  {
+   "hash": "f3904b8a3554a1b432df9e751ee39aa3c34fd48461b3799adc34f66232d92d6a",
+   "step": "set-eligible",
+   "signer": "GAETDRSUVCR3WIMUXDSMTMG3ZVTYVLGIEW4C4ISPTWZWEEVM436ZCMHK",
+   "ledger": 5893172
+  },
+  {
+   "hash": "5edaab51eb1d20e92afc08fac2e36c7a1647f655ebe2ff4d04da1c059792e91c",
+   "ledger": 5893207,
+   "step": "subscribe, Class A, 2 note(s)",
+   "signer": "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV"
+  },
+  {
+   "hash": "0f83b44cb92bb701f657b440306d78463da3658ce4a4c62851d25809fc8d7667",
+   "ledger": 5893247,
+   "step": "subscribe, Class A, 5 note(s)",
+   "signer": "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV"
+  },
+  {
+   "hash": "d5e1bd52738e70076027b9d853a586dc82b12e92d3b6f7a66aa58552d65edac8",
+   "ledger": 5893254,
+   "step": "cancel, Class A, 1 note(s)",
+   "signer": "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV"
+  },
+  {
+   "hash": "b060179132a5db96138faac6b5e9419fb64b491156142c80dea8e8d172e0e87d",
+   "ledger": 5893260,
+   "step": "subscribe, Class A, 1 note(s)",
+   "signer": "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV"
+  },
+  {
+   "hash": "1c83e4f0c571cd3a967bc530841f1cbcb4834d24e166eb8302cfe62af86977a3",
+   "ledger": 5893414,
+   "step": "subscribe, Class B, 1 note(s)",
+   "signer": "GBYGTYZK2FWRJ7KTTWBMXIUMHZXO7GFM6KQ6C45Y3Q6W3ABTWBJ5KY7V"
+  },
+  {
+   "hash": "5ad50b7a580725f72ae96276277124f782f8f405763183916d775c1b0b711d2b",
+   "ledger": 5893892,
+   "step": "cancel, Class B, 1 note(s)",
+   "signer": "GBYGTYZK2FWRJ7KTTWBMXIUMHZXO7GFM6KQ6C45Y3Q6W3ABTWBJ5KY7V"
+  },
+  {
+   "hash": "567782b9475769c687885a6a2c81127720accee5dfcdabfaede3085053d70a09",
+   "ledger": 5893902,
+   "step": "subscribe, Class A, 3 note(s)",
+   "signer": "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI"
+  },
+  {
+   "hash": "49467d54c756263854d571a94585177d2fc1cc760e712c6484ab5c1265b524a9",
+   "ledger": 5893904,
+   "step": "subscribe, Class B, 5 note(s)",
+   "signer": "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI"
+  },
+  {
+   "hash": "cf16dc4ca6d17a7212d949e3b4adce3b5206b8a067277552d0697ce60538425f",
+   "ledger": 5893905,
+   "step": "subscribe, Class C, 3 note(s)",
+   "signer": "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI"
+  },
+  {
+   "hash": "540f2b992a8a72cc466522bf3cb884e08acb28943c0aafda5d960f60ce8ba7a7",
+   "ledger": 5893906,
+   "step": "fund_sub_loan",
+   "signer": "GCV6OX6GKQOJJGD3DTF5AIENK3EKR64OPHCNCX5MGZUT2KTDD5QGFFRI"
+  },
+  {
+   "hash": "2513f5c1c8f14abb2e3cce7e63e39e09cbce25829f6d1b488cdec56c80218b68",
+   "ledger": 5895828,
+   "step": "close (closing DvP)",
+   "signer": "GAETDRSUVCR3WIMUXDSMTMG3ZVTYVLGIEW4C4ISPTWZWEEVM436ZCMHK"
+  },
+  {
+   "hash": "faf9ce1f2e9323ee1268bc20cc7a13654df898558d0ebfc22e9184872c029e6b",
+   "ledger": 5895902,
+   "step": "set_rate, 2484 units",
+   "signer": "GAQ7GZ2OSPIPIIF6WQ5XPHZJZ4IPOSZVH6X4IOHGWT32CYJB45ZJUIQM"
+  },
+  {
+   "hash": "32010a285df5cb4b63d660f0f209f3c49c523194de876100ecd1f8b9843dbe23",
+   "ledger": 5895913,
+   "step": "distribute, period 1",
+   "signer": "GBHYXZJPKYQA4L4N52LUFSKRZ4QKZHKDEPUWMNEBTOACGA5T3IMKYNSG"
+  },
+  {
+   "hash": "a989bb25bcdd095ea7e1f0df7279d163ef0aec2d0c19c15cddf4c58eb6bfe41a",
+   "ledger": 5895914,
+   "step": "push_batch, period 1, Class A, 1 push failed",
+   "signer": "GAJ2IQ2UCUFFGJYSLAJOHTOIKEDQXETWXRJ6I6YD2RPJABY3J5J5REHO"
+  },
+  {
+   "hash": "a4b3a7791d9220c0b3753e18768204d0d6480baed2744b18ea17f7ee98d8bfbe",
+   "ledger": 5895915,
+   "step": "push_batch, period 1, Class B",
+   "signer": "GAJ2IQ2UCUFFGJYSLAJOHTOIKEDQXETWXRJ6I6YD2RPJABY3J5J5REHO"
+  },
+  {
+   "hash": "29dd0a4ae5e8db8147da3d1d62b9d2f2ebf1a0ec6fe70bd8d2ca63038bf35121",
+   "ledger": 5895916,
+   "step": "push_batch, period 1, Class C",
+   "signer": "GAJ2IQ2UCUFFGJYSLAJOHTOIKEDQXETWXRJ6I6YD2RPJABY3J5J5REHO"
+  },
+  {
+   "hash": "1561e7836777d73fd5e0fef3beee0841266ac4c1599fb12dd7defb27ecd95013",
+   "ledger": 5895928,
+   "step": "claim (paying agent)",
+   "signer": "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV"
+  }
+ ],
+ "accounts": [
+  {
+   "account": "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV",
+   "hash": "5f628e5fc2b639f30c0e402703cd3e04ead23a0bae1adaaac20609e02a7e2431",
+   "createdAt": "2026-11-24T03:07:02Z",
+   "what": "change_trust EURC",
+   "successful": true
+  },
+  {
+   "account": "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV",
+   "hash": "c684a640ee4decb03caa9fc1d7cf907af44f2a1409bc423b77c36139dfe07f76",
+   "createdAt": "2026-11-24T03:07:27Z",
+   "what": "transfer",
+   "successful": true
+  },
+  {
+   "account": "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV",
+   "hash": "5edaab51eb1d20e92afc08fac2e36c7a1647f655ebe2ff4d04da1c059792e91c",
+   "createdAt": "2026-11-24T03:07:57Z",
+   "what": "subscribe",
+   "successful": true
+  },
+  {
+   "account": "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV",
+   "hash": "0f83b44cb92bb701f657b440306d78463da3658ce4a4c62851d25809fc8d7667",
+   "createdAt": "2026-11-24T03:11:17Z",
+   "what": "subscribe",
+   "successful": true
+  },
+  {
+   "account": "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV",
+   "hash": "d5e1bd52738e70076027b9d853a586dc82b12e92d3b6f7a66aa58552d65edac8",
+   "createdAt": "2026-11-24T03:11:52Z",
+   "what": "cancel",
+   "successful": true
+  },
+  {
+   "account": "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV",
+   "hash": "b060179132a5db96138faac6b5e9419fb64b491156142c80dea8e8d172e0e87d",
+   "createdAt": "2026-11-24T03:12:22Z",
+   "what": "subscribe",
+   "successful": true
+  },
+  {
+   "account": "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV",
+   "hash": "18bbfac7bcee1086d683bf807ac17aa5a2c713da1348382b8b5f62bf80cf72b3",
+   "createdAt": "2026-11-24T06:47:17Z",
+   "what": "change_trust EURC (removed)",
+   "successful": true
+  },
+  {
+   "account": "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV",
+   "hash": "8b35ee4354737eb287afad19341db99da3d8d7d5d20087dc226704cc8c51cbc5",
+   "createdAt": "2026-11-24T06:54:22Z",
+   "what": "change_trust EURC",
+   "successful": true
+  },
+  {
+   "account": "GDCXLJCUWFHD56327BBOCTGY3ICMDLOSOSQJE37IZOWZP7UWL2HUNIWV",
+   "hash": "1561e7836777d73fd5e0fef3beee0841266ac4c1599fb12dd7defb27ecd95013",
+   "createdAt": "2026-11-24T06:54:42Z",
+   "what": "claim",
+   "successful": true
+  },
+  {
+   "account": "GBYGTYZK2FWRJ7KTTWBMXIUMHZXO7GFM6KQ6C45Y3Q6W3ABTWBJ5KY7V",
+   "hash": "fd455520028eb7cee148ad87d2093430a15b4953e5da7e94c0faeecab726f7d6",
+   "createdAt": "2026-11-24T03:21:57Z",
+   "what": "change_trust EURC",
+   "successful": true
+  },
+  {
+   "account": "GBYGTYZK2FWRJ7KTTWBMXIUMHZXO7GFM6KQ6C45Y3Q6W3ABTWBJ5KY7V",
+   "hash": "0abe3523df17eb58d86a4ffc9e04341bd0b150553629225593d9fb3ba013f4a7",
+   "createdAt": "2026-11-24T03:22:07Z",
+   "what": "transfer",
+   "successful": true
+  },
+  {
+   "account": "GBYGTYZK2FWRJ7KTTWBMXIUMHZXO7GFM6KQ6C45Y3Q6W3ABTWBJ5KY7V",
+   "hash": "1c83e4f0c571cd3a967bc530841f1cbcb4834d24e166eb8302cfe62af86977a3",
+   "createdAt": "2026-11-24T03:25:12Z",
+   "what": "subscribe",
+   "successful": true
+  },
+  {
+   "account": "GBYGTYZK2FWRJ7KTTWBMXIUMHZXO7GFM6KQ6C45Y3Q6W3ABTWBJ5KY7V",
+   "hash": "5ad50b7a580725f72ae96276277124f782f8f405763183916d775c1b0b711d2b",
+   "createdAt": "2026-11-24T04:05:02Z",
+   "what": "cancel",
+   "successful": true
+  }
+ ],
+ "fixings": {}
+}

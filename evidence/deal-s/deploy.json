@@ -1,0 +1,62 @@
+{
+  "configFile": "deal.json",
+  "name": "Bavarian Sky French Auto Leases 5 (D2 demo, Circle EURC)",
+  "network": "testnet",
+  "deal": "CAYGDU72HJ6LBDOEEIFH2J3DTPCXECQ5WVTTCFZV6JVH76D2HXOEZRUF",
+  "notes": [
+    "CDHQ6BBPIHHL4K4P3H2BT5K2AUG22E3WCQWCXAB7RGDDA72WTPP3FGKS",
+    "CAUGR4VMYIUELXB2JV2RGBT76F2FHXAPMJ4XFWCGJXXYYJ7ONCTT44CL",
+    "CDAMV6TE66DY3VZVF5UMEXGVTEJKJ35CGWSLSQUULH64EQUGOKQFJRM6",
+    "CBZHJDN6JMEFISE3DBZWAO3ETFNXKLATIKCENIZD2PLYJVBOHUGHKETY"
+  ],
+  "payingAgent": "CCE6Q3XUOKX2CYBIHWGZPBYVSWONH3UJA6CYP2RLNJCXDKA4FPVSMZW4",
+  "oracle": "CAMRPVLUPYCMXAMDJXYSTSTUR3FC4JBDE3C7HOF2SMOQHK4KOQ4N2N5Z",
+  "asset": "CCUUDM434BMZMYWYDITHFXHDMIVTGGD6T2I5UKNX5BSLXLW7HVR4MCGZ",
+  "roles": {
+    "crank": "GDNAVLIKUXPCTTMRWERBXKRBS4NBBDZ2JCLONLWM55XE2C7J42XHH4Q2",
+    "admin": "GC5FLOFIOEKU75I3L6GFJFPBY7AABHYH5SYO77G2H2SDWEIY5NZAYLDU",
+    "servicer": "GDKAUFUS6KNDECWWQM4UETOAPHZU2AEOSUYVWHLKBXC6IBXWSGIFYIO4",
+    "reporter": "GB6N5XUASLSGRGRYUFQZ5IHWCMGYVBJZYSZX7FDLOXCD6WYPC274G5QI"
+  },
+  "code": {
+    "deal": "5a5fedeaff280170ea28fb618a2587d992012e2fab4cab02504b7e50eaaead7a",
+    "note": "4498e0661fa55f2ee71899fe4bba88a49b4d2f195ee390905e1e01cf544201a2",
+    "agent": "667fc2fdea335f73a1e2a8a141eb4ba1525a4202124073cec059c45a5d8c1603"
+  },
+  "initialReserve": "50000000",
+  "registryDealId": 43,
+  "transactions": [
+    {
+      "kind": "deploy-deal",
+      "hash": "8f815edb91c13d1bfa92a1910c4313620de0b875740bbf3ac352ec70ec1954e4"
+    },
+    {
+      "kind": "deploy-note-A",
+      "hash": "7066df4a57cb372b48893f599cf0036742341f7411b76a964246a9f5c339bf57"
+    },
+    {
+      "kind": "deploy-note-B",
+      "hash": "22b7f5fc5b2f64e8ac91e423e5e1cc9b6710910e33ce321e06c74c1e3d460b35"
+    },
+    {
+      "kind": "deploy-note-C",
+      "hash": "f274e45eb05c37a97a3978760721b17cf1a2a00b036236b4bc8578bc94aece1c"
+    },
+    {
+      "kind": "deploy-note-D",
+      "hash": "b406935a1870e0c120327243350d807293432d9bfb51ee03c3e41e426620b005"
+    },
+    {
+      "kind": "deploy-paying-agent",
+      "hash": "12b24f5121aec5d64c656c7c44e6ad9aa02c5cf110368a230ef1c8b02a4e0489"
+    },
+    {
+      "kind": "set-wiring",
+      "hash": "eccbcc6c91776304983fc008a5ad92dcaf158fbc7fdf9686d5eee7f781a833c9"
+    },
+    {
+      "kind": "set-eligible",
+      "hash": "8d3d545eed9844071aa4319d1725a9edb4ef10bde240468082bf3631bc8cb11b"
+    }
+  ]
+}
