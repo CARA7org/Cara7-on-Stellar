@@ -1,0 +1,39 @@
+{
+  "network": "testnet",
+  "networkPassphrase": "Test SDF Network ; September 2015",
+  "eurc": {
+    "code": "EURC",
+    "issuer": "GCB6FLVHX7OXWSUHP76WGPVOJLGPB6FGXAQKMVSWPNP6NFUWNOHQMXQA",
+    "contractId": "CBEO2RDQKBM7S3TYOYKBWAJEC6WMYPCW6JJWX47UCLFMUJI2EUZPJOXW",
+    "decimals": 7
+  },
+  "thresholdEurc": "250",
+  "maxFeeStroops": "50000000",
+  "maxValiditySeconds": 7200,
+  "deals": [
+    {
+      "name": "Bavarian Sky French Auto Leases 5 (v4)",
+      "dealContractId": "CB3S3NWG7IUKUBAWAAJPFKVMCIMTRJ73GHZX6YZASRMZPVUGYFLCATJ4",
+      "payingAgentContractId": "CAXBYHZVHXOP3HQCMXPPVZMDUYEO27CTQQQDMWVNMMGSRCBSJHGIARZW",
+      "noteDenomination": "1000000000"
+    },
+    {
+      "name": "Bavarian Sky French Auto Leases 5 (Series 2)",
+      "dealContractId": "CBVCKQH6CSGRS5W7SYZAJJ3MH5QUWNX7HKWTSLXK4YHPOSY3YZJ2I7AP",
+      "payingAgentContractId": "CCD2G6GCWW77RKX3Y4JXUOSNPD7NUAH5Y46SLV64AVACUYR5HZT7E7N4",
+      "noteDenomination": "1000000000"
+    },
+    {
+      "name": "Bavarian Sky French Auto Leases 5 (Series 4)",
+      "dealContractId": "CDP3NNLBJ7E5ZWJMUTMBPEJP2KB4UNOQ2KXMINAMO7NQAESQMKQ46SPL",
+      "payingAgentContractId": "CCLCDNQTWKGVGDH6XOC2FNEWVGOOC2KTO25JAJJHRPMP6M34QWO5K57S",
+      "noteDenomination": "1000000000"
+    },
+    {
+      "name": "Bavarian Sky French Auto Leases 5 (D3 custody demo)",
+      "dealContractId": "CBNPFPUNWJEKX5EJHFS2BJI43V4DN4WWRGTDH44ZKEEN26ZGQWVHOQ2C",
+      "payingAgentContractId": "CCP7LGA3W6GYEP2CFMIGMFILYDW5HWVDTOVYXNYEDEGQ6IFBCHTLJLQR",
+      "noteDenomination": "1000000000"
+    }
+  ]
+}

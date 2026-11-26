@@ -1,0 +1,99 @@
+generator client {
+  provider = "prisma-client"
+  output   = "../src/generated/prisma"
+}
+
+datasource db {
+  provider = "postgresql"
+}
+
+// ---------------------------------------------------------------------------
+// Investors and their passkeys. Each investor has one org-managed Dfns
+// wallet with the tag cara7:investor. The service keeps no key material.
+// ---------------------------------------------------------------------------
+
+model Investor {
+  id              String           @id
+  displayName     String           @map("display_name")
+  /// Dfns wallet id.
+  walletId        String           @unique @map("wallet_id")
+  /// Dfns signing key id of the wallet.
+  keyId           String           @map("key_id")
+  /// Stellar G-address of the wallet.
+  address         String           @unique
+  /// testnet | mainnet
+  network         String
+  createdAt       DateTime         @default(now()) @map("created_at")
+  passkeys        Passkey[]
+  sessions        Session[]
+  signingRequests SigningRequest[]
+
+  @@map("investor")
+}
+
+/// One WebAuthn credential. The id is the base64url credential id.
+model Passkey {
+  id         String   @id
+  investorId String   @map("investor_id")
+  /// COSE public key of the credential.
+  publicKey  Bytes    @map("public_key")
+  /// Signature counter (uint32).
+  counter    BigInt   @default(0)
+  transports String[]
+  createdAt  DateTime @default(now()) @map("created_at")
+  investor   Investor @relation(fields: [investorId], references: [id], onDelete: Cascade)
+
+  @@index([investorId])
+  @@map("passkey")
+}
+
+/// A login session. The service stores only the SHA-256 of the token.
+model Session {
+  id         String   @id @default(uuid())
+  tokenHash  String   @unique @map("token_hash")
+  investorId String   @map("investor_id")
+  expiresAt  DateTime @map("expires_at")
+  createdAt  DateTime @default(now()) @map("created_at")
+  investor   Investor @relation(fields: [investorId], references: [id], onDelete: Cascade)
+
+  @@index([investorId])
+  @@map("session")
+}
+
+/// A WebAuthn challenge. It expires after 5 minutes and works once.
+model Challenge {
+  id          String   @id
+  /// register | login
+  kind        String
+  challenge   String
+  /// Set for a registration challenge only.
+  displayName String?  @map("display_name")
+  expiresAt   DateTime @map("expires_at")
+  createdAt   DateTime @default(now()) @map("created_at")
+
+  @@index([expiresAt])
+  @@map("challenge")
+}
+
+/// One Dfns signature request that an investor started.
+model SigningRequest {
+  id              String   @id
+  investorId      String   @map("investor_id")
+  dfnsSignatureId String   @unique @map("dfns_signature_id")
+  keyId           String   @map("key_id")
+  /// Hex hash of the prepared transaction. The signed envelope must match it.
+  preparedHash    String   @map("prepared_hash")
+  /// pending | signed | rejected | failed
+  status          String
+  approvalId      String?  @map("approval_id")
+  reason          String?
+  /// auto | needs_approval
+  decision        String
+  summary         Json
+  createdAt       DateTime @default(now()) @map("created_at")
+  updatedAt       DateTime @updatedAt @map("updated_at")
+  investor        Investor @relation(fields: [investorId], references: [id], onDelete: Cascade)
+
+  @@index([investorId, status])
+  @@map("signing_request")
+}

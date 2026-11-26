@@ -1,0 +1,42 @@
+{
+  "name": "custody-api",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Investor custody service: passkey login, one Dfns policy wallet per investor, signature requests and the checker",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "tsx watch src/server.ts",
+    "start": "tsx src/server.ts",
+    "start:prod": "prisma migrate deploy && tsx src/server.ts",
+    "checker": "tsx src/checker/main.ts",
+    "postinstall": "prisma generate",
+    "typecheck": "tsc --noEmit",
+    "test": "vitest run",
+    "check": "pnpm typecheck && pnpm test",
+    "db:migrate": "prisma migrate dev"
+  },
+  "dependencies": {
+    "@dfns/sdk": "0.8.35",
+    "@dfns/sdk-keysigner": "0.8.35",
+    "@fastify/cors": "^11.3.0",
+    "@prisma/adapter-pg": "^7.9.1",
+    "@prisma/client": "^7.9.1",
+    "@simplewebauthn/server": "14.0.3",
+    "@stellar/stellar-sdk": "16.0.1",
+    "dotenv": "^17.4.2",
+    "fastify": "^5.11.0",
+    "node-cron": "^3.0.3",
+    "prisma": "^7.9.1",
+    "tsx": "^4.23.1",
+    "zod": "^4.4.3"
+  },
+  "devDependencies": {
+    "@types/node": "^24.13.3",
+    "@types/node-cron": "^3.0.11",
+    "typescript": "^7.0.2",
+    "vitest": "^4.1.10"
+  }
+}
