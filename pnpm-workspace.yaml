@@ -9,3 +9,7 @@ onlyBuiltDependencies:
   - "@prisma/engines"
   - esbuild
   - sharp
+
+# Supply-chain cooldown: refuse any package version published less than
+# 24 hours ago (value in minutes). It applies to sub-dependencies too.
+minimumReleaseAge: 1440
