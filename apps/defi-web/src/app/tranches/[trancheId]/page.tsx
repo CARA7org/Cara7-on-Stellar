@@ -4,13 +4,20 @@ import { use, useCallback, useEffect, useState } from "react";
 import { Button } from "@/components/ui/button";
 import { ToggleGroup, ToggleGroupItem } from "@/components/ui/toggle-group";
 import { Input } from "@/components/ui/input";
-import useStellarWalletStore from "@/stores/useStellarWalletStore";
+import useStellarWalletStore, { openConnectMenu } from "@/stores/useStellarWalletStore";
 import {
   useTrancheStats,
   useNotePosition,
+  useNoteDenomination,
   refreshNoteDataAfterTx,
 } from "@/hooks/useNoteData";
-import { formatAmount, formatQty, fromBaseUnits } from "@/lib/format";
+import {
+  formatAmount,
+  formatBaseUnits,
+  formatQty,
+  fromBaseUnits,
+  parseBaseUnits,
+} from "@/lib/format";
 import { TrancheChart } from "@/components/TrancheChart";
 import { UserPositionChart } from "@/components/UserPositionChart";
 import { ClassCashflowCard } from "@/components/ClassCashflowCard";
@@ -26,7 +33,9 @@ import {
   fetchSubscription,
   fetchClaimable,
   fetchFundingProgress,
-  seniorityIndex,
+  fetchEligibility,
+  trancheClassIndex,
+  classLetter,
   type FundingProgress,
 } from "@/services/waterfall";
 import { trancheRate, ASSUMED_DEFAULT_RATE_PCT } from "@/lib/rates";
@@ -35,20 +44,19 @@ import { fmtDate } from "@/lib/reportFormat";
 import {
   invokeDeal,
   claimHeldPayments,
-  fetchTokenBalance,
-  explorerTxUrl,
+  fetchTokenBalanceUnits,
 } from "@/services/trancheTx";
+import { enableTrustline } from "@/services/trustline";
+import { TxFeedback } from "@/components/TxFeedback";
+import { useTxRunner } from "@/hooks/useTxRunner";
+import { useDfnsTrustline } from "@/hooks/useDfnsTrustline";
 
 type ContentTab = "TranchePerformance" | "YourPosition";
 
-/** One note = 100 EURC at par (the deal's note_denomination). */
-const NOTE_DENOMINATION = 100;
-
-const CLASS_LETTER: Record<TrancheDetail["seniority"], string> = {
-  SENIOR: "A",
-  MEZZANINE: "B",
-  JUNIOR: "C",
-};
+/** A whole number of notes as bigint. 0 for a value that is not a safe positive integer. */
+function wholeNotes(value: number): bigint {
+  return Number.isSafeInteger(value) && value > 0 ? BigInt(value) : BigInt(0);
+}
 
 /**
  * Display phase of the class: the deal lifecycle, except a fully repaid
@@ -105,6 +113,8 @@ function TranchePerformancePanel({
   const decimals = tranche.assetDecimals;
   const { locale, dictionary } = useLocale();
   const funding = classPhase(deal, stats) === "FUNDING";
+  // The live stats carry the all-in rate of the current period.
+  const rate = trancheRate({ ...tranche, stats: stats ?? tranche.stats });
 
   const auditContracts = [
     tranche.contractId,
@@ -130,8 +140,8 @@ function TranchePerformancePanel({
         />
         <StatCard
           label={dictionary.tileRate}
-          value={trancheRate(tranche).allIn}
-          delta={dictionary.ratePricingLabel(trancheRate(tranche).pricing)}
+          value={rate.allIn}
+          delta={dictionary.ratePricingLabel(rate.pricing)}
         />
         <StatCard label={dictionary.tileSeniority} value={tranche.seniority} />
       </div>
@@ -161,7 +171,7 @@ function TranchePerformancePanel({
               : undefined
           }
         />
-        {/* First-loss risk assumption - junior only (Eric, 2026-08-03) */}
+        {/* First-loss risk assumption - junior only (decided 2026-08-03) */}
         {tranche.seniority === "JUNIOR" && (
           <StatCard
             label={dictionary.tileAssumedDefault}
@@ -183,7 +193,7 @@ function TranchePerformancePanel({
         <ClassCashflowCard
           dealId={tranche.dealId}
           trancheContractId={tranche.contractId}
-          classIndex={seniorityIndex(tranche.seniority)}
+          classIndex={trancheClassIndex(tranche)}
           stats={stats}
           symbol={symbol}
           decimals={decimals}
@@ -203,17 +213,24 @@ function PositionPanel({
   tranche,
   stats,
   position,
+  noteDenomination,
 }: {
   tranche: TrancheDetail;
   stats: TrancheStats | null;
   position: NotePosition | null;
+  /** Face value of one note in base units. Null until the chain read succeeds. */
+  noteDenomination: bigint | null;
 }) {
   const symbol = tranche.assetSymbol;
   const decimals = tranche.assetDecimals;
   const { dictionary } = useLocale();
 
   const units = position ? Number(position.units) : 0;
-  const faceValue = units * NOTE_DENOMINATION;
+  // Face value of the notes held: notes x the note denomination of the deal.
+  const faceValue =
+    noteDenomination !== null
+      ? fromBaseUnits(wholeNotes(units) * noteDenomination, decimals)
+      : null;
   const outstandingClaim = position
     ? fromBaseUnits(position.outstandingClaim, decimals)
     : 0;
@@ -252,9 +269,11 @@ function PositionPanel({
             </span>
             <span>
               {units}
-              <span className="ml-2 text-xs text-gray-500">
-                {dictionary.posFaceValue(formatQty(faceValue), symbol)}
-              </span>
+              {faceValue != null && (
+                <span className="ml-2 text-xs text-gray-500">
+                  {dictionary.posFaceValue(formatQty(faceValue), symbol)}
+                </span>
+              )}
             </span>
           </div>
           <div className="flex flex-col gap-1">
@@ -309,44 +328,33 @@ function PositionPanel({
   );
 }
 
-/* ── tx feedback line (shared by every form action) ── */
-type TxStatus =
-  | { kind: "success"; hash: string }
-  | { kind: "error"; message: string }
-  | null;
-
-function TxFeedback({ status }: { status: TxStatus }) {
-  const { dictionary } = useLocale();
-  if (!status) return null;
-  return (
-    <p
-      className={`mb-2 text-xs break-all ${
-        status.kind === "success"
-          ? "text-green-600 dark:text-green-400"
-          : "text-red-600 dark:text-red-400"
-      }`}
-    >
-      {status.kind === "success" ? (
-        <>
-          {dictionary.txConfirmed}{" "}
-          <a
-            href={explorerTxUrl(status.hash)}
-            target="_blank"
-            rel="noopener noreferrer"
-            className="underline"
-          >
-            {dictionary.viewTransaction}
-          </a>
-        </>
-      ) : (
-        status.message
-      )}
-    </p>
-  );
-}
-
 const CTA_GRADIENT =
   "w-full rounded-full text-white bg-[linear-gradient(90deg,#04003c_0%,#570a61_55%,#91117e_100%)] disabled:opacity-50";
+
+/* ── "Enable EURC": a Dfns wallet opens its trustline before it can hold the deal asset ── */
+function TrustlineCta({
+  symbol,
+  label,
+  disabled,
+  onEnable,
+}: {
+  symbol: string;
+  label: string;
+  disabled: boolean;
+  onEnable: () => void;
+}) {
+  const { dictionary } = useLocale();
+  return (
+    <>
+      <p className="mb-2 text-xs text-gray-600 dark:text-gray-400">
+        {dictionary.trustlineNeeded(symbol)}
+      </p>
+      <Button onClick={onEnable} className={CTA_GRADIENT} disabled={disabled}>
+        {label}
+      </Button>
+    </>
+  );
+}
 
 /* ── Subscription form (phase-driven) ── */
 function SubscriptionForm({
@@ -354,18 +362,23 @@ function SubscriptionForm({
   stats,
   position,
   deal,
+  noteDenomination,
 }: {
   tranche: TrancheDetail;
   stats: TrancheStats | null;
   position: NotePosition | null;
   deal: DealInfo | null;
+  /** Face value of one note in base units. Null until the chain read succeeds. */
+  noteDenomination: bigint | null;
 }) {
   const symbol = tranche.assetSymbol;
   const decimals = tranche.assetDecimals;
-  const classIndex = seniorityIndex(tranche.seniority);
-  const classLetter = CLASS_LETTER[tranche.seniority];
+  // The on-chain class index goes to every deal and paying-agent call.
+  const classIndex = trancheClassIndex(tranche);
+  const letter = classLetter(classIndex);
   const connected = useStellarWalletStore((s) => s.connected);
   const address = useStellarWalletStore((s) => s.address);
+  const provider = useStellarWalletStore((s) => s.provider);
   const { locale, dictionary } = useLocale();
 
   const phase = classPhase(deal, stats);
@@ -374,8 +387,7 @@ function SubscriptionForm({
 
   const [formType, setFormType] = useState<"subscribe" | "cancel">("subscribe");
   const [inputAmount, setInputAmount] = useState("");
-  const [submitting, setSubmitting] = useState(false);
-  const [txStatus, setTxStatus] = useState<TxStatus>(null);
+  const { submitting, status: txStatus, busyLabel, run } = useTxRunner();
   const isSubscribe = formType === "subscribe";
 
   // book-building progress of the whole class (all subscribers, not just us)
@@ -395,14 +407,14 @@ function SubscriptionForm({
     };
   }, [phase, dealContractId, txStatus]);
 
-  // wallet balance of the deal asset (subscribe max, refunds landing)
-  const [walletBalance, setWalletBalance] = useState(0);
+  // wallet balance of the deal asset in exact base units (subscribe max, refunds landing)
+  const [walletUnits, setWalletUnits] = useState(() => BigInt(0));
   useEffect(() => {
     if (!address) return;
     let active = true;
     const load = async () => {
-      const balance = await fetchTokenBalance(tranche.baseAssetId, address, decimals);
-      if (active) setWalletBalance(balance);
+      const balance = await fetchTokenBalanceUnits(tranche.baseAssetId, address);
+      if (active) setWalletUnits(balance);
     };
     load();
     const timer = setInterval(load, 15_000);
@@ -410,7 +422,8 @@ function SubscriptionForm({
       active = false;
       clearInterval(timer);
     };
-  }, [address, txStatus, tranche.baseAssetId, decimals]);
+  }, [address, txStatus, tranche.baseAssetId]);
+  const walletBalance = fromBaseUnits(walletUnits, decimals);
 
   // pending funding-window subscription, in whole notes (cancel max)
   const [pendingNotes, setPendingNotes] = useState(0);
@@ -425,6 +438,40 @@ function SubscriptionForm({
     const timer = setInterval(loadSubscription, 15_000);
     return () => clearInterval(timer);
   }, [phase, loadSubscription, txStatus]);
+
+  // Whitelist of the deal (new deals only; an old deal lists every address).
+  // Undefined while the first read runs. Null when the read fails: the
+  // chain still checks the subscription.
+  const eligibilityKey =
+    phase === "FUNDING" && connected && address && dealContractId
+      ? `${dealContractId}:${address}`
+      : null;
+  const [eligibility, setEligibility] = useState<{
+    key: string;
+    eligible: boolean | null;
+  } | null>(null);
+  useEffect(() => {
+    if (!eligibilityKey || !dealContractId || !address) return;
+    let active = true;
+    const load = async () => {
+      const eligible = await fetchEligibility(dealContractId, address);
+      if (!active) return;
+      // A failed read keeps the last known answer for this address.
+      setEligibility((previous) =>
+        eligible === null && previous?.key === eligibilityKey
+          ? previous
+          : { key: eligibilityKey, eligible }
+      );
+    };
+    load();
+    const timer = setInterval(load, 15_000);
+    return () => {
+      active = false;
+      clearInterval(timer);
+    };
+  }, [eligibilityKey, dealContractId, address]);
+  const eligible =
+    eligibility && eligibility.key === eligibilityKey ? eligibility.eligible : undefined;
 
   // payments held on the paying agent after a failed push (claim fallback)
   const [claimableEurc, setClaimableEurc] = useState(0);
@@ -447,62 +494,88 @@ function SubscriptionForm({
     };
   }, [address, payingAgentContractId, phase, classIndex, decimals, txStatus]);
 
-  const handleConnect = async () => {
-    const { StellarWalletsKit } = await import("@creit-tech/stellar-wallets-kit");
-    await StellarWalletsKit.authModal();
+  // A Dfns wallet needs the trustline of the deal asset before it can hold it.
+  const trustline = useDfnsTrustline(tranche.baseAssetId, address, provider);
+  const needsTrustline = trustline.state?.exists === false;
+
+  // The header menu offers the self-custody wallet and the Dfns policy wallet.
+  const handleConnect = () => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    openConnectMenu();
   };
 
-  const runTx = async (action: () => Promise<{ hash: string }>) => {
-    setSubmitting(true);
-    setTxStatus(null);
-    try {
-      const { hash } = await action();
-      setTxStatus({ kind: "success", hash });
-      // tx -> indexer cron -> API poll takes up to ~45s; burst-refresh so the
-      // dashboard picks the new snapshot up as soon as the indexer writes it.
-      refreshNoteDataAfterTx();
-      return true;
-    } catch (e) {
-      setTxStatus({
-        kind: "error",
-        message: e instanceof Error ? e.message : dictionary.txFailed,
-      });
-      return false;
-    } finally {
-      setSubmitting(false);
-    }
+  const runTx = async (action: Parameters<typeof run>[0]) => {
+    const done = await run(action);
+    // tx -> indexer cron -> API poll takes up to ~45s; burst-refresh so the
+    // dashboard picks the new snapshot up as soon as the indexer writes it.
+    if (done) refreshNoteDataAfterTx();
+    return done;
   };
+
+  const handleEnableTrustline = async () => {
+    if (!address) return;
+    const done = await runTx((options) =>
+      enableTrustline({ tokenContractId: tranche.baseAssetId, address }, options)
+    );
+    if (done) trustline.refresh();
+  };
+
+  const trustlineCta = (
+    <TrustlineCta
+      symbol={symbol}
+      label={submitting ? busyLabel : dictionary.enableAsset(symbol)}
+      disabled={submitting}
+      onEnable={handleEnableTrustline}
+    />
+  );
 
   const panelClass =
     "flex flex-col gap-2 w-full max-w-[347px] p-5 pb-8 rounded-[20px] bg-white dark:bg-neutral-900 grow sm:grow-0";
 
-  /* ---- FUNDING: subscribe / cancel at par, whole notes of 100 EURC ---- */
+  /* ---- FUNDING: subscribe / cancel at par, in whole notes of the deal ---- */
   if (phase === "FUNDING") {
-    // Subscriptions settle in whole notes: EURC amounts are multiples of 100.
-    const maxAmount = isSubscribe
-      ? Math.floor(Math.max(walletBalance, 0) / NOTE_DENOMINATION) * NOTE_DENOMINATION
-      : pendingNotes * NOTE_DENOMINATION;
-
-    const amount = Number(inputAmount);
-    const notes = Math.round(amount / NOTE_DENOMINATION);
+    // Subscriptions settle in whole notes: an amount is a multiple of the
+    // note denomination. All amount math uses exact base units (bigint).
+    const zero = BigInt(0);
+    const denomination = noteDenomination; // null until the chain read succeeds
+    const maxUnits =
+      denomination === null
+        ? zero
+        : isSubscribe
+          ? (walletUnits / denomination) * denomination
+          : wholeNotes(pendingNotes) * denomination;
+    const amountUnits = parseBaseUnits(inputAmount, decimals);
+    const notes =
+      denomination !== null &&
+      amountUnits !== null &&
+      amountUnits > zero &&
+      amountUnits % denomination === zero
+        ? amountUnits / denomination
+        : null;
+    // The whitelist check must answer before a subscribe. Null (read failed)
+    // does not block: the chain still rejects an address that is not listed.
+    const subscribeAllowed = eligible === true || eligible === null;
     const canSubmit =
       connected &&
       !submitting &&
-      Number.isFinite(amount) &&
-      amount > 0 &&
-      amount % NOTE_DENOMINATION === 0 &&
-      amount <= maxAmount + 1e-9 &&
-      dealContractId != null;
+      notes !== null &&
+      amountUnits !== null &&
+      amountUnits <= maxUnits &&
+      dealContractId != null &&
+      (!isSubscribe || subscribeAllowed);
+    const nominal =
+      denomination !== null
+        ? dictionary.noteNominal(fromBaseUnits(denomination, decimals), symbol)
+        : null;
 
     const handleSubmit = async () => {
-      if (!address || !canSubmit || !dealContractId) return;
-      const done = await runTx(() =>
-        invokeDeal(isSubscribe ? "subscribe" : "cancel", {
-          dealContractId,
-          caller: address,
-          classIndex,
-          notes: BigInt(notes),
-        })
+      if (!address || !canSubmit || !dealContractId || notes === null) return;
+      const done = await runTx((options) =>
+        invokeDeal(
+          isSubscribe ? "subscribe" : "cancel",
+          { dealContractId, caller: address, classIndex, notes },
+          options
+        )
       );
       if (done) {
         setInputAmount("");
@@ -520,7 +593,7 @@ function SubscriptionForm({
     return (
       <div className={panelClass}>
         {/* Book-building progress of this class */}
-        {progressPct != null && classSubscribed != null && classTotal != null && (
+        {progressPct != null && classSubscribed != null && classTotal != null && denomination !== null && (
           <div className="mb-2 flex flex-col gap-1.5">
             <div className="flex items-center justify-between text-xs">
               <span className="uppercase tracking-wide text-gray-500">
@@ -528,8 +601,8 @@ function SubscriptionForm({
               </span>
               <span className="text-gray-600 dark:text-gray-400">
                 {dictionary.bookBuildingHint(
-                  formatQty(classSubscribed * NOTE_DENOMINATION),
-                  formatQty(classTotal * NOTE_DENOMINATION),
+                  formatQty(fromBaseUnits(wholeNotes(classSubscribed) * denomination, decimals)),
+                  formatQty(fromBaseUnits(wholeNotes(classTotal) * denomination, decimals)),
                   symbol
                 )}
               </span>
@@ -567,8 +640,17 @@ function SubscriptionForm({
           </Button>
         </div>
 
+        {/* Whitelist of a new deal: this address cannot subscribe */}
+        {connected && isSubscribe && eligible === false && (
+          <div className="mt-2 rounded-lg border border-amber-300/60 dark:border-amber-800/60 bg-amber-50 dark:bg-amber-950/30 px-3 py-2">
+            <p className="text-xs font-medium text-amber-900 dark:text-amber-200">
+              {dictionary.notWhitelisted}
+            </p>
+          </div>
+        )}
+
         {/* Pending escrowed subscription - always visible once it exists */}
-        {connected && pendingNotes > 0 && (
+        {connected && pendingNotes > 0 && denomination !== null && (
           <div className="mt-2 rounded-lg border border-purple-300/60 dark:border-purple-800/60 bg-purple-50 dark:bg-purple-950/30 px-3 py-2">
             <p className="text-xs font-medium text-purple-900 dark:text-purple-200">
               {dictionary.pendingSubTitle}
@@ -576,7 +658,7 @@ function SubscriptionForm({
             <p className="mt-0.5 text-xs text-purple-800/80 dark:text-purple-300/80">
               {dictionary.pendingSubCopy(
                 pendingNotes,
-                formatQty(pendingNotes * NOTE_DENOMINATION),
+                formatQty(fromBaseUnits(wholeNotes(pendingNotes) * denomination, decimals)),
                 symbol
               )}
             </p>
@@ -586,20 +668,24 @@ function SubscriptionForm({
         <div className="flex flex-col gap-4 mt-4">
           <p className="text-sm text-gray-600 dark:text-gray-400">
             {isSubscribe
-              ? dictionary.subscribeCopy(symbol, classLetter)
+              ? dictionary.subscribeCopy(symbol, letter, nominal)
               : dictionary.cancelCopy}
           </p>
 
-          {/* Input (multiples of 100 EURC = whole notes) */}
+          {/* Input (multiples of the note denomination = whole notes) */}
           <div className="flex flex-col gap-2">
             {connected && (
               <div className="flex items-center justify-between">
                 <button
-                  onClick={() => setInputAmount(String(maxAmount))}
+                  onClick={() => setInputAmount(formatBaseUnits(maxUnits, decimals))}
+                  disabled={denomination === null}
                   className="flex items-center gap-1 bg-gray-200 dark:bg-[#2a3142] rounded-sm px-2 py-0.5"
                 >
                   <span className="text-xs text-gray-600 dark:text-gray-400">
-                    {dictionary.maxHint(formatQty(maxAmount), symbol)}
+                    {dictionary.maxHint(
+                      denomination === null ? "-" : formatQty(fromBaseUnits(maxUnits, decimals)),
+                      symbol
+                    )}
                   </span>
                 </button>
                 {!isSubscribe && (
@@ -616,8 +702,9 @@ function SubscriptionForm({
               </div>
               <Input
                 type="number"
-                step={NOTE_DENOMINATION}
+                step={denomination !== null ? formatBaseUnits(denomination, decimals) : undefined}
                 min={0}
+                disabled={denomination === null}
                 className="w-full text-right bg-transparent text-neutral-700 dark:text-neutral-300 font-semibold text-2xl placeholder:text-neutral-500"
                 placeholder="0"
                 value={inputAmount}
@@ -625,9 +712,11 @@ function SubscriptionForm({
               />
             </div>
             <p className="text-xs text-gray-500 text-right">
-              {Number.isFinite(amount) && amount > 0 && amount % NOTE_DENOMINATION === 0
-                ? dictionary.notesAtPar(notes)
-                : dictionary.multiplesHint(symbol)}
+              {denomination === null
+                ? dictionary.loading
+                : notes !== null
+                  ? dictionary.notesAtPar(Number(notes))
+                  : dictionary.multiplesHint(fromBaseUnits(denomination, decimals), symbol)}
             </p>
           </div>
 
@@ -639,7 +728,9 @@ function SubscriptionForm({
             <span>
               {formatQty(walletBalance)} {" -> "}
               {formatQty(
-                walletBalance + (Number(inputAmount) || 0) * (isSubscribe ? -1 : 1)
+                walletBalance +
+                  (amountUnits !== null ? fromBaseUnits(amountUnits, decimals) : 0) *
+                    (isSubscribe ? -1 : 1)
               )}{" "}
               {symbol}
             </span>
@@ -669,10 +760,12 @@ function SubscriptionForm({
         <TxFeedback status={txStatus} />
 
         {/* CTA */}
-        {connected ? (
+        {connected && needsTrustline ? (
+          trustlineCta
+        ) : connected ? (
           <Button onClick={handleSubmit} className={CTA_GRADIENT} disabled={!canSubmit}>
             {submitting
-              ? dictionary.confirmInWallet
+              ? busyLabel
               : isSubscribe
                 ? dictionary.confirmSubscription
                 : dictionary.confirmCancellation}
@@ -698,6 +791,22 @@ function SubscriptionForm({
     );
   }
 
+  const claimable = payingAgentContractId != null && claimableEurc > 0;
+  const handleClaim = () => {
+    if (!address || !payingAgentContractId) return;
+    runTx((options) =>
+      claimHeldPayments({ payingAgentContractId, holder: address }, options)
+    );
+  };
+  // Without the trustline, a claim cannot pay out: "Enable EURC" comes first.
+  const claimArea = needsTrustline ? (
+    trustlineCta
+  ) : claimable ? (
+    <Button onClick={handleClaim} className={CTA_GRADIENT} disabled={submitting}>
+      {submitting ? busyLabel : dictionary.claimCta(formatQty(claimableEurc), symbol)}
+    </Button>
+  ) : null;
+
   /* ---- ENFORCED: accelerated priority of payments ---- */
   if (phase === "ENFORCED") {
     return (
@@ -706,23 +815,11 @@ function SubscriptionForm({
         <p className="mt-2 text-sm text-gray-600 dark:text-gray-400">
           {dictionary.enforcedCopy}
         </p>
-        {connected && address && payingAgentContractId && claimableEurc > 0 && (
+        {connected && address && (claimable || needsTrustline || txStatus) && (
           <>
             <div className="grow h-[24px]" />
             <TxFeedback status={txStatus} />
-            <Button
-              onClick={() =>
-                runTx(() =>
-                  claimHeldPayments({ payingAgentContractId, holder: address })
-                )
-              }
-              className={CTA_GRADIENT}
-              disabled={submitting}
-            >
-              {submitting
-                ? dictionary.confirmInWallet
-                : dictionary.claimCta(formatQty(claimableEurc), symbol)}
-            </Button>
+            {claimArea}
           </>
         )}
       </div>
@@ -753,21 +850,7 @@ function SubscriptionForm({
 
       <TxFeedback status={txStatus} />
 
-      {connected && address && payingAgentContractId && claimableEurc > 0 && (
-        <Button
-          onClick={() =>
-            runTx(() =>
-              claimHeldPayments({ payingAgentContractId, holder: address })
-            )
-          }
-          className={CTA_GRADIENT}
-          disabled={submitting}
-        >
-          {submitting
-            ? dictionary.confirmInWallet
-            : dictionary.claimCta(formatQty(claimableEurc), symbol)}
-        </Button>
-      )}
+      {connected && address && claimArea}
     </div>
   );
 }
@@ -815,6 +898,8 @@ export default function TranchePage(props: {
   // Hooks run unconditionally (before any early return) - fall back to "" id.
   const { stats } = useTrancheStats(tranche?.contractId ?? "");
   const position = useNotePosition(tranche?.contractId ?? "", address);
+  // Face value of one note, read on chain from the deal config.
+  const noteDenomination = useNoteDenomination(deal?.dealContractId ?? null);
 
   const [activeTab, setActiveTab] = useState<ContentTab>("TranchePerformance");
 
@@ -868,7 +953,12 @@ export default function TranchePage(props: {
           <TranchePerformancePanel tranche={tranche} stats={stats} deal={deal} />
         )}
         {activeTab === "YourPosition" && (
-          <PositionPanel tranche={tranche} stats={stats} position={position} />
+          <PositionPanel
+            tranche={tranche}
+            stats={stats}
+            position={position}
+            noteDenomination={noteDenomination}
+          />
         )}
 
         <div className="w-full md:max-w-[400px]">
@@ -877,6 +967,7 @@ export default function TranchePage(props: {
             stats={stats}
             position={position}
             deal={deal}
+            noteDenomination={noteDenomination}
           />
         </div>
       </div>

@@ -17,6 +17,11 @@ const StellarConnectButton = dynamic(
   () => import("@/components/stellar/StellarConnectButton"),
   { ssr: false }
 );
+// Reads sessionStorage: client only.
+const PendingApprovalBanner = dynamic(
+  () => import("@/components/PendingApprovalBanner"),
+  { ssr: false }
+);
 
 /** Header lives in its own component so it can read the locale context. */
 function Header() {
@@ -50,6 +55,7 @@ export default function AppShell({ children }: { children: React.ReactNode }) {
         <TooltipProvider>
         <div className="mx-auto flex min-h-screen w-full max-w-[1200px] flex-col px-4">
           <Header />
+          <PendingApprovalBanner />
           <main className="flex-1 pb-16">{children}</main>
         </div>
           <Footer />

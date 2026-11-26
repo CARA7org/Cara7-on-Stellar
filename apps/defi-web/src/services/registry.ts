@@ -13,7 +13,13 @@ export interface TrancheInfo {
   dealId: number;
   dealName: string;
   name: string;
+  /** On-chain class index in the deal, senior first (0 = Class A). Old rows can lack it. */
+  classIndex?: number | null;
+  /** Display label only. Several classes of one deal can have the same label. */
   seniority: "SENIOR" | "MEZZANINE" | "JUNIOR";
+  /** FLOATING: EURIBOR 1M + spread, floor 0%. FIXED: one annual rate. */
+  rateKind: "FLOATING" | "FIXED";
+  /** FIXED: the annual rate in bps. FLOATING: the spread over EURIBOR 1M in bps. */
   couponBps: number;
   contractId: string; // note-token contract of the class
   baseAssetId: string;
@@ -62,7 +68,7 @@ export async function fetchDeals(): Promise<DealInfo[]> {
 
 export interface DistributionPerClass {
   tranche: string | null; // note-token contract id (null if unregistered)
-  class: number; // 0 = SENIOR, 1 = MEZZANINE, 2 = JUNIOR
+  class: number; // on-chain class index, senior first (0 = Class A)
   interest: string;
   principal: string;
   shortfall: string;

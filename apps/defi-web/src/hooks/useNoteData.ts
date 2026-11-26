@@ -11,6 +11,7 @@ import {
   type TrancheHistoryPoint,
   type PositionHistoryPoint,
 } from "@/services/indexer";
+import { fetchNoteDenomination } from "@/services/waterfall";
 
 const REFRESH_MS = 15_000;
 
@@ -133,4 +134,34 @@ export function useNotePosition(contractId: string, address: string | null) {
   }, [contractId, address]);
 
   return position;
+}
+
+/**
+ * Face value of one note of the deal, in base units of the settlement asset,
+ * read on chain (`get_config().note_denomination`). Null until the read
+ * succeeds. A failed read runs again after REFRESH_MS.
+ */
+export function useNoteDenomination(dealContractId: string | null): bigint | null {
+  const [result, setResult] = useState<{ dealContractId: string; denomination: bigint } | null>(
+    null
+  );
+
+  useEffect(() => {
+    if (!dealContractId) return;
+    let active = true;
+    let retry: ReturnType<typeof setTimeout> | undefined;
+    const load = async () => {
+      const denomination = await fetchNoteDenomination(dealContractId);
+      if (!active) return;
+      if (denomination !== null) setResult({ dealContractId, denomination });
+      else retry = setTimeout(load, REFRESH_MS);
+    };
+    load();
+    return () => {
+      active = false;
+      if (retry) clearTimeout(retry);
+    };
+  }, [dealContractId]);
+
+  return result && result.dealContractId === dealContractId ? result.denomination : null;
 }

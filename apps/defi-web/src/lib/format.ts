@@ -4,6 +4,36 @@ export function fromBaseUnits(value: string | bigint, decimals: number): number 
   return Number(v) / 10 ** decimals;
 }
 
+/**
+ * Exact base units of a typed amount, e.g. "12.5" with 7 decimals gives
+ * 125000000n. Gives null for a text that is not a plain decimal number, and
+ * for more fraction digits than the asset has. No float math.
+ */
+export function parseBaseUnits(text: string, decimals: number): bigint | null {
+  const match = /^(\d*)(?:\.(\d*))?$/.exec(text.trim());
+  if (!match) return null;
+  const whole = match[1] ?? "";
+  const digits = match[2] ?? "";
+  // An empty text or a lone "." is not an amount.
+  if (whole === "" && digits === "") return null;
+  const fraction = digits.replace(/0+$/, "");
+  if (fraction.length > decimals) return null;
+  return (
+    BigInt(whole || "0") * BigInt(10) ** BigInt(decimals) +
+    BigInt(fraction.padEnd(decimals, "0") || "0")
+  );
+}
+
+/** Plain decimal text of base units, with no separators, e.g. 125000000n with 7 decimals gives "12.5". */
+export function formatBaseUnits(value: bigint, decimals: number): string {
+  const negative = value < BigInt(0);
+  const abs = negative ? -value : value;
+  const scale = BigInt(10) ** BigInt(decimals);
+  const whole = (abs / scale).toString();
+  const fraction = (abs % scale).toString().padStart(decimals, "0").replace(/0+$/, "");
+  return `${negative ? "-" : ""}${whole}${fraction ? `.${fraction}` : ""}`;
+}
+
 /** Compact token amount, e.g. 1_234_500_0000000 → "123.45". */
 export function formatAmount(value: string | bigint, decimals: number, dp = 2): string {
   const n = fromBaseUnits(value, decimals);

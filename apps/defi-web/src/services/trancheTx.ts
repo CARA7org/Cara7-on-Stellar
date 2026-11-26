@@ -1,13 +1,19 @@
 /**
- * Onchain deal / note interactions signed by the user's wallet (Stellar
- * Wallets Kit). Flow: build invoke tx -> simulate/assemble (RPC) -> sign
- * (wallet) -> send -> poll. The dapp never touches a secret key; auth is
- * `require_auth(investor|from|holder)` onchain.
+ * Onchain deal and note actions. The connected wallet signs each action.
+ * Flow: build the invoke transaction, simulate and prepare it (RPC), sign
+ * it, send it, then poll for the result. The dapp never touches a secret
+ * key. The contracts check `require_auth(investor|from|holder)`.
  *
- * Primary market: `subscribe`/`cancel` on the abs-deal contract during the
- * funding window only. After closing there is no deposit and no withdraw -
- * notes repay through the priority of payments; the remaining user actions
- * are note transfers (SEP-41) and claiming held paying-agent payments.
+ * Two signers can sign (see services/signers). The Stellar Wallets Kit
+ * signs for a self-custody wallet. The custody API signs for a Dfns policy
+ * wallet. A Dfns signature can wait for a policy approval: the pipeline
+ * then polls the approval and sends the transaction after the approval.
+ *
+ * Primary market: the investor calls `subscribe` and `cancel` on the
+ * abs-deal contract during the funding window only. After the closing, no
+ * deposit and no withdrawal occur. The notes repay through the priority of
+ * payments. The other user actions are note transfers (SEP-41) and the
+ * claim of the payments that the paying agent holds.
  */
 import {
   rpc,
@@ -18,10 +24,19 @@ import {
   Address,
   xdr,
 } from "@stellar/stellar-sdk";
+import {
+  connectedSigner,
+  signAndSubmit,
+  type PendingContext,
+  type SignedTransaction,
+  type TxOptions,
+} from "./signers";
+
+export type { TxOptions } from "./signers";
 
 export const RPC_URL = "https://soroban-testnet.stellar.org";
 export const NETWORK_PASSPHRASE = "Test SDF Network ; September 2015";
-const HORIZON_URL = "https://horizon-testnet.stellar.org";
+export const HORIZON_URL = "https://horizon-testnet.stellar.org";
 const EXPLORER_TX = "https://stellar.expert/explorer/testnet/tx";
 
 export function explorerTxUrl(hash: string): string {
@@ -53,16 +68,13 @@ export async function fetchNativeBalance(address: string): Promise<number> {
 }
 
 /**
- * Balance of any Soroban token for an account, via simulated
- * `balance(address)` - works for EURC or USDC alike. Returns a display
- * amount (base units / 10^decimals); 0 on any failure. On a NOTE token
- * pass decimals = 0: the balance is an integer number of notes.
+ * Balance of any Soroban token for an account, in base units, via simulated
+ * `balance(address)`. Exact (bigint). 0 on any failure.
  */
-export async function fetchTokenBalance(
+export async function fetchTokenBalanceUnits(
   tokenContractId: string,
-  address: string,
-  decimals: number
-): Promise<number> {
+  address: string
+): Promise<bigint> {
   try {
     const { Account, Keypair, scValToNative } = await import("@stellar/stellar-sdk");
     const server = new rpc.Server(RPC_URL);
@@ -76,20 +88,69 @@ export async function fetchTokenBalance(
       .setTimeout(30)
       .build();
     const sim = await server.simulateTransaction(tx);
-    if (rpc.Api.isSimulationError(sim) || !sim.result?.retval) return 0;
-    const raw = scValToNative(sim.result.retval) as bigint;
-    return Number(raw) / 10 ** decimals;
+    if (rpc.Api.isSimulationError(sim) || !sim.result?.retval) return BigInt(0);
+    const raw = scValToNative(sim.result.retval);
+    return typeof raw === "bigint" ? raw : BigInt(0);
   } catch {
-    return 0;
+    return BigInt(0);
   }
+}
+
+/**
+ * Balance of any Soroban token for an account - works for EURC or USDC
+ * alike. Returns a display amount (base units / 10^decimals); 0 on any
+ * failure. On a NOTE token pass decimals = 0: the balance is an integer
+ * number of notes.
+ */
+export async function fetchTokenBalance(
+  tokenContractId: string,
+  address: string,
+  decimals: number
+): Promise<number> {
+  const raw = await fetchTokenBalanceUnits(tokenContractId, address);
+  return Number(raw) / 10 ** decimals;
+}
+
+/** Deal error: the investor is not on the whitelist of the deal (new deals only). */
+export const DEAL_ERROR_NOT_ELIGIBLE = 15;
+/** Note-token error: the receiver of a transfer is not on the whitelist (new deals only). */
+export const NOTE_ERROR_RECEIVER_NOT_ELIGIBLE = 9;
+
+/**
+ * The simulation rejected a contract call with a contract error code. The
+ * UI uses `method` and `code` to show a known error in the user's language.
+ */
+export class ContractCallError extends Error {
+  readonly method: string;
+  readonly code: number;
+
+  constructor(method: string, code: number, message: string) {
+    super(message);
+    this.name = "ContractCallError";
+    this.method = method;
+    this.code = code;
+  }
+}
+
+/** The contract error code in a host error, e.g. 13 for "Error(Contract, #13)". */
+function contractErrorCode(msg: string): number | null {
+  const m = msg.match(/Error\(Contract, #(\d+)\)/);
+  return m ? Number(m[1]) : null;
 }
 
 function readableError(e: unknown): string {
   const msg = e instanceof Error ? e.message : String(e);
   // surface the contract error code when present, e.g. "Error(Contract, #13)"
-  const m = msg.match(/Error\(Contract, #(\d+)\)/);
-  if (m) return `Contract rejected the call (error #${m[1]}).`;
+  const code = contractErrorCode(msg);
+  if (code !== null) return `Contract rejected the call (error #${code}).`;
   return msg.length > 180 ? `${msg.slice(0, 180)}…` : msg;
+}
+
+/** The error of a failed prepare. A contract error code gives a ContractCallError. */
+function prepareError(method: string, e: unknown): Error {
+  const code = contractErrorCode(e instanceof Error ? e.message : String(e));
+  const message = readableError(e);
+  return code !== null ? new ContractCallError(method, code, message) : new Error(message);
 }
 
 /**
@@ -100,9 +161,11 @@ async function submitInvoke(
   contractId: string,
   caller: string,
   method: string,
-  args: xdr.ScVal[]
+  args: xdr.ScVal[],
+  options: TxOptions = {}
 ): Promise<{ hash: string }> {
   const server = new rpc.Server(RPC_URL);
+  const signer = connectedSigner();
   const account = await server.getAccount(caller);
   const contract = new Contract(contractId);
 
@@ -111,7 +174,7 @@ async function submitInvoke(
     networkPassphrase: NETWORK_PASSPHRASE,
   })
     .addOperation(contract.call(method, ...args))
-    .setTimeout(120)
+    .setTimeout(signer.txTimeoutSeconds)
     .build();
 
   let prepared;
@@ -119,16 +182,35 @@ async function submitInvoke(
     // simulates, attaches soroban data + auth, bumps fee
     prepared = await server.prepareTransaction(tx);
   } catch (e) {
-    throw new Error(readableError(e));
+    throw prepareError(method, e);
   }
 
-  const { StellarWalletsKit } = await import("@creit-tech/stellar-wallets-kit");
-  const { signedTxXdr } = await StellarWalletsKit.signTransaction(prepared.toXDR(), {
-    networkPassphrase: NETWORK_PASSPHRASE,
-    address: caller,
-  });
+  // THE SEAM: the signer of the connected provider signs the prepared envelope.
+  // A Dfns signature can wait for a policy approval. Then the send comes after the approval.
+  return signAndSubmit(
+    signer,
+    prepared,
+    {
+      address: caller,
+      networkPassphrase: NETWORK_PASSPHRASE,
+      onAwaitingApproval: options.onAwaitingApproval,
+      pending: pendingContextOf(method),
+    },
+    sendAndPoll
+  );
+}
 
-  const signed = TransactionBuilder.fromXDR(signedTxXdr, NETWORK_PASSPHRASE);
+/** The kind of action that a saved pending handle records. A transfer has no handle. */
+function pendingContextOf(method: string): PendingContext | undefined {
+  if (method === "subscribe" || method === "cancel" || method === "claim") {
+    return { kind: method, submitVia: "soroban" };
+  }
+  return undefined;
+}
+
+/** Sends a signed invoke transaction, then polls until the ledger includes it. */
+export async function sendAndPoll(signed: SignedTransaction): Promise<{ hash: string }> {
+  const server = new rpc.Server(RPC_URL);
   const sent = await server.sendTransaction(signed);
   if (sent.status === "ERROR") {
     throw new Error(`Submission failed (${sent.status}).`);
@@ -149,17 +231,25 @@ async function submitInvoke(
 /**
  * Invoke `subscribe(investor, class, notes)` or `cancel(investor, class,
  * notes)` on the abs-deal contract - funding window only. `notes` is a whole
- * number of notes (1 note = 100 EURC paid/refunded at par).
+ * number of notes. The deal pays or refunds each note at par: one
+ * `note_denomination` of the settlement asset.
  */
 export async function invokeDeal(
   method: "subscribe" | "cancel",
-  opts: { dealContractId: string; caller: string; classIndex: number; notes: bigint }
+  opts: { dealContractId: string; caller: string; classIndex: number; notes: bigint },
+  options: TxOptions = {}
 ): Promise<{ hash: string }> {
-  return submitInvoke(opts.dealContractId, opts.caller, method, [
-    new Address(opts.caller).toScVal(), // investor
-    nativeToScVal(opts.classIndex, { type: "u32" }), // class (0=A, 1=B, 2=C)
-    nativeToScVal(opts.notes, { type: "i128" }), // notes
-  ]);
+  return submitInvoke(
+    opts.dealContractId,
+    opts.caller,
+    method,
+    [
+      new Address(opts.caller).toScVal(), // investor
+      nativeToScVal(opts.classIndex, { type: "u32" }), // on-chain class index (0 = Class A)
+      nativeToScVal(opts.notes, { type: "i128" }), // notes
+    ],
+    options
+  );
 }
 
 /**
@@ -167,28 +257,36 @@ export async function invokeDeal(
  * (decimals 0); the next coupon is split day-weighted between seller and
  * buyer at the next payment date.
  */
-export async function transferNotes(opts: {
-  noteContractId: string;
-  from: string;
-  to: string;
-  notes: bigint;
-}): Promise<{ hash: string }> {
-  return submitInvoke(opts.noteContractId, opts.from, "transfer", [
-    new Address(opts.from).toScVal(),
-    new Address(opts.to).toScVal(),
-    nativeToScVal(opts.notes, { type: "i128" }),
-  ]);
+export async function transferNotes(
+  opts: { noteContractId: string; from: string; to: string; notes: bigint },
+  options: TxOptions = {}
+): Promise<{ hash: string }> {
+  return submitInvoke(
+    opts.noteContractId,
+    opts.from,
+    "transfer",
+    [
+      new Address(opts.from).toScVal(),
+      new Address(opts.to).toScVal(),
+      nativeToScVal(opts.notes, { type: "i128" }),
+    ],
+    options
+  );
 }
 
 /**
  * `claim(holder)` on the paying agent: pull any payments whose push failed
  * (missing trustline, frozen account...). Drains every class at once.
  */
-export async function claimHeldPayments(opts: {
-  payingAgentContractId: string;
-  holder: string;
-}): Promise<{ hash: string }> {
-  return submitInvoke(opts.payingAgentContractId, opts.holder, "claim", [
-    new Address(opts.holder).toScVal(),
-  ]);
+export async function claimHeldPayments(
+  opts: { payingAgentContractId: string; holder: string },
+  options: TxOptions = {}
+): Promise<{ hash: string }> {
+  return submitInvoke(
+    opts.payingAgentContractId,
+    opts.holder,
+    "claim",
+    [new Address(opts.holder).toScVal()],
+    options
+  );
 }

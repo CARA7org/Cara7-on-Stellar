@@ -34,16 +34,47 @@ export interface WaterfallClassState {
 export interface WaterfallState {
   /** One note of any class, in EURC (POC: 100). */
   noteDenominationEurc: number;
-  /** Senior first - index with seniorityIndex(). */
+  /** Senior first, by on-chain class index (see trancheClassIndex()). */
   classes: WaterfallClassState[];
 }
 
-/** Deal class order is senior -> junior, like the registry rows. */
+/**
+ * Class index from the seniority label, for an old registry row that has no
+ * class index. The reference deal has one class per label: A, B, C.
+ */
 export function seniorityIndex(seniority: "SENIOR" | "MEZZANINE" | "JUNIOR"): number {
   return seniority === "SENIOR" ? 0 : seniority === "MEZZANINE" ? 1 : 2;
 }
 
-async function simulateCall(
+/**
+ * On-chain class index of a tranche (0 = most senior). The registry gives it.
+ * The seniority label gives it only when the registry row has no class index.
+ */
+export function trancheClassIndex(tranche: {
+  classIndex?: number | null;
+  seniority: "SENIOR" | "MEZZANINE" | "JUNIOR";
+}): number {
+  return tranche.classIndex ?? seniorityIndex(tranche.seniority);
+}
+
+/** Class letter of an on-chain class index: 0 gives "A", 1 gives "B", and so on. */
+export function classLetter(classIndex: number): string {
+  return String.fromCharCode(65 + classIndex);
+}
+
+/** A failed read-only simulation. `detail` keeps the error text of the RPC. */
+export class SimulationError extends Error {
+  readonly detail: string;
+
+  constructor(method: string, detail: string) {
+    super(`simulation failed: ${method}`);
+    this.name = "SimulationError";
+    this.detail = detail;
+  }
+}
+
+/** Read-only contract call through RPC simulation. Throws a SimulationError on a simulation error. */
+export async function simulateCall(
   contractId: string,
   method: string,
   args: xdr.ScVal[] = []
@@ -59,10 +90,68 @@ async function simulateCall(
     .setTimeout(30)
     .build();
   const sim = await server.simulateTransaction(tx);
-  if (rpc.Api.isSimulationError(sim) || !sim.result?.retval) {
-    throw new Error(`simulation failed: ${method}`);
+  if (rpc.Api.isSimulationError(sim)) {
+    throw new SimulationError(method, sim.error);
+  }
+  if (!sim.result?.retval) {
+    throw new SimulationError(method, "no return value");
   }
   return scValToNative(sim.result.retval);
+}
+
+/* The deal config does not change after the deployment, so one read is enough. */
+const denominationCache = new Map<string, bigint>();
+
+/**
+ * Face value of one note of the deal, in base units of the settlement asset
+ * (`get_config().note_denomination`). Null when the read fails.
+ */
+export async function fetchNoteDenomination(dealContractId: string): Promise<bigint | null> {
+  const cached = denominationCache.get(dealContractId);
+  if (cached !== undefined) return cached;
+  try {
+    const config = (await simulateCall(dealContractId, "get_config")) as {
+      note_denomination?: unknown;
+    };
+    const denomination = config.note_denomination;
+    if (typeof denomination !== "bigint" || denomination <= BigInt(0)) return null;
+    denominationCache.set(dealContractId, denomination);
+    return denomination;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The RPC gives this host error for a call to a function that the contract
+ * does not export. The diagnostic text can also name the cause.
+ */
+function isMissingFunction(detail: string): boolean {
+  return (
+    detail.includes("Error(WasmVm, MissingValue)") ||
+    detail.includes("non-existent contract function")
+  );
+}
+
+/**
+ * Whitelist check of the deal: `is_eligible(holder)`. An old deal (the
+ * reference deal, Series 2) has no `is_eligible` function and no whitelist:
+ * every address is then eligible. Null when the read fails for another
+ * reason. The chain still checks each subscription.
+ */
+export async function fetchEligibility(
+  dealContractId: string,
+  address: string
+): Promise<boolean | null> {
+  try {
+    const eligible = await simulateCall(dealContractId, "is_eligible", [
+      new Address(address).toScVal(),
+    ]);
+    return typeof eligible === "boolean" ? eligible : null;
+  } catch (e) {
+    if (e instanceof SimulationError && isMissingFunction(e.detail)) return true;
+    return null;
+  }
 }
 
 export async function fetchWaterfallState(

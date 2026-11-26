@@ -3,8 +3,9 @@
 import { useEffect, useState } from "react";
 import Link from "next/link";
 import useStellarWalletStore from "@/stores/useStellarWalletStore";
-import { fetchTranches, type TrancheInfo } from "@/services/registry";
+import { fetchDeals, fetchTranches, type TrancheInfo } from "@/services/registry";
 import { fetchUserPositions, type NotePosition } from "@/services/indexer";
+import { fetchNoteDenomination } from "@/services/waterfall";
 import { formatQty, fromBaseUnits } from "@/lib/format";
 import { SENIORITY_BADGE, SeniorityDot } from "@/lib/seniority";
 import { trancheRate } from "@/lib/rates";
@@ -91,6 +92,35 @@ export default function PortfolioPage() {
     };
   }, [address]);
 
+  // Face value of one note per deal id, read on chain (base units). A deal
+  // with a failed read has no entry.
+  const [denominations, setDenominations] = useState<Map<number, bigint>>(
+    () => new Map()
+  );
+  useEffect(() => {
+    let active = true;
+    (async () => {
+      const deals = await fetchDeals();
+      const entries = await Promise.all(
+        deals.map(async (deal) => ({
+          dealId: deal.id,
+          denomination: deal.dealContractId
+            ? await fetchNoteDenomination(deal.dealContractId)
+            : null,
+        }))
+      );
+      if (!active) return;
+      const byDeal = new Map<number, bigint>();
+      for (const { dealId, denomination } of entries) {
+        if (denomination !== null) byDeal.set(dealId, denomination);
+      }
+      setDenominations(byDeal);
+    })();
+    return () => {
+      active = false;
+    };
+  }, []);
+
   // A row matters when notes are held, cash was received, or a funding
   // subscription is pending closing.
   const held = (holdings ?? []).filter(
@@ -109,13 +139,27 @@ export default function PortfolioPage() {
       ? held.reduce(
           (sum, holding) =>
             sum +
-            (holding.tranche.stats?.coupon?.allInPct ??
-              holding.tranche.couponBps / 100) *
+            trancheRate(holding.tranche).allInPct *
               (holding.outstandingClaim / totalClaim),
           0
         )
       : null;
   const symbol = holdings?.[0]?.tranche.assetSymbol ?? "EURC";
+  // The subtitle gives the face value of one note only when all the deals of
+  // the table have the same face value and token. Else it stays general.
+  const nominalLabels = new Set(
+    (holdings ?? []).map((holding) => {
+      const denomination = denominations.get(holding.tranche.dealId);
+      return denomination === undefined
+        ? null
+        : dictionary.noteNominal(
+            fromBaseUnits(denomination, holding.tranche.assetDecimals),
+            holding.tranche.assetSymbol
+          );
+    })
+  );
+  const [onlyNominal] = Array.from(nominalLabels);
+  const tableNominal = nominalLabels.size === 1 ? (onlyNominal ?? null) : null;
 
   if (!connected || !address) {
     return (
@@ -229,7 +273,7 @@ export default function PortfolioPage() {
         <div className="flex items-baseline justify-between">
           <h3 className="text-lg font-semibold">{dictionary.noteHoldingsTitle}</h3>
           <span className="text-xs text-gray-500">
-            {dictionary.noteHoldingsSubtitle(symbol)}
+            {dictionary.noteHoldingsSubtitle(tableNominal)}
           </span>
         </div>
         {holdings === null && (
@@ -269,6 +313,7 @@ export default function PortfolioPage() {
                     holding.phase !== "FUNDING" && tranche.stats
                       ? tranche.stats.noteFactorPct
                       : null;
+                  const rate = trancheRate(tranche);
                   return (
                     <tr key={tranche.id} className="border-b border-gray-200/60 dark:border-neutral-800/60">
                       <td className="py-2.5 pr-3">
@@ -305,9 +350,9 @@ export default function PortfolioPage() {
                         </div>
                       </td>
                       <td className="py-2.5 pr-3 text-right">
-                        <div>{trancheRate(tranche).allIn}</div>
+                        <div>{rate.allIn}</div>
                         <div className="text-xs text-gray-500">
-                          {dictionary.ratePricingLabel(trancheRate(tranche).pricing)}
+                          {dictionary.ratePricingLabel(rate.pricing)}
                         </div>
                       </td>
                       <td className="py-2.5 text-right">{statusPill(holding)}</td>

@@ -14,6 +14,7 @@ export const metadata: Metadata = {
   title: "CARA7 - Investor Dashboard",
   description:
     "Invest in tokenized ABS notes on Stellar - subscribe at issuance, get repaid through the priority of payments",
+  icons: { icon: "/cara7-logo.svg" },
 };
 
 export default function RootLayout({

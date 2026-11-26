@@ -22,6 +22,21 @@ export type Locale = "en" | "fr";
  * payeur). Deliberately untranslated: "Note factor" -> "Factor", class
  * names, EURC, on-chain terms (ledger, closing, waterfall, DvP, wallet).
  */
+
+/** A number in the format of a locale: 1,000 (en-US) or 1 000 (fr-FR). */
+function localeNumber(value: number, tag: "en-US" | "fr-FR"): string {
+  return value.toLocaleString(tag, { maximumFractionDigits: 7 });
+}
+
+/*
+ * Face value of one note. Notes are in EUR and settle at par in the deal
+ * token (1 token = 1 EUR), so the token amount is also the EUR amount.
+ */
+const noteNominalEn = (amount: number, symbol: string): string =>
+  `EUR\u00a0${localeNumber(amount, "en-US")} nominal, settled in ${symbol}`;
+const noteNominalFr = (amount: number, symbol: string): string =>
+  `${localeNumber(amount, "fr-FR")}\u00a0€ nominal, réglé en ${symbol}`;
+
 const en = {
   /* Report header */
   cutoffDate: "Cut-off date:",
@@ -120,14 +135,32 @@ const en = {
   connect: "Connect",
   walletConnectionFailed: (message: string): string =>
     `Wallet connection failed: ${message}`,
+  contractAddressRejected:
+    "Smart-contract accounts (C-addresses) are not supported. Use a G-address wallet.",
+
+  /* Connect menu: self-custody wallet or Dfns policy wallet */
+  connectSelfCustody: "Self-custody wallet",
+  connectSelfCustodyHint: "Freighter, xBull and other Stellar wallets. You sign each action.",
+  connectDfns: "Dfns policy wallet",
+  connectDfnsHint: "A custodied wallet. Policy rules and an approver control each signature.",
+  dfnsSignIn: "Sign in with a passkey",
+  dfnsCreatePrompt: "No account yet? Create one with a display name.",
+  dfnsDisplayName: "Display name",
+  dfnsCreate: "Create account",
+  dfnsWaitingPasskey: "Waiting for the passkey…",
+  dfnsConnectFailed: "The Dfns sign-in failed.",
+  dfnsSignedInAs: (name: string): string => `Signed in as ${name}`,
+  passkeyCancelled: "The passkey request was cancelled or timed out.",
+  logout: "Log out",
+  removeTrustline: (symbol: string): string => `Remove ${symbol} trustline`,
+  removeTrustlineHint: (symbol: string): string =>
+    `Without the ${symbol} trustline, your payments wait on the paying agent until the trustline comes back. "Claim" then collects them.`,
 
   /* Rate pricing (prospectus terms; class names stay untranslated) */
-  ratePricingLabel: (pricing: TranchePricing): string => {
-    if (pricing.kind === "fixed") return "fixed";
-    if (pricing.kind === "floating")
-      return `EURIBOR 1M + ${pricing.spreadPct.toFixed(2)}% (floor 0%)`;
-    return "refix to EURIBOR terms pending";
-  },
+  ratePricingLabel: (pricing: TranchePricing): string =>
+    pricing.kind === "fixed"
+      ? "fixed"
+      : `EURIBOR 1M + ${pricing.spreadPct.toFixed(2)}% (floor 0%)`,
 
   /* Portfolio page */
   portfolioKicker: "Investor dashboard",
@@ -141,8 +174,10 @@ const en = {
   kpiCashReceived: "Cash received to date",
   kpiWeightedCoupon: "Weighted coupon",
   noteHoldingsTitle: "Note holdings",
-  noteHoldingsSubtitle: (symbol: string): string =>
-    `one note token per class · 100 ${symbol} denomination`,
+  noteHoldingsSubtitle: (nominal: string | null): string =>
+    nominal
+      ? `one note token per class · 1 note = ${nominal}`
+      : "one note token per class · notes in EUR, settled at par in the deal token",
   loadingHoldings: "Loading holdings…",
   colTranche: "Tranche",
   colToken: "Token",
@@ -199,16 +234,20 @@ const en = {
   /* Tranche page - subscription form */
   formSubscribe: "Subscribe",
   formCancel: "Cancel",
-  subscribeCopy: (symbol: string, classLetter: string): string =>
-    `Subscribe ${symbol} during the funding window. At closing, subscriptions fund the purchase of the receivables pool and you receive Class ${classLetter} notes at par - 100 ${symbol} per note. You can cancel any time before closing; after closing, notes repay through the priority of payments only.`,
+  noteNominal: noteNominalEn,
+  subscribeCopy: (symbol: string, classLetter: string, nominal: string | null): string =>
+    `Subscribe ${symbol} during the funding window. At closing, subscriptions fund the purchase of the receivables pool and you receive Class ${classLetter} notes at par${nominal ? ` (1 note = ${nominal})` : ""}. You can cancel any time before closing; after closing, notes repay through the priority of payments only.`,
   cancelCopy:
     "Cancel all or part of your pending subscription. Funds return to your wallet immediately. Cancellation is only possible before closing.",
   maxHint: (amount: string, symbol: string): string => `Max: ${amount} ${symbol}`,
   pendingNotesHint: (notes: number): string => `pending: ${notes} notes`,
   notesAtPar: (notes: number): string =>
     `= ${notes} note${notes === 1 ? "" : "s"} at par`,
-  multiplesHint: (symbol: string): string =>
-    `multiples of 100 ${symbol} (1 note = 100 ${symbol})`,
+  multiplesHint: (denomination: number, symbol: string): string =>
+    `multiples of ${localeNumber(denomination, "en-US")} ${symbol} (1 note = ${noteNominalEn(denomination, symbol)})`,
+  notWhitelisted: "Your address is not on the whitelist of this deal. Contact the arranger.",
+  receiverNotWhitelisted:
+    "The receiving address is not on the whitelist of this deal. Notes can only be transferred to an address on the list.",
   balanceLabel: "Balance",
   bookBuildingLabel: "Book building",
   bookBuildingHint: (subscribed: string, total: string, symbol: string): string =>
@@ -230,6 +269,22 @@ const en = {
   txConfirmed: "Confirmed onchain.",
   viewTransaction: "View transaction",
   txFailed: "Transaction failed.",
+  awaitingApproval: "Awaiting approval…",
+  txAwaitingApproval: "This action waits for your wallet's policy approver.",
+  txApprovalIdLabel: "Approval id:",
+  txApproverDecides: "The approver decides in the Dfns dashboard.",
+  pendingBannerTitle: "An action waits for approval",
+  txApprovalDenied: (reason: string): string =>
+    `Your policy approver denied this action: ${reason}`,
+  txPolicyBlocked: (reason: string): string =>
+    `The wallet policy does not allow this action: ${reason}`,
+  txSigningFailed: (reason: string): string =>
+    `The custody provider could not sign this action: ${reason}`,
+  txApprovalExpired: "The approval request expired.",
+  txBodyChanged: "The custody provider returned a different transaction.",
+  enableAsset: (symbol: string): string => `Enable ${symbol}`,
+  trustlineNeeded: (symbol: string): string =>
+    `Your Dfns wallet needs a ${symbol} trustline before it can hold ${symbol}. You enable it one time.`,
   closedTitle: "Primary market closed",
   closedCopy: (closedOn: string | null): string =>
     `This deal closed${closedOn ? ` on ${closedOn}` : ""}: subscription proceeds were paid to the Seller against the receivables, the cash reserve was funded, and notes were issued at par. Notes are not redeemable on demand - principal and interest are paid by the paying agent on each payment date, in order of seniority. Notes remain transferable; coupons on mid-period transfers are split day-weighted between seller and buyer at the next payment date.`,
@@ -301,6 +356,12 @@ const en = {
     claimed: "Held payment claimed",
     enforced: "Enforcement notice",
     matured: "Deal matured",
+    eligibility_set: "Whitelist updated",
+    payout_parked: "Fee or residual held for its recipient",
+    owed_claimed: "Held fee or residual claimed",
+    rank_lines: "Rank-by-rank allocation",
+    period_settled: "Period settled - balances checked",
+    trigger_breached: "Trigger breached",
   },
   eventNotes: (notes: string): string => `${notes} notes`,
   eventSubscription: (notes: string, amount: string, symbol: string): string =>
@@ -402,13 +463,30 @@ const fr: Dictionary = {
   connect: "Connecter",
   walletConnectionFailed: (message: string): string =>
     `Échec de connexion du wallet : ${message}`,
+  contractAddressRejected:
+    "Les comptes smart contract (adresses C) ne sont pas pris en charge. Utilisez un wallet à adresse G.",
 
-  ratePricingLabel: (pricing: TranchePricing): string => {
-    if (pricing.kind === "fixed") return "fixe";
-    if (pricing.kind === "floating")
-      return `EURIBOR 1M + ${pricing.spreadPct.toFixed(2).replace(".", ",")} % (floor 0 %)`;
-    return "refixation aux conditions EURIBOR en attente";
-  },
+  connectSelfCustody: "Wallet en auto-conservation",
+  connectSelfCustodyHint: "Freighter, xBull et les autres wallets Stellar. Vous signez chaque action.",
+  connectDfns: "Wallet Dfns sous politique",
+  connectDfnsHint: "Un wallet confié à un dépositaire. Des règles de politique et un approbateur contrôlent chaque signature.",
+  dfnsSignIn: "Se connecter avec une clé d'accès",
+  dfnsCreatePrompt: "Pas encore de compte ? Créez-en un avec un nom affiché.",
+  dfnsDisplayName: "Nom affiché",
+  dfnsCreate: "Créer le compte",
+  dfnsWaitingPasskey: "En attente de la clé d'accès…",
+  dfnsConnectFailed: "La connexion Dfns a échoué.",
+  dfnsSignedInAs: (name: string): string => `Connecté en tant que ${name}`,
+  passkeyCancelled: "La demande de clé d'accès a été annulée ou a expiré.",
+  logout: "Se déconnecter",
+  removeTrustline: (symbol: string): string => `Supprimer la trustline ${symbol}`,
+  removeTrustlineHint: (symbol: string): string =>
+    `Sans la trustline ${symbol}, vos paiements attendent chez l'agent payeur jusqu'au retour de la trustline. « Réclamer » les collecte ensuite.`,
+
+  ratePricingLabel: (pricing: TranchePricing): string =>
+    pricing.kind === "fixed"
+      ? "fixe"
+      : `EURIBOR 1M + ${pricing.spreadPct.toFixed(2).replace(".", ",")} % (floor 0 %)`,
 
   portfolioKicker: "Tableau de bord investisseur",
   portfolioTitle: "Mon portefeuille",
@@ -421,8 +499,10 @@ const fr: Dictionary = {
   kpiCashReceived: "Sommes reçues à ce jour",
   kpiWeightedCoupon: "Coupon moyen pondéré",
   noteHoldingsTitle: "Notes en portefeuille",
-  noteHoldingsSubtitle: (symbol: string): string =>
-    `un token de note par classe · coupure de 100 ${symbol}`,
+  noteHoldingsSubtitle: (nominal: string | null): string =>
+    nominal
+      ? `un token de note par classe · 1 note = ${nominal}`
+      : "un token de note par classe · notes en EUR, réglées au pair dans le token du deal",
   loadingHoldings: "Chargement des positions…",
   colTranche: "Tranche",
   colToken: "Token",
@@ -475,16 +555,20 @@ const fr: Dictionary = {
 
   formSubscribe: "Souscrire",
   formCancel: "Annuler",
-  subscribeCopy: (symbol: string, classLetter: string): string =>
-    `Souscrivez en ${symbol} pendant la période de souscription. Au closing, les souscriptions financent l'achat du portefeuille de créances et vous recevez des notes de Classe ${classLetter} au pair - coupure de 100 ${symbol}. Vous pouvez annuler à tout moment avant le closing ; après le closing, les notes ne se remboursent que par les rangs de priorité des paiements.`,
+  noteNominal: noteNominalFr,
+  subscribeCopy: (symbol: string, classLetter: string, nominal: string | null): string =>
+    `Souscrivez en ${symbol} pendant la période de souscription. Au closing, les souscriptions financent l'achat du portefeuille de créances et vous recevez des notes de Classe ${classLetter} au pair${nominal ? ` (1 note = ${nominal})` : ""}. Vous pouvez annuler à tout moment avant le closing ; après le closing, les notes ne se remboursent que par les rangs de priorité des paiements.`,
   cancelCopy:
     "Annulez tout ou partie de votre souscription en attente. Les fonds reviennent immédiatement dans votre wallet. L'annulation n'est possible qu'avant le closing.",
   maxHint: (amount: string, symbol: string): string => `Max : ${amount} ${symbol}`,
   pendingNotesHint: (notes: number): string => `en attente : ${notes} notes`,
   notesAtPar: (notes: number): string =>
     `= ${notes} note${notes === 1 ? "" : "s"} au pair`,
-  multiplesHint: (symbol: string): string =>
-    `multiples de 100 ${symbol} (1 note = 100 ${symbol})`,
+  multiplesHint: (denomination: number, symbol: string): string =>
+    `multiples de ${localeNumber(denomination, "fr-FR")} ${symbol} (1 note = ${noteNominalFr(denomination, symbol)})`,
+  notWhitelisted: "Votre adresse n'est pas sur la liste blanche de ce deal. Contactez l'arrangeur.",
+  receiverNotWhitelisted:
+    "L'adresse destinataire n'est pas sur la liste blanche de ce deal. Les notes ne peuvent être transférées qu'à une adresse de la liste.",
   balanceLabel: "Solde",
   bookBuildingLabel: "Carnet d'ordres",
   bookBuildingHint: (subscribed: string, total: string, symbol: string): string =>
@@ -506,6 +590,22 @@ const fr: Dictionary = {
   txConfirmed: "Confirmé on-chain.",
   viewTransaction: "Voir la transaction",
   txFailed: "Échec de la transaction.",
+  awaitingApproval: "En attente d'approbation…",
+  txAwaitingApproval: "Cette action attend l'approbateur de la politique de votre wallet.",
+  txApprovalIdLabel: "Identifiant d'approbation :",
+  txApproverDecides: "L'approbateur décide dans le tableau de bord Dfns.",
+  pendingBannerTitle: "Une action attend une approbation",
+  txApprovalDenied: (reason: string): string =>
+    `L'approbateur de votre politique a refusé cette action : ${reason}`,
+  txPolicyBlocked: (reason: string): string =>
+    `La politique du wallet n'autorise pas cette action : ${reason}`,
+  txSigningFailed: (reason: string): string =>
+    `Le dépositaire n'a pas pu signer cette action : ${reason}`,
+  txApprovalExpired: "La demande d'approbation a expiré.",
+  txBodyChanged: "Le dépositaire a renvoyé une transaction différente.",
+  enableAsset: (symbol: string): string => `Activer ${symbol}`,
+  trustlineNeeded: (symbol: string): string =>
+    `Votre wallet Dfns doit ouvrir une trustline ${symbol} avant de pouvoir détenir des ${symbol}. Vous l'activez une seule fois.`,
   closedTitle: "Marché primaire clos",
   closedCopy: (closedOn: string | null): string =>
     `Ce deal a été clos${closedOn ? ` le ${closedOn}` : ""} : le produit des souscriptions a été versé au Cédant contre les créances, la réserve de trésorerie a été constituée et les notes ont été émises au pair. Les notes ne sont pas remboursables à la demande - le principal et les intérêts sont payés par l'agent payeur à chaque date de paiement, par ordre de séniorité. Les notes restent cessibles ; les coupons des cessions en cours de période sont répartis prorata temporis entre cédant et cessionnaire à la prochaine date de paiement.`,
@@ -574,6 +674,12 @@ const fr: Dictionary = {
     claimed: "Paiement en attente réclamé",
     enforced: "Avis d'exigibilité anticipée",
     matured: "Deal arrivé à maturité",
+    eligibility_set: "Liste blanche mise à jour",
+    payout_parked: "Frais ou résiduel mis en attente pour son bénéficiaire",
+    owed_claimed: "Frais ou résiduel en attente réclamé",
+    rank_lines: "Allocation rang par rang",
+    period_settled: "Période réglée - soldes vérifiés",
+    trigger_breached: "Déclencheur atteint",
   },
   eventNotes: (notes: string): string => `${notes} notes`,
   eventSubscription: (notes: string, amount: string, symbol: string): string =>
