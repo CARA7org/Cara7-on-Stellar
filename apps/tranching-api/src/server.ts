@@ -24,8 +24,6 @@ interface Logger {
   error: (messageOrError: unknown, message?: string) => void;
 }
 
-const SENIORITY_ORDER = ['SENIOR', 'MEZZANINE', 'JUNIOR'];
-
 /// One poller cycle: ingest the three contracts of the deal (abs-deal, paying
 /// agent, note tokens) plus one snapshot per tranche, then accumulate the
 /// Reflector prices. Overlapping cycles are skipped.
@@ -36,7 +34,7 @@ export function createTick(log: Logger): () => Promise<void> {
     running = true;
     try {
       const deals = await prisma.deal.findMany({
-        include: { tranches: { orderBy: { id: 'asc' } } },
+        include: { tranches: { orderBy: { classIndex: 'asc' } } },
       });
       for (const deal of deals) {
         const contracts = [
@@ -53,14 +51,13 @@ export function createTick(log: Logger): () => Promise<void> {
         }
         if (deal.dealContractId) {
           try {
-            const ordered = [...deal.tranches].sort(
-              (a, b) =>
-                SENIORITY_ORDER.indexOf(a.seniority) - SENIORITY_ORDER.indexOf(b.seniority),
-            );
             await takeDealSnapshot(
               {
                 dealContractId: deal.dealContractId,
-                trancheContractIds: ordered.map((tranche) => tranche.contractId),
+                tranches: deal.tranches.map(({ classIndex, contractId }) => ({
+                  classIndex,
+                  contractId,
+                })),
               },
               log,
             );

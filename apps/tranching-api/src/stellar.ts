@@ -18,8 +18,13 @@ export const server = new rpc.Server(environment.SOROBAN_RPC_URL, {
 // Ephemeral source account, only used to SIMULATE read calls.
 const simulationSource = Keypair.random().publicKey();
 
+/**
+ * The latest ledger, from `getHealth`. The call `getLatestLedger` of SDK
+ * 16.0.1 fails on testnet since protocol 30: the SDK cannot read the new
+ * ledger header.
+ */
 export async function latestLedger(): Promise<number> {
-  return (await server.getLatestLedger()).sequence;
+  return (await server.getHealth()).latestLedger;
 }
 
 /// Simulate a read-only method call and return its native value.

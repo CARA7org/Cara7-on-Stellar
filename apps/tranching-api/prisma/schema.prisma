@@ -31,11 +31,18 @@ model Deal {
 model Tranche {
   id            Int      @id @default(autoincrement())
   dealId        Int      @map("deal_id")
+  /// On-chain class index of the note in its deal: 0..n-1, senior first.
+  classIndex    Int      @map("class_index")
   name          String
-  seniority     String // SENIOR | MEZZANINE | JUNIOR - class 0/1/2 on-chain
+  /// Display label only: SENIOR | MEZZANINE | JUNIOR. Two classes of one deal
+  /// can have the same label. The class index identifies the class.
+  seniority     String
   /// note-token contract id of the class.
   contractId    String   @unique @map("contract_id")
   baseAssetId   String   @map("base_asset_id")
+  /// FLOATING (EURIBOR 1M + spread, floor 0%) or FIXED.
+  rateKind      String   @default("FIXED") @map("rate_kind")
+  /// FIXED: annual rate in bps. FLOATING: spread over EURIBOR 1M in bps.
   couponBps     Int      @default(0) @map("coupon_bps")
   /// Original face of the class in base units (notes x denomination).
   originalFace  Decimal  @map("original_face") @db.Decimal(40, 0)
@@ -44,6 +51,7 @@ model Tranche {
   createdAt     DateTime @default(now()) @map("created_at")
   deal          Deal     @relation(fields: [dealId], references: [id], onDelete: Cascade)
 
+  @@unique([dealId, classIndex])
   @@index([dealId])
   @@map("tranche")
 }
@@ -58,7 +66,8 @@ model Tranche {
 /// abs-deal subscribed|sub_cancelled|sub_loan_funded|sub_loan_refunded|
 /// deal_closed|deal_aborted|distribution|fees_paid|interest_paid|
 /// principal_paid|factor_updated|reserve_released|reserve_refunded|
-/// carry_updated|residual_paid|enforced|matured ;
+/// carry_updated|residual_paid|enforced|matured|eligibility_set|
+/// payout_parked|owed_claimed|rank_lines|period_settled|trigger_breached ;
 /// paying-agent period_funded|holder_paid|push_failed|claimed|batch_done.
 model StellarEvent {
   id         String   @id

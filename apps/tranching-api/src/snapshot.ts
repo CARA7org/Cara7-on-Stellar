@@ -4,13 +4,54 @@ import { prisma } from './db.js';
 
 interface DealTarget {
   dealContractId: string;
-  /// Note-token contract ids in on-chain class order (SENIOR, MEZZANINE, JUNIOR).
-  trancheContractIds: string[];
+  /// Note-token contract of each registered class, with its on-chain class
+  /// index (0..n-1, senior first).
+  tranches: { classIndex: number; contractId: string }[];
+}
+
+/// The terms of one class in `get_config`. A deal of the earlier code has no
+/// floor field: its floating rate has a floor of 0 on the all-in rate.
+export interface ClassTermsView {
+  rate: [string, bigint];
+  total_notes: bigint;
+  /// Floor of the all-in rate, in 0.001 % units. Null: no floor.
+  floor?: bigint | null;
+  /// Floor of the index before the spread, in 0.001 % units. Null: no floor.
+  index_floor?: bigint | null;
 }
 
 interface DealConfigView {
   oracle: string;
-  classes: { rate: [string, bigint]; total_notes: bigint }[];
+  classes: ClassTermsView[];
+}
+
+/// A rate figure of the contract as a bigint, or null when it is absent.
+function rateUnits(value: unknown): bigint | null {
+  if (typeof value === 'bigint') return value;
+  if (typeof value === 'number' && Number.isInteger(value)) return BigInt(value);
+  if (typeof value === 'string' && /^-?\d+$/.test(value)) return BigInt(value);
+  return null;
+}
+
+/// The all-in annual rate of a class, in 0.001 % units.
+/// - Fixed: the rate.
+/// - Floating: the fixing, not below the index floor, plus the spread. Then
+///   not below the all-in floor. A rate below 0 gives no interest, so the
+///   result is never below 0. With no fixing, the result is 0.
+/// The result is always a whole number: never NaN.
+export function couponRateUnits(terms: ClassTermsView, fixing: bigint | null): number {
+  const [kind, rawValue] = terms.rate;
+  const value = rateUnits(rawValue);
+  if (value === null) return 0;
+  if (kind === 'Fixed') return Number(value);
+  const index = rateUnits(fixing);
+  if (index === null) return 0;
+  const indexFloor = rateUnits(terms.index_floor);
+  const flooredIndex = indexFloor !== null && index < indexFloor ? indexFloor : index;
+  const floor = rateUnits(terms.floor);
+  const sum = flooredIndex + value;
+  const allIn = floor !== null && sum < floor ? floor : sum;
+  return allIn > 0n ? Number(allIn) : 0;
 }
 
 /// Read the live state of the deal (outstanding, note factors, all-in coupons)
@@ -27,8 +68,8 @@ export async function takeDealSnapshot(
     readContract(target.dealContractId, 'get_config') as Promise<DealConfigView>,
   ]);
 
-  // EURIBOR 1M fixing for the floating classes (all-in = fixing + spread,
-  // floor 0); the fixed classes carry their rate directly.
+  // EURIBOR 1M fixing for the floating classes (see `couponRateUnits`); the
+  // fixed classes carry their rate directly.
   let fixing: bigint | null = null;
   const needsFixing = config.classes.some((c) => c.rate[0] === 'Floating');
   if (needsFixing) {
@@ -36,18 +77,10 @@ export async function takeDealSnapshot(
     fixing = price?.price ?? null;
   }
 
-  for (let classIndex = 0; classIndex < target.trancheContractIds.length; classIndex++) {
-    const contractId = target.trancheContractIds[classIndex];
-    if (!contractId) continue;
+  for (const { classIndex, contractId } of target.tranches) {
     const terms = config.classes[classIndex];
     if (!terms) continue;
-    const [kind, value] = terms.rate;
-    const couponRateUnits =
-      kind === 'Fixed'
-        ? Number(value)
-        : fixing !== null
-          ? Math.max(0, Number(fixing + value))
-          : 0;
+    const coupon = couponRateUnits(terms, fixing);
 
     // Totals per class from the deal events (topics [type, class]).
     const paid = await prisma.stellarEvent.findMany({
@@ -78,7 +111,7 @@ export async function takeDealSnapshot(
         ledger,
         outstanding: new Prisma.Decimal((outstanding[classIndex] ?? 0n).toString()),
         noteFactor: Number(factors[classIndex] ?? 0n),
-        couponRateUnits,
+        couponRateUnits: coupon,
         paidInterestCum: new Prisma.Decimal(interestCum.toString()),
         paidPrincipalCum: new Prisma.Decimal(principalCum.toString()),
       },

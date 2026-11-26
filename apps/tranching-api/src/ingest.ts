@@ -2,14 +2,12 @@ import { Prisma } from './generated/prisma/client.js';
 import { server, latestLedger } from './stellar.js';
 import { prisma, jsonSafe } from './db.js';
 import { environment } from './config.js';
-import { decodeEvent, positionDeltas, type DecodedEvent } from './decode.js';
+import { decodeEvent, positionDeltas, KNOWN_EVENT_TYPES, type DecodedEvent } from './decode.js';
 
 const LEDGERS_PER_DAY = 17280; // ledgers de ~5 s
 // Cold start: getEvents keeps about 7 days, but the queryable window is
 // bounded; start about 1 day back.
 const COLD_START_LOOKBACK = LEDGERS_PER_DAY;
-
-const SENIORITY_ORDER = ['SENIOR', 'MEZZANINE', 'JUNIOR'] as const;
 
 interface Logger {
   info: (message: string) => void;
@@ -24,22 +22,23 @@ async function startLedgerFor(contractId: string, latest: number): Promise<numbe
 }
 
 /// Resolve (deal|agent contract, on-chain class index) -> note-token contract,
-/// through the seniority order of the registry (class 0 = SENIOR,
-/// 1 = MEZZANINE, 2 = JUNIOR).
-async function resolveTranche(
+/// through the class index of the registry. The seniority is a label only:
+/// two classes of one deal can have the same label.
+export async function resolveTranche(
   source: { deal?: string; agent?: string },
   classIndex: number,
 ): Promise<string | null> {
-  const deal = await prisma.deal.findFirst({
-    where: source.deal
-      ? { dealContractId: source.deal }
-      : { payingAgentContractId: source.agent },
-    include: { tranches: true },
+  if (!Number.isInteger(classIndex)) return null;
+  const tranche = await prisma.tranche.findFirst({
+    where: {
+      classIndex,
+      deal: source.deal
+        ? { dealContractId: source.deal }
+        : { payingAgentContractId: source.agent },
+    },
+    select: { contractId: true },
   });
-  if (!deal) return null;
-  const seniority = SENIORITY_ORDER[classIndex];
-  if (!seniority) return null;
-  return deal.tranches.find((tranche) => tranche.seniority === seniority)?.contractId ?? null;
+  return tranche?.contractId ?? null;
 }
 
 /// One ingestion cycle for ONE contract: scan from the last ingested ledger,
@@ -63,7 +62,7 @@ export async function ingestOnce(contractId: string, log?: Logger): Promise<numb
 
     for (const rawEvent of response.events) {
       const event = decodeEvent(rawEvent as Parameters<typeof decodeEvent>[0]);
-      if (await persist(event)) inserted++;
+      if (await storeEvent(event, log)) inserted++;
       scannedTo = Math.max(scannedTo, event.ledger);
     }
     scannedTo = Math.max(scannedTo, response.latestLedger ?? scannedTo);
@@ -82,6 +81,23 @@ export async function ingestOnce(contractId: string, log?: Logger): Promise<numb
   return inserted;
 }
 
+/// Store one event and apply its position deltas. The indexer stores a topic
+/// that it does not know (see KNOWN_EVENT_TYPES) raw and does not decode it.
+/// If the indexer cannot store such an event, it logs the event and goes on:
+/// an unknown topic never stops the ingestion. A known topic that fails stops
+/// the cycle, and the next cycle tries it again.
+export async function storeEvent(event: DecodedEvent, log?: Logger): Promise<boolean> {
+  try {
+    return await persist(event);
+  } catch (error) {
+    if (KNOWN_EVENT_TYPES.has(event.type)) throw error;
+    log?.error(
+      `[ingest ${event.contractId.slice(0, 8)}] unknown event ${event.type} ${event.id} skipped: ${String(error)}`,
+    );
+    return false;
+  }
+}
+
 async function persist(event: DecodedEvent): Promise<boolean> {
   try {
     await prisma.stellarEvent.create({
@@ -92,7 +108,8 @@ async function persist(event: DecodedEvent): Promise<boolean> {
         contractId: event.contractId,
         type: event.type,
         topic: jsonSafe(event.topics) as Prisma.InputJsonValue,
-        data: jsonSafe(event.data) as Prisma.InputJsonValue,
+        // A void event body decodes to null. A Json column needs JsonNull for it.
+        data: event.data == null ? Prisma.JsonNull : (jsonSafe(event.data) as Prisma.InputJsonValue),
       },
     });
   } catch (error) {

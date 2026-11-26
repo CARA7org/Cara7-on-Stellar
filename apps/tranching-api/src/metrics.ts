@@ -24,6 +24,13 @@ export async function dealPhase(dealContractId: string | null): Promise<string> 
   }
 }
 
+/// Display label of the rate terms of a class. FLOATING: couponBps is the
+/// spread over EURIBOR 1M. FIXED: couponBps is the annual rate.
+export function rateLabel(rateKind: string, couponBps: number): string {
+  const pct = (couponBps / 100).toFixed(2);
+  return rateKind === 'FLOATING' ? `EURIBOR 1M + ${pct}% (floor 0%)` : `${pct}% fixed`;
+}
+
 /// Investor metrics of a NOTE (no NAV, no share price any more): factor,
 /// outstanding, current coupon, accrued interest, paid totals, next due date.
 export async function trancheStats(contractId: string): Promise<Record<string, unknown> | null> {
@@ -91,10 +98,7 @@ export async function trancheStats(contractId: string): Promise<Record<string, u
     coupon: {
       allInPct,
       rateUnits: latest.couponRateUnits,
-      pricing:
-        tranche.seniority === 'SENIOR'
-          ? 'EURIBOR 1M + 0.60% (floor 0%)'
-          : `${allInPct.toFixed(2)}% fixed`,
+      pricing: rateLabel(tranche.rateKind, tranche.couponBps),
     },
     accrued: {
       days: Number(Math.min(accruedDays, periodDays).toFixed(2)),
@@ -243,8 +247,8 @@ export async function userPositionHistory(
   }
 
   // Total received by this address on this tranche over time (holder_paid
-  // + claimed of the paying agent, class resolved by seniority).
-  const classIndex = ['SENIOR', 'MEZZANINE', 'JUNIOR'].indexOf(tranche.seniority);
+  // + claimed of the paying agent, matched on the class index of the tranche).
+  const classIndex = tranche.classIndex;
   const paymentEvents = tranche.deal.payingAgentContractId
     ? await prisma.stellarEvent.findMany({
         where: {

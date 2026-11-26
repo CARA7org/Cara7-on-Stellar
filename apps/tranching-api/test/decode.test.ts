@@ -1,5 +1,6 @@
 import { describe, expect, it } from 'vitest';
-import { positionDeltas, type DecodedEvent } from '../src/decode.js';
+import { nativeToScVal, xdr } from '@stellar/stellar-sdk';
+import { decodeEvent, positionDeltas, type DecodedEvent } from '../src/decode.js';
 
 function eventOf(
   type: string,
@@ -91,5 +92,51 @@ describe('positionDeltas', () => {
     expect(positionDeltas(eventOf('period_rolled', [], ['1', '0', '0']))).toEqual([]);
     expect(positionDeltas(eventOf('deal_closed', [], ['0', '0', '0']))).toEqual([]);
     expect(positionDeltas(eventOf('approve', ['GA', 'GB'], ['10', '100']))).toEqual([]);
+  });
+
+  it('attributes a payment of class 3 (4th class) to class 3', () => {
+    const deltas = positionDeltas(
+      eventOf('holder_paid', ['GHOLD'], ['2', '3', '500', '0'], 'CAGENT'),
+    );
+    expect(deltas[0]).toMatchObject({ kind: 'payment', classIndex: 3 });
+  });
+
+  it('gives no position delta for the whitelist, parked payout and rank engine topics', () => {
+    expect(positionDeltas(eventOf('eligibility_set', ['GINV'], [true], 'CDEAL'))).toEqual([]);
+    expect(positionDeltas(eventOf('payout_parked', ['GHOLD'], [1, 1, '100'], 'CDEAL'))).toEqual([]);
+    expect(positionDeltas(eventOf('owed_claimed', ['GHOLD'], ['100'], 'CDEAL'))).toEqual([]);
+    expect(positionDeltas(eventOf('rank_lines', [1], [false, [['fees', ['Fee', 0], '50', '50', '0']]], 'CDEAL'))).toEqual([]);
+    expect(positionDeltas(eventOf('period_settled', [1], ['0', '0', '0', '0', '0', '0', '0', '0', '0', '0'], 'CDEAL'))).toEqual([]);
+    expect(positionDeltas(eventOf('trigger_breached', ['seq'], [1], 'CDEAL'))).toEqual([]);
+  });
+});
+
+describe('decodeEvent', () => {
+  const base = {
+    id: '0000000001-0000000001',
+    ledger: 5,
+    ledgerClosedAt: '2026-11-17T00:00:00Z',
+    contractId: 'CDEAL',
+  };
+
+  it('decodes an unknown topic with a void body', () => {
+    const event = decodeEvent({
+      ...base,
+      topic: [xdr.ScVal.scvSymbol('topic_of_another_contract'), nativeToScVal(3, { type: 'u32' })],
+      value: xdr.ScVal.scvVoid(),
+    });
+    expect(event.type).toBe('topic_of_another_contract');
+    expect(event.topics).toEqual(['topic_of_another_contract', 3]);
+    expect(event.data).toBeNull();
+  });
+
+  it('keeps the raw XDR of a value that the SDK cannot decode', () => {
+    const event = decodeEvent({
+      ...base,
+      topic: [xdr.ScVal.scvSymbol('topic_of_another_contract').toXDR('base64')],
+      value: 'not-an-xdr-value',
+    });
+    expect(event.type).toBe('topic_of_another_contract');
+    expect(event.data).toEqual({ xdr: 'not-an-xdr-value' });
   });
 });
